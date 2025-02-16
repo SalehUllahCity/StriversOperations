@@ -2,6 +2,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
 
 public class JDBC {
     public static void main(String[] args) {
@@ -16,6 +17,25 @@ public class JDBC {
             // create the connection, git connection
             Connection connection = DriverManager.getConnection(url, userName, password);
 
+            BoxOfficeData boxOfficeData = new BoxOfficeData();
+
+            List<String> venueAvailability = boxOfficeData.getVenueAvailability(connection);
+
+            System.out.println("Venue Availability:");
+            for (String availability : venueAvailability) {
+                System.out.println(availability);
+            }
+
+            List<SeatingConfiguration> seatingConfigurationList = boxOfficeData.seatingConfigurations(connection, "Meeting");
+
+            System.out.println("SeatingConfiguration:");
+            for (SeatingConfiguration seating : seatingConfigurationList) {
+                System.out.println(seating);
+            }
+
+
+
+            /*
             // Statement objects
             Statement statement = connection.createStatement();
 
@@ -29,11 +49,10 @@ public class JDBC {
                         + resultSet.getString(3) + " " +
                         resultSet.getString(4));
             }
-
+            */
             connection.close(); // close connection
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e);
         }
     }
