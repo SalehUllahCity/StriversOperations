@@ -7,7 +7,8 @@ import java.util.List;
 
 /* TO-DO
 - Implement column for reserved spaces? -> this is more of a seating configuration thing maybe
-
+- Make a new method that returns the spaces that are restricted (discount is BO problem)
+- Wheelchair seating locations
  */
 public class BoxOfficeData implements BoxOffice {
 
