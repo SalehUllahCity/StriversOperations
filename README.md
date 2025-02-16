@@ -5,7 +5,7 @@ Team: Shakeel, Samir, Mai-linh, Hussein, Giacomo, Numair, Saleh | Coach: Dr Dhaw
 Team Leader (Marketing) - Filippo
 Team Leader (Box Office) - Denis
 
-Point of Contact:
+Points of Contact:
 [dhawal.beohar@city.ac.uk](mailto:dhawal.beohar@city.ac.uk)
 [shakeel.aziz@city.ac.uk](mailto:shakeel.aziz@city.ac.uk)
 [giacomo.dellacasa-saba@city.ac.uk](mailto:giacomo.dellacasa-saba@city.ac.uk)
