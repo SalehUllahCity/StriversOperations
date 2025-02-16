@@ -47,9 +47,10 @@ public class BoxOfficeData implements BoxOffice {
         List<SeatingConfiguration> seatingConfigurations = new ArrayList<>();
 
         // Might get rid of SeatNumber or SeatID as they could mean the same thing, ask Samir if there is a difference
-        String query = "SELECT SeatID, BookingID, SeatNumber, SeatType, RowNumber, SeatStatus FROM seating" +
-                "WHERE BookingID IN " +
-                "(SELECT BookingID FROM Booking WHERE BookingType = ?)"; // is our BookingType the room or type of event
+        String query = "SELECT s.SeatNumber, s.SeatType, s.SeatStatus \n" +
+                "FROM Seating s\n" +
+                "JOIN Booking b ON s.BookingID = b.BookingID\n" +
+                "WHERE b.BookingType = ?"; // is our BookingType the room or type of event, in this case its hallName
                     // if event type, we need a variable for hallName
 
         try {

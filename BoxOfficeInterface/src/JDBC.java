@@ -29,8 +29,8 @@ public class JDBC {
             List<SeatingConfiguration> seatingConfigurationList = boxOfficeData.seatingConfigurations(connection, "Meeting");
 
             System.out.println("SeatingConfiguration:");
-            for (SeatingConfiguration seating : seatingConfigurationList) {
-                System.out.println(seating);
+            for (SeatingConfiguration config : seatingConfigurationList) {
+                System.out.println(config);
             }
 
 
