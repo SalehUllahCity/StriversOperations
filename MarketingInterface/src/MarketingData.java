@@ -11,6 +11,11 @@ import java.util.List;
  */
 
 public class MarketingData implements Marketing{
+    /**
+     *
+     * @param connection
+     * @return
+     */
     @Override
     public List<String> getVenueAvailability(Connection connection) {
         List<String> venueAvailability = new ArrayList<>();
@@ -40,6 +45,12 @@ public class MarketingData implements Marketing{
         return venueAvailability;
     }
 
+    /**
+     *
+     * @param connection
+     * @param hallName
+     * @return
+     */
     @Override
     public List<SeatingConfiguration> seatingConfigurations(Connection connection, String hallName) {
         List<SeatingConfiguration> seatingConfigurations = new ArrayList<>();
@@ -71,6 +82,12 @@ public class MarketingData implements Marketing{
         return seatingConfigurations;
     }
 
+    /**
+     *
+     * @param connection
+     * @param hallName
+     * @return
+     */
     @Override
     public List<WheelChairSeatConfig> isAccessible(Connection connection, String hallName) {
         List<WheelChairSeatConfig> wheelchairSeatsConfig = new ArrayList<>();
@@ -97,6 +114,16 @@ public class MarketingData implements Marketing{
         }
         return wheelchairSeatsConfig;
     }
+
+    /**
+     *
+     * @param connection
+     * @param rowNumber
+     * @param seatNumber
+     * @param hallName
+     * @return
+     * @throws SQLException
+     */
     private boolean isAdjacentTaken(Connection connection, String rowNumber, String seatNumber, String hallName) throws SQLException {
         // Check the adjacent seats (left and right)
         int leftSeat = Integer.parseInt(seatNumber) - 1;  // Seat to the left
@@ -119,6 +146,16 @@ public class MarketingData implements Marketing{
         return false;
     }
 
+    /**
+     *
+     * @param connection
+     * @param query
+     * @param rowNumber
+     * @param seatNumber
+     * @param hallName
+     * @return
+     * @throws SQLException
+     */
     // Helper method to check if a seat is taken based on SeatStatus and hall name
     private boolean isSeatTaken(Connection connection, String query, String rowNumber, int seatNumber, String hallName) throws SQLException {
         try (PreparedStatement stm = connection.prepareStatement(query)) {

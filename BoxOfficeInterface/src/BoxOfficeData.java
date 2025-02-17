@@ -13,6 +13,11 @@ import java.util.List;
  */
 public class BoxOfficeData implements BoxOffice {
 
+    /**
+     *
+     * @param connection
+     * @return
+     */
     @Override
     public List<String> getVenueAvailability(Connection connection) {
         List<String> venueAvailability = new ArrayList<>();
@@ -43,6 +48,12 @@ public class BoxOfficeData implements BoxOffice {
         return venueAvailability;
     }
 
+    /**
+     *
+     * @param connection
+     * @param hallName
+     * @return
+     */
     @Override
     public List<SeatingConfiguration> seatingConfigurations(Connection connection, String hallName) {
         List<SeatingConfiguration> seatingConfigurations = new ArrayList<>();
@@ -75,6 +86,12 @@ public class BoxOfficeData implements BoxOffice {
 
     }
 
+    /**
+     *
+     * @param connection
+     * @param hallName
+     * @return
+     */
     @Override
     public List<SeatingConfiguration> isRestricted(Connection connection, String hallName) {
         List<SeatingConfiguration> restrictedSeating = new ArrayList<>();
@@ -106,6 +123,12 @@ public class BoxOfficeData implements BoxOffice {
         return restrictedSeating;
     }
 
+    /**
+     *
+     * @param connection
+     * @param hallName
+     * @return
+     */
     @Override
     public List<SeatingConfiguration> isReserved(Connection connection, String hallName) {
         List<SeatingConfiguration> reservedSeating = new ArrayList<>();
@@ -137,6 +160,12 @@ public class BoxOfficeData implements BoxOffice {
         return reservedSeating;
     }
 
+    /**
+     *
+     * @param connection
+     * @param hallName
+     * @return
+     */
     @Override
     public List<WheelChairSeatConfig> isAccessible(Connection connection, String hallName) {
         List<WheelChairSeatConfig> wheelchairSeatsConfig = new ArrayList<>();
@@ -174,6 +203,16 @@ public class BoxOfficeData implements BoxOffice {
      */
 
     // To check is adjacent seat is taken, if the seat is of type 'Wheelchair'
+
+    /**
+     *
+     * @param connection
+     * @param rowNumber
+     * @param seatNumber
+     * @param hallName
+     * @return
+     * @throws SQLException
+     */
     private boolean isAdjacentTaken(Connection connection, String rowNumber, String seatNumber, String hallName) throws SQLException {
         // Check the adjacent seats (left and right)
         int leftSeat = Integer.parseInt(seatNumber) - 1;  // Seat to the left
@@ -196,6 +235,16 @@ public class BoxOfficeData implements BoxOffice {
         return false;
     }
 
+    /**
+     *
+     * @param connection
+     * @param query
+     * @param rowNumber
+     * @param seatNumber
+     * @param hallName
+     * @return
+     * @throws SQLException
+     */
     // Helper method to check if a seat is taken based on SeatStatus and hall name
     private boolean isSeatTaken(Connection connection, String query, String rowNumber, int seatNumber, String hallName) throws SQLException {
         try (PreparedStatement stm = connection.prepareStatement(query)) {

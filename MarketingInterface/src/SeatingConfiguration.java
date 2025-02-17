@@ -14,6 +14,10 @@ public class SeatingConfiguration {
     // allow code that is treating the string as a more generalized object to know its string value without
     // casting it to String type.
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString() {
         return "Seat Number: " + seatNumber +

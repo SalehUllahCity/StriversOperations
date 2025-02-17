@@ -9,6 +9,10 @@ public class WheelChairSeatConfig {
         this.isAdjacentSeatTaken = isAdjacentSeatTaken;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString() {
         return "Wheelchair Seat: Row " + rowNumber + " Seat " + seatNumber + ", Adjacent Seat Taken: " + isAdjacentSeatTaken;

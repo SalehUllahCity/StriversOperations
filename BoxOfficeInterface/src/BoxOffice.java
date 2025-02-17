@@ -6,15 +6,46 @@ public interface BoxOffice { // consisting of methods to allow BoxOfficeT25 to a
     // to your SQL Database, according to Box Office's Requirement Specification
 
     // Venue Calendar and Availability
+
+    /**
+     *
+     * @param connection
+     * @return
+     */
     List<String> getVenueAvailability(Connection connection);
 
     // Seating Configurations
+
+    /**
+     *
+     * @param connection
+     * @param hallName
+     * @return
+     */
     List<SeatingConfiguration> seatingConfigurations(Connection connection, String hallName);
 
+    /**
+     *
+     * @param connection
+     * @param hallName
+     * @return
+     */
     List<SeatingConfiguration> isRestricted(Connection connection, String hallName);
 
+    /**
+     *
+     * @param connection
+     * @param hallName
+     * @return
+     */
     List<SeatingConfiguration> isReserved(Connection connection, String hallName);
 
+    /**
+     *
+     * @param connection
+     * @param hallName
+     * @return
+     */
     List<WheelChairSeatConfig> isAccessible(Connection connection, String hallName);
 
     // Operational Updates - I have temp archived this as it seems similar to venue availability - SU
