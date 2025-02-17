@@ -21,6 +21,8 @@ public class JDBC {
 
             // Venue Availability/Schedule
             List<String> venueAvailability = boxOfficeData.getVenueAvailability(connection);
+            // to show only availability might need to
+            // create a separate table that joins and then finds the difference or along those lines
 
             System.out.println("Venue Availability:");
             for (String availability : venueAvailability) {
@@ -67,9 +69,6 @@ public class JDBC {
             for (WheelChairSeatConfig wheelchair : wheelchairSeating) {
                 System.out.println(wheelchair);
             }
-
-
-
 
             connection.close(); // close connection
 
