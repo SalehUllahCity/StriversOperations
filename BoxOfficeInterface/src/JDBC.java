@@ -50,6 +50,15 @@ public class JDBC {
             // Created both of these, will delete or not add to the university team DB
             System.out.println("\n");
 
+            // Reserved Seating
+            List<SeatingConfiguration> reservedSeating = boxOfficeData.isReserved(connection, "Meeting");
+
+            System.out.println("Reserved Seating: ");
+            for (SeatingConfiguration reserved : reservedSeating) {
+                System.out.println(reserved);
+            }
+
+
             connection.close(); // close connection
 
         } catch (Exception e) {

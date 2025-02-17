@@ -7,7 +7,6 @@ import java.util.List;
 
 /* TO-DO
 - Implement column for reserved spaces? -> this is more of a seating configuration thing maybe
-- Make a new method that returns the spaces that are restricted (discount is BO problem)
 - Wheelchair seating locations
  */
 public class BoxOfficeData implements BoxOffice {
@@ -110,6 +109,40 @@ public class BoxOfficeData implements BoxOffice {
             System.out.println(e);
         }
         return restrictedSeating;
+    }
+
+    @Override
+    public List<SeatingConfiguration> isReserved(Connection connection, String hallName) {
+        List<SeatingConfiguration> reservedSeating = new ArrayList<>();
+
+        // Might get rid of SeatNumber or SeatID as they could mean the same thing, ask Samir if there is a difference
+        String query = "SELECT s.SeatNumber, s.SeatType, s.SeatStatus \n" +
+                "FROM Seating s\n" +
+                "JOIN Booking b ON s.BookingID = b.BookingID\n" +
+                "WHERE b.BookingType = ? AND s.SeatType = 'Reserved'"; // is our BookingType the room or type of event, in this case its hallName
+        // if event type, we need a variable for hallName
+
+        try {
+            PreparedStatement stm = connection.prepareStatement(query);
+            stm.setString(1, hallName);
+            // setString(int parameterIndex, String x) Sets the designated parameter to the given Java String value.
+            ResultSet resultSet = stm.executeQuery();
+
+            while (resultSet.next()) {
+                SeatingConfiguration configuration = new SeatingConfiguration(
+                        resultSet.getString("SeatNumber"),
+                        resultSet.getString("SeatType"),
+                        resultSet.getString("SeatStatus")
+                );
+                reservedSeating.add(configuration);
+
+
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        return reservedSeating;
     }
 
     /* This seems similar to venue availability, so I have temporarily archived this - SU
