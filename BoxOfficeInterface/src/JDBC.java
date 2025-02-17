@@ -58,6 +58,18 @@ public class JDBC {
                 System.out.println(reserved);
             }
 
+            System.out.println("\n");
+
+            // Wheelchair Seating
+            List<SeatingConfiguration> wheelchairSeating = boxOfficeData.isAccessible(connection, "Meeting");
+
+            System.out.println("Wheelchair Seating: ");
+            for (SeatingConfiguration wheelchair : wheelchairSeating) {
+                System.out.println(wheelchair);
+            }
+
+
+
 
             connection.close(); // close connection
 

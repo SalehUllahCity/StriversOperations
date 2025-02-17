@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /* TO-DO
-- Implement column for reserved spaces? -> this is more of a seating configuration thing maybe
 - Wheelchair seating locations
  */
 public class BoxOfficeData implements BoxOffice {
@@ -145,6 +144,42 @@ public class BoxOfficeData implements BoxOffice {
         return reservedSeating;
     }
 
+    @Override
+    public List<SeatingConfiguration> isAccessible(Connection connection, String hallName) {
+        List<SeatingConfiguration> accessibleSeating = new ArrayList<>();
+
+        // Might get rid of SeatNumber or SeatID as they could mean the same thing, ask Samir if there is a difference
+        String query = "SELECT s.SeatNumber, s.SeatType, s.SeatStatus \n" +
+                "FROM Seating s\n" +
+                "JOIN Booking b ON s.BookingID = b.BookingID\n" +
+                "WHERE b.BookingType = ? AND s.SeatType = 'Wheelchair'"; // is our BookingType the room or type of event, in this case its hallName
+        // if event type, we need a variable for hallName
+
+        try {
+            PreparedStatement stm = connection.prepareStatement(query);
+            stm.setString(1, hallName);
+            // setString(int parameterIndex, String x) Sets the designated parameter to the given Java String value.
+            ResultSet resultSet = stm.executeQuery();
+
+            while (resultSet.next()) {
+                SeatingConfiguration configuration = new SeatingConfiguration(
+                        resultSet.getString("SeatNumber"),
+                        resultSet.getString("SeatType"),
+                        resultSet.getString("SeatStatus")
+
+                );
+                // if (!isAdjacentTaken(connection, resultSet.getString("SeatNumber")))
+                accessibleSeating.add(configuration);
+
+
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        return accessibleSeating;
+    }
+
     /* This seems similar to venue availability, so I have temporarily archived this - SU
     @Override
     public List<String> getOperationUpdates(Connection connection) {
@@ -153,4 +188,7 @@ public class BoxOfficeData implements BoxOffice {
     }
 
      */
+
+    // To check is adjacent seat is taken, if the seat is of type 'Wheelchair'
+
 }

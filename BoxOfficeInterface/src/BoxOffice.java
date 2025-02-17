@@ -15,6 +15,8 @@ public interface BoxOffice { // consisting of methods to allow BoxOfficeT25 to a
 
     List<SeatingConfiguration> isReserved(Connection connection, String hallName);
 
+    List<SeatingConfiguration> isAccessible(Connection connection, String hallName);
+
     // Operational Updates - I have temp archived this as it seems similar to venue availability - SU
     // List<String> getOperationUpdates(Connection connection);
 
