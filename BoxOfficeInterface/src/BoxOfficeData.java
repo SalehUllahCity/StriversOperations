@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /* TO-DO
-- Wheelchair seating locations
+- Wheelchair seating locations are not adjacent DONE - BO can do what they will with that data
+- Base seating configuration could be done through just having enough data entries in the DB
+    so that if BO pull the data, they pull all the seats
+- DB needs some work -> change seatNumber to int?
  */
 public class BoxOfficeData implements BoxOffice {
 
@@ -33,7 +36,6 @@ public class BoxOfficeData implements BoxOffice {
                 venueAvailability.add(Booking);
 
             }
-
 
         } catch (SQLException e) {
             System.out.println(e);
@@ -65,10 +67,7 @@ public class BoxOfficeData implements BoxOffice {
                         resultSet.getString("SeatStatus")
                 );
                 seatingConfigurations.add(configuration);
-
-
             }
-
         } catch (SQLException e) {
             System.out.println(e);
         }
@@ -100,10 +99,7 @@ public class BoxOfficeData implements BoxOffice {
                         resultSet.getString("SeatStatus")
                 );
                 restrictedSeating.add(configuration);
-
-
             }
-
         } catch (SQLException e) {
             System.out.println(e);
         }
@@ -120,7 +116,6 @@ public class BoxOfficeData implements BoxOffice {
                 "JOIN Booking b ON s.BookingID = b.BookingID\n" +
                 "WHERE b.BookingType = ? AND s.SeatType = 'Reserved'"; // is our BookingType the room or type of event, in this case its hallName
         // if event type, we need a variable for hallName
-
         try {
             PreparedStatement stm = connection.prepareStatement(query);
             stm.setString(1, hallName);
@@ -134,8 +129,6 @@ public class BoxOfficeData implements BoxOffice {
                         resultSet.getString("SeatStatus")
                 );
                 reservedSeating.add(configuration);
-
-
             }
 
         } catch (SQLException e) {
@@ -145,39 +138,30 @@ public class BoxOfficeData implements BoxOffice {
     }
 
     @Override
-    public List<SeatingConfiguration> isAccessible(Connection connection, String hallName) {
-        List<SeatingConfiguration> accessibleSeating = new ArrayList<>();
+    public List<WheelChairSeatConfig> isAccessible(Connection connection, String hallName) {
+        List<WheelChairSeatConfig> wheelchairSeatsConfig = new ArrayList<>();
 
-        // Might get rid of SeatNumber or SeatID as they could mean the same thing, ask Samir if there is a difference
-        String query = "SELECT s.SeatNumber, s.SeatType, s.SeatStatus \n" +
-                "FROM Seating s\n" +
-                "JOIN Booking b ON s.BookingID = b.BookingID\n" +
-                "WHERE b.BookingType = ? AND s.SeatType = 'Wheelchair'"; // is our BookingType the room or type of event, in this case its hallName
-        // if event type, we need a variable for hallName
+        String query = "SELECT RowNumber, SeatNumber FROM seating WHERE SeatType = 'WheelChair' AND hallName = ?";
 
         try {
             PreparedStatement stm = connection.prepareStatement(query);
             stm.setString(1, hallName);
-            // setString(int parameterIndex, String x) Sets the designated parameter to the given Java String value.
+
             ResultSet resultSet = stm.executeQuery();
 
             while (resultSet.next()) {
-                SeatingConfiguration configuration = new SeatingConfiguration(
-                        resultSet.getString("SeatNumber"),
-                        resultSet.getString("SeatType"),
-                        resultSet.getString("SeatStatus")
+                String rowNumber = resultSet.getString("RowNumber");
+                String seatNumber = resultSet.getString("SeatNumber");
 
-                );
-                // if (!isAdjacentTaken(connection, resultSet.getString("SeatNumber")))
-                accessibleSeating.add(configuration);
+                // Check if adjacent seats are taken
+                boolean isAdjacentTaken = isAdjacentTaken(connection, rowNumber, seatNumber, hallName);
 
-
+                wheelchairSeatsConfig.add(new WheelChairSeatConfig(rowNumber, seatNumber, isAdjacentTaken));
             }
-
         } catch (SQLException e) {
             System.out.println(e);
         }
-        return accessibleSeating;
+        return wheelchairSeatsConfig;
     }
 
     /* This seems similar to venue availability, so I have temporarily archived this - SU
@@ -190,5 +174,43 @@ public class BoxOfficeData implements BoxOffice {
      */
 
     // To check is adjacent seat is taken, if the seat is of type 'Wheelchair'
+    private boolean isAdjacentTaken(Connection connection, String rowNumber, String seatNumber, String hallName) throws SQLException {
+        // Check the adjacent seats (left and right)
+        int leftSeat = Integer.parseInt(seatNumber) - 1;  // Seat to the left
+        int rightSeat = Integer.parseInt(seatNumber) + 1;  // Seat to the right
 
+        // Query to check if an adjacent seat is taken based on hall name
+        String seatStatusQuery = "SELECT SeatStatus FROM Seating WHERE RowNumber = ? AND SeatNumber = ? AND hallName = ?";
+
+        // Check if the left seat is taken
+        if (isSeatTaken(connection, seatStatusQuery, rowNumber, leftSeat, hallName)) {
+            return true;  // Left seat is taken
+        }
+
+        // Check if the right seat is taken
+        if (isSeatTaken(connection, seatStatusQuery, rowNumber, rightSeat, hallName)) {
+            return true;  // Right seat is taken
+        }
+
+        // If neither adjacent seat is taken
+        return false;
+    }
+
+    // Helper method to check if a seat is taken based on SeatStatus and hall name
+    private boolean isSeatTaken(Connection connection, String query, String rowNumber, int seatNumber, String hallName) throws SQLException {
+        try (PreparedStatement stm = connection.prepareStatement(query)) {
+            stm.setString(1, rowNumber);    // Set the row number
+            stm.setInt(2, seatNumber);      // Set the seat number
+            stm.setString(3, hallName);     // Set the hall name
+            try (ResultSet resultSet = stm.executeQuery()) {
+                if (resultSet.next()) {
+                    String seatStatus = resultSet.getString("SeatStatus");
+                    return "Taken".equals(seatStatus) || "Reserved".equals(seatStatus);
+                }
+            }
+        }
+        return false;
+    }
 }
+
+

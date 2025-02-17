@@ -20,9 +20,4 @@ public class SeatingConfiguration {
                 ", Seat Type: " + isRestrictedView +
                 ", Seat Status: " + isAvailable;
     }
-
-
-
-
-
 }

@@ -61,10 +61,10 @@ public class JDBC {
             System.out.println("\n");
 
             // Wheelchair Seating
-            List<SeatingConfiguration> wheelchairSeating = boxOfficeData.isAccessible(connection, "Meeting");
+            List<WheelChairSeatConfig> wheelchairSeating = boxOfficeData.isAccessible(connection, "Meeting");
 
             System.out.println("Wheelchair Seating: ");
-            for (SeatingConfiguration wheelchair : wheelchairSeating) {
+            for (WheelChairSeatConfig wheelchair : wheelchairSeating) {
                 System.out.println(wheelchair);
             }
 
