@@ -19,6 +19,7 @@ public class JDBC {
 
             BoxOfficeData boxOfficeData = new BoxOfficeData();
 
+            // Venue Availability/Schedule
             List<String> venueAvailability = boxOfficeData.getVenueAvailability(connection);
 
             System.out.println("Venue Availability:");
@@ -26,6 +27,9 @@ public class JDBC {
                 System.out.println(availability);
             }
 
+            System.out.println("\n");
+
+            // Seating Configuration for a specific hall
             List<SeatingConfiguration> seatingConfigurationList = boxOfficeData.seatingConfigurations(connection, "Meeting");
 
             System.out.println("SeatingConfiguration:");
@@ -33,9 +37,27 @@ public class JDBC {
                 System.out.println(config);
             }
 
+            System.out.println("\n");
 
+            // Seats that have a restricted view for a specific hall
+            List<SeatingConfiguration> restrictedSeating = boxOfficeData.isRestricted(connection, "Meeting");
 
-            /*
+            System.out.println("Restricted Seating: ");
+            for (SeatingConfiguration restricted : restrictedSeating) {
+                System.out.println(restricted);
+            }
+            // The BookingID in the SQL database is messed up, the correct ID for meeting is '2 - Meeting' - SU
+            // Created both of these, will delete or not add to the university team DB
+            System.out.println("\n");
+
+            connection.close(); // close connection
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+}
+/*
             // Statement objects
             Statement statement = connection.createStatement();
 
@@ -50,10 +72,3 @@ public class JDBC {
                         resultSet.getString(4));
             }
             */
-            connection.close(); // close connection
-
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-}
