@@ -48,6 +48,10 @@ public interface BoxOffice { // consisting of methods to allow BoxOfficeT25 to a
      */
     List<WheelChairSeatConfig> isAccessible(Connection connection, String hallName);
 
+
+    // Test run of free calendar spots that day
+    List<String> getCalendarAvailability(Connection connection);
+
     // Operational Updates - I have temp archived this as it seems similar to venue availability - SU
     // List<String> getOperationUpdates(Connection connection);
 

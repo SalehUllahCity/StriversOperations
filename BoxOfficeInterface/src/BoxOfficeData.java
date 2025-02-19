@@ -193,6 +193,36 @@ public class BoxOfficeData implements BoxOffice {
         return wheelchairSeatsConfig;
     }
 
+    @Override
+    public List<String> getCalendarAvailability(Connection connection) {
+        List<String> calendarAvailability = new ArrayList<>();
+        String query = "SELECT ts.SlotTime \n" +
+                "FROM TimeSlots ts\n" +
+                "LEFT JOIN Booking b \n" +
+                "ON ts.SlotTime BETWEEN b.StartTime AND b.EndTime\n" +
+                "AND b.BookingDate = '2025-02-18'\n" +
+                "WHERE b.BookingID IS NULL";
+
+        // A prepared statement is a parameterized and reusable SQL query which forces the developer to write the SQL
+        // command and the user-provided data separately
+
+        try {
+            PreparedStatement stm = connection.prepareStatement(query);
+            ResultSet resultSet = stm.executeQuery();
+
+            while (resultSet.next()) { // while there is a next column
+                String slots =
+                        "SlotTime: " + resultSet.getTime("SlotTime");
+                calendarAvailability.add(slots);
+
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        return calendarAvailability;
+    }
+
     /* This seems similar to venue availability, so I have temporarily archived this - SU
     @Override
     public List<String> getOperationUpdates(Connection connection) {

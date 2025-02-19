@@ -70,6 +70,15 @@ public class JDBC {
                 System.out.println(wheelchair);
             }
 
+            System.out.println("\n");
+
+            List<String> calendarAvailability = boxOfficeData.getCalendarAvailability(connection);
+
+            System.out.println("Calendar Availability:");
+            for (String configs : calendarAvailability) {
+                System.out.println(configs);
+            }
+
             connection.close(); // close connection
 
         } catch (Exception e) {
