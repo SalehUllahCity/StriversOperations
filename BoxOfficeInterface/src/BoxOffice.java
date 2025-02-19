@@ -1,4 +1,5 @@
 import java.sql.Connection;
+import java.sql.Date;
 import java.util.List;
 public interface BoxOffice { // consisting of methods to allow BoxOfficeT25 to access certain data
 
@@ -50,7 +51,7 @@ public interface BoxOffice { // consisting of methods to allow BoxOfficeT25 to a
 
 
     // Test run of free calendar spots that day
-    List<String> getCalendarAvailability(Connection connection);
+    List<String> getCalendarAvailability(Connection connection, Date BookingDate);
 
     // Operational Updates - I have temp archived this as it seems similar to venue availability - SU
     // List<String> getOperationUpdates(Connection connection);

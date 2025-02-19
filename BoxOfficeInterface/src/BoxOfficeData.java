@@ -1,7 +1,4 @@
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -194,20 +191,22 @@ public class BoxOfficeData implements BoxOffice {
     }
 
     @Override
-    public List<String> getCalendarAvailability(Connection connection) {
+    public List<String> getCalendarAvailability(Connection connection, Date BookingDate) {
         List<String> calendarAvailability = new ArrayList<>();
         String query = "SELECT ts.SlotTime \n" +
                 "FROM TimeSlots ts\n" +
                 "LEFT JOIN Booking b \n" +
                 "ON ts.SlotTime BETWEEN b.StartTime AND b.EndTime\n" +
-                "AND b.BookingDate = '2025-02-18'\n" +
+                "AND b.BookingDate = ?\n" +
                 "WHERE b.BookingID IS NULL";
 
         // A prepared statement is a parameterized and reusable SQL query which forces the developer to write the SQL
         // command and the user-provided data separately
 
         try {
+            // set a stm string here for the dates
             PreparedStatement stm = connection.prepareStatement(query);
+            stm.setDate(1, BookingDate);
             ResultSet resultSet = stm.executeQuery();
 
             while (resultSet.next()) { // while there is a next column

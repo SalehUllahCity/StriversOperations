@@ -1,7 +1,4 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
 
 public class JDBC {
@@ -72,7 +69,7 @@ public class JDBC {
 
             System.out.println("\n");
 
-            List<String> calendarAvailability = boxOfficeData.getCalendarAvailability(connection);
+            List<String> calendarAvailability = boxOfficeData.getCalendarAvailability(connection, Date.valueOf("2025-02-10"));
 
             System.out.println("Calendar Availability:");
             for (String configs : calendarAvailability) {
