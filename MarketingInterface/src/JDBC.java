@@ -1,7 +1,4 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
 
 public class JDBC {
@@ -19,17 +16,16 @@ public class JDBC {
 
             MarketingData marketingData = new MarketingData();
 
-            // Venue Accessibility
-            List<String> venueAvailability = marketingData.getVenueAvailability(connection);
+            // Venue Unavailability
+            List<String> venueUnavailability = marketingData.getVenueUnavailability(connection);
 
-            System.out.println("Venue Availability (Current Bookings:"); // to show only availability might need to
+            System.out.println("Venue Unavailability (Current Bookings):"); // to show only availability might need to
             // create a separate table that joins and then finds the difference or along those lines
-            for (String availability : venueAvailability) {
-                System.out.println(availability);
+            for (String unavailability : venueUnavailability) {
+                System.out.println(unavailability);
             }
 
             System.out.println("\n");
-
 
             // Seating Configuration
             List<SeatingConfiguration> seatingConfigurationList = marketingData.seatingConfigurations(connection, "Meeting");
@@ -41,7 +37,6 @@ public class JDBC {
 
             System.out.println("\n");
 
-
             //  Wheelchair Seating
             List<WheelChairSeatConfig> wheelchairSeating = marketingData.isAccessible(connection, "Meeting");
 
@@ -51,6 +46,14 @@ public class JDBC {
             }
 
             System.out.println("\n");
+
+            // Calendar Availability
+            List<String> calendarAvailability = marketingData.getCalendarAvailability(connection, Date.valueOf("2025-02-10"));
+
+            System.out.println("Calendar Availability: (Open TimeSlots)");
+            for (String configs : calendarAvailability) {
+                System.out.println(configs);
+            }
 
             connection.close(); // close connection
 

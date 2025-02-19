@@ -6,55 +6,57 @@ public interface BoxOffice { // consisting of methods to allow BoxOfficeT25 to a
     // These are the abstract classes that we (Operations) will implement to allow certain and enough required access
     // to your SQL Database, according to Box Office's Requirement Specification
 
-    // Venue Calendar and Availability
-
+    // Venue Unavailability
     /**
-     *
-     * @param connection
-     * @return
+     * Collects that data of events that are booked
+     * @param connection connection to the SQL DB
+     * @return the current bookings
      */
-    List<String> getVenueAvailability(Connection connection);
+    List<String> getVenueUnavailability(Connection connection);
 
     // Seating Configurations
-
     /**
-     *
-     * @param connection
-     * @param hallName
-     * @return
+     * Collects data on the seating in a hall and prints it
+     * @param connection connection to the SQL DB
+     * @param hallName name of the hall for the seating arrangements
+     * @return seating arrangement for that hall
      */
     List<SeatingConfiguration> seatingConfigurations(Connection connection, String hallName);
 
+    // Restricted View Seats
     /**
-     *
-     * @param connection
-     * @param hallName
-     * @return
+     * Collects data on the seats that have a restricted view
+     * @param connection connection to the SQL DB
+     * @param hallName name of the hall required
+     * @return seats that have a restricted view
      */
     List<SeatingConfiguration> isRestricted(Connection connection, String hallName);
 
+    // Reserved Seating
     /**
-     *
-     * @param connection
-     * @param hallName
-     * @return
+     * Collects data on seats that are of type 'Reserved'
+     * @param connection connection to the SQL DB
+     * @param hallName name of the hall required
+     * @return the seats that are reserved
      */
     List<SeatingConfiguration> isReserved(Connection connection, String hallName);
 
+    // Wheelchair Seating
     /**
-     *
-     * @param connection
-     * @param hallName
-     * @return
+     * Seats that are of type wheelChair
+     * @param connection connection the SQL DB
+     * @param hallName name of the hall required
+     * @return seats that are for wheelChair users
      */
     List<WheelChairSeatConfig> isAccessible(Connection connection, String hallName);
 
-
-    // Test run of free calendar spots that day
+    // Calendar Availability for a specific date
+    /**
+     * Calendar TimeSlots that are available for a specific date
+     * @param connection connection the SQL DB
+     * @param BookingDate date that is required
+     * @return TimeSlots that are available on that BookingDate
+     */
     List<String> getCalendarAvailability(Connection connection, Date BookingDate);
-
-    // Operational Updates - I have temp archived this as it seems similar to venue availability - SU
-    // List<String> getOperationUpdates(Connection connection);
-
 
 }

@@ -4,9 +4,9 @@ import java.util.List;
 public class JDBC {
     public static void main(String[] args) {
         // URL
-        String url = "jdbc:mysql://localhost:3306/in2033t26";
+        String url = "jdbc:mysql://localhost:3306/in2033t26"; // local but this would become the university DB Server
         String userName = "root"; // change to team username
-        String password = "root"; // default password is empty but change to other
+        String password = "root"; // default password is local password -> change to team password when it works
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -16,14 +16,12 @@ public class JDBC {
 
             BoxOfficeData boxOfficeData = new BoxOfficeData();
 
-            // Venue Availability/Schedule
-            List<String> venueAvailability = boxOfficeData.getVenueAvailability(connection);
-            // to show only availability might need to
-            // create a separate table that joins and then finds the difference or along those lines
+            // Venue Unavailability/Schedule
+            List<String> venueUnavailability = boxOfficeData.getVenueUnavailability(connection);
 
-            System.out.println("Venue Availability:");
-            for (String availability : venueAvailability) {
-                System.out.println(availability);
+            System.out.println("Venue Unavailability (Current Bookings):");
+            for (String unavailability : venueUnavailability) {
+                System.out.println(unavailability);
             }
 
             System.out.println("\n");
@@ -45,8 +43,7 @@ public class JDBC {
             for (SeatingConfiguration restricted : restrictedSeating) {
                 System.out.println(restricted);
             }
-            // The BookingID in the SQL database is messed up, the correct ID for meeting is '2 - Meeting' - SU
-            // Created both of these, will delete or not add to the university team DB
+
             System.out.println("\n");
 
             // Reserved Seating
@@ -71,7 +68,7 @@ public class JDBC {
 
             List<String> calendarAvailability = boxOfficeData.getCalendarAvailability(connection, Date.valueOf("2025-02-10"));
 
-            System.out.println("Calendar Availability:");
+            System.out.println("Calendar Availability: (Open TimeSlots)");
             for (String configs : calendarAvailability) {
                 System.out.println(configs);
             }
@@ -83,18 +80,4 @@ public class JDBC {
         }
     }
 }
-/*
-            // Statement objects
-            Statement statement = connection.createStatement();
 
-            // Execute the query method, returns all the objects that are needed to get the results
-            // from the table
-            ResultSet resultSet = statement.executeQuery("select * from user");
-
-            while (resultSet.next()) {
-                System.out.println(resultSet.getInt(1) + " " +
-                        resultSet.getString(2) + " "
-                        + resultSet.getString(3) + " " +
-                        resultSet.getString(4));
-            }
-            */

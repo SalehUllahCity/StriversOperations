@@ -1,8 +1,14 @@
 public class WheelChairSeatConfig {
-    private String rowNumber;
-    private String seatNumber;
-    private boolean isAdjacentSeatTaken;
+    private final String rowNumber;
+    private final String seatNumber;
+    private final boolean isAdjacentSeatTaken;
 
+    /**
+     * Class constructor for Wheelchair configuration
+     * @param rowNumber wheelChair row number
+     * @param seatNumber wheelChair seat number
+     * @param isAdjacentSeatTaken whether the Wheelchair adjacent seat is taken
+     */
     public WheelChairSeatConfig(String rowNumber, String seatNumber, boolean isAdjacentSeatTaken) {
         this.rowNumber = rowNumber;
         this.seatNumber = seatNumber;
@@ -10,11 +16,14 @@ public class WheelChairSeatConfig {
     }
 
     /**
-     *
-     * @return
+     * toString() method returns the string itself
+     * @return string value of these variables
      */
     @Override
     public String toString() {
-        return "Wheelchair Seat: Row " + rowNumber + " Seat " + seatNumber + ", Adjacent Seat Taken: " + isAdjacentSeatTaken;
+        return "Wheelchair Seat: Row " +
+                rowNumber + " Seat " +
+                seatNumber + ", Adjacent Seat Taken: "
+                + isAdjacentSeatTaken;
     }
 }

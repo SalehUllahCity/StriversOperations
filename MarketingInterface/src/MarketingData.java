@@ -1,23 +1,15 @@
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/* TO DO
-    - Converse whether they need certain variables like venue_id because that is lancaster after all etc.
-    - Do we need documentation?
- */
-
-public class MarketingData implements Marketing{
+public class MarketingData implements Marketing {
     /**
-     *
-     * @param connection
-     * @return
+     * Collects that data of events that are booked
+     * @param connection connection to the SQL DB
+     * @return the current bookings
      */
     @Override
-    public List<String> getVenueAvailability(Connection connection) {
+    public List<String> getVenueUnavailability(Connection connection) {
         List<String> venueAvailability = new ArrayList<>();
         String query = "SELECT BookingID, UserID, BookingDate, StartTime, EndTime, BookingType FROM booking " +
                 "WHERE PaymentStatus = 'Paid'";
@@ -46,21 +38,19 @@ public class MarketingData implements Marketing{
     }
 
     /**
-     *
-     * @param connection
-     * @param hallName
-     * @return
+     * Collects data on the seating in a hall and prints it
+     * @param connection connection to the SQL DB
+     * @param hallName name of the hall for the seating arrangements
+     * @return seating arrangement for that hall
      */
     @Override
     public List<SeatingConfiguration> seatingConfigurations(Connection connection, String hallName) {
         List<SeatingConfiguration> seatingConfigurations = new ArrayList<>();
 
-        // Might get rid of SeatNumber or SeatID as they could mean the same thing, ask Samir if there is a difference
         String query = "SELECT s.SeatNumber, s.SeatType, s.SeatStatus \n" +
                 "FROM Seating s\n" +
                 "JOIN Booking b ON s.BookingID = b.BookingID\n" +
-                "WHERE b.BookingType = ?"; // is our BookingType the room or type of event, in this case its hallName
-        // if event type, we need a variable for hallName
+                "WHERE b.BookingType = ?";
 
         try {
             PreparedStatement stm = connection.prepareStatement(query);
@@ -83,10 +73,10 @@ public class MarketingData implements Marketing{
     }
 
     /**
-     *
-     * @param connection
-     * @param hallName
-     * @return
+     * Collects data of all the wheelchair type seats and whether they have seats adjacent to them taken
+     * @param connection connection to the SQL DB
+     * @param hallName name of hall for the seating arrangements
+     * @return wheelchair seats in the hallName and whether that adjacent seat is taken or not
      */
     @Override
     public List<WheelChairSeatConfig> isAccessible(Connection connection, String hallName) {
@@ -104,7 +94,7 @@ public class MarketingData implements Marketing{
                 String rowNumber = resultSet.getString("RowNumber");
                 String seatNumber = resultSet.getString("SeatNumber");
 
-                // Check if adjacent seats are taken - Marketing may not need this
+                // Check if adjacent seats are taken
                 boolean isAdjacentTaken = isAdjacentTaken(connection, rowNumber, seatNumber, hallName);
 
                 wheelchairSeatsConfig.add(new WheelChairSeatConfig(rowNumber, seatNumber, isAdjacentTaken));
@@ -116,13 +106,50 @@ public class MarketingData implements Marketing{
     }
 
     /**
-     *
-     * @param connection
-     * @param rowNumber
-     * @param seatNumber
-     * @param hallName
-     * @return
-     * @throws SQLException
+     * Collects the data from the DB of empty TimeSlots on a specific BookingDate
+     * @param connection connection to the SQL DB
+     * @param BookingDate date for available TimeSlots
+     * @return TimeSlots on a date that is available
+     */
+    @Override
+    public List<String> getCalendarAvailability(Connection connection, Date BookingDate) {
+        List<String> calendarAvailability = new ArrayList<>();
+        String query = "SELECT ts.SlotTime \n" +
+                "FROM TimeSlots ts\n" +
+                "LEFT JOIN Booking b \n" +
+                "ON ts.SlotTime BETWEEN b.StartTime AND b.EndTime\n" +
+                "AND b.BookingDate = ?\n" +
+                "WHERE b.BookingID IS NULL";
+
+        // A prepared statement is a parameterized and reusable SQL query which forces the developer to write the SQL
+        // command and the user-provided data separately
+
+        try {
+            PreparedStatement stm = connection.prepareStatement(query);
+            stm.setDate(1, BookingDate);
+            ResultSet resultSet = stm.executeQuery();
+
+            while (resultSet.next()) { // while there is a next column
+                String slots =
+                        "SlotTime: " + resultSet.getTime("SlotTime");
+                calendarAvailability.add(slots);
+
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        return calendarAvailability;
+    }
+
+    /**
+     * Checks if the adjacent seat of a wheelchair seat is taken (if true, then need to change to false)
+     * @param connection connection to the SQL DB
+     * @param rowNumber Row of the seat
+     * @param seatNumber Number of the seat
+     * @param hallName name of the hall for that seat
+     * @return returns true if adjacent seat is taken, and false if not
+     * @throws SQLException error
      */
     private boolean isAdjacentTaken(Connection connection, String rowNumber, String seatNumber, String hallName) throws SQLException {
         // Check the adjacent seats (left and right)
@@ -147,14 +174,14 @@ public class MarketingData implements Marketing{
     }
 
     /**
-     *
-     * @param connection
-     * @param query
-     * @param rowNumber
-     * @param seatNumber
-     * @param hallName
-     * @return
-     * @throws SQLException
+     * Helper method that checks whether the adjacent seat is 'Taken' or 'Reserved'
+     * @param connection connection to the SQL DB
+     * @param query the query that is run to get this particular seat
+     * @param rowNumber row number of the seat
+     * @param seatNumber seat number
+     * @param hallName name of the hall for that seat
+     * @return whether that seat is taken e.g. if the adjacent seat is 'Reserved' or 'Taken'
+     * @throws SQLException error
      */
     // Helper method to check if a seat is taken based on SeatStatus and hall name
     private boolean isSeatTaken(Connection connection, String query, String rowNumber, int seatNumber, String hallName) throws SQLException {
@@ -171,5 +198,4 @@ public class MarketingData implements Marketing{
         }
         return false;
     }
-
 }
