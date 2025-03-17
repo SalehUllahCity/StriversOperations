@@ -1,12 +1,18 @@
+package MarketingInterface;
+
 import java.sql.*;
 import java.util.List;
 
 public class JDBC {
     public static void main(String[] args) {
         // URL
-        String url = "jdbc:mysql://localhost:3306/in2033t26";
-        String userName = "root"; // change to team username
-        String password = "root"; // default password is empty but change to other
+        String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26"; // local but this would become the university DB Server
+        // String userName = "root"; // change to team username
+        // String password = "root"; // default password is local password -> change to team password when it works
+
+        String userName = "in2033t26_a"; // change to team username
+        String password = "jLxOPuQ69Mg"; // default password is local password -> change to team password when it works
+        // make sure that you are connection the city vpn beforehand
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -30,7 +36,7 @@ public class JDBC {
             // Seating Configuration
             List<SeatingConfiguration> seatingConfigurationList = marketingData.seatingConfigurations(connection, "Meeting");
 
-            System.out.println("SeatingConfiguration:");
+            System.out.println("Configurations.SeatingConfiguration:");
             for (SeatingConfiguration config : seatingConfigurationList) {
                 System.out.println(config);
             }

@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/BoxOfficeInterface/BoxOfficeInterface.iml" filepath="$PROJECT_DIR$/BoxOfficeInterface/BoxOfficeInterface.iml" />
-      <module fileurl="file://$PROJECT_DIR$/MarketingInterface/MarketingInterface.iml" filepath="$PROJECT_DIR$/MarketingInterface/MarketingInterface.iml" />
+      <module fileurl="file://$PROJECT_DIR$/StriversOperations/StriversOperation.iml" filepath="$PROJECT_DIR$/StriversOperations/StriversOperation.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/StriversOperations.iml" filepath="$PROJECT_DIR$/.idea/StriversOperations.iml" />
     </modules>
   </component>

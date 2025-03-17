@@ -1,3 +1,5 @@
+package MarketingInterface;
+
 public class SeatingConfiguration {
     private final String seatNumber;
     private final String isRestrictedView;

@@ -1,8 +1,11 @@
+package BoxOfficeInterface;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MarketingData implements Marketing {
+public class BoxOfficeData implements BoxOffice {
+
     /**
      * Collects that data of events that are booked
      * @param connection connection to the SQL DB
@@ -30,7 +33,6 @@ public class MarketingData implements Marketing {
                         ", BookingType: " + resultSet.getString(6);
                 venueAvailability.add(Booking);
             }
-
         } catch (SQLException e) {
             System.out.println(e);
         }
@@ -48,8 +50,8 @@ public class MarketingData implements Marketing {
         List<SeatingConfiguration> seatingConfigurations = new ArrayList<>();
 
         String query = "SELECT s.SeatNumber, s.SeatType, s.SeatStatus \n" +
-                "FROM Seating s\n" +
-                "JOIN Booking b ON s.BookingID = b.BookingID\n" +
+                "FROM seating s\n" +
+                "JOIN booking b ON s.BookingID = b.BookingID\n" +
                 "WHERE b.BookingType = ?";
 
         try {
@@ -73,10 +75,80 @@ public class MarketingData implements Marketing {
     }
 
     /**
-     * Collects data of all the wheelchair type seats and whether they have seats adjacent to them taken
+     * Collects data on the seats that have a restricted view
      * @param connection connection to the SQL DB
-     * @param hallName name of hall for the seating arrangements
-     * @return wheelchair seats in the hallName and whether that adjacent seat is taken or not
+     * @param hallName name of the hall required
+     * @return seats that have a restricted view
+     */
+    @Override
+    public List<SeatingConfiguration> isRestricted(Connection connection, String hallName) {
+        List<SeatingConfiguration> restrictedSeating = new ArrayList<>();
+
+        String query = "SELECT s.SeatNumber, s.SeatType, s.SeatStatus \n" +
+                "FROM seating s\n" +
+                "JOIN booking b ON s.BookingID = b.BookingID\n" +
+                "WHERE b.BookingType = ? AND s.SeatType = 'Restricted'";
+
+        try {
+            PreparedStatement stm = connection.prepareStatement(query);
+            stm.setString(1, hallName);
+            // setString(int parameterIndex, String x) Sets the designated parameter to the given Java String value.
+            ResultSet resultSet = stm.executeQuery();
+
+            while (resultSet.next()) {
+                SeatingConfiguration configuration = new SeatingConfiguration(
+                        resultSet.getString("SeatNumber"),
+                        resultSet.getString("SeatType"),
+                        resultSet.getString("SeatStatus")
+                );
+                restrictedSeating.add(configuration);
+            }
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        return restrictedSeating;
+    }
+
+    /**
+     * Collects data on seats that are of type 'Reserved'
+     * @param connection connection to the SQL DB
+     * @param hallName name of the hall required
+     * @return the seats that are reserved
+     */
+    @Override
+    public List<SeatingConfiguration> isReserved(Connection connection, String hallName) {
+        List<SeatingConfiguration> reservedSeating = new ArrayList<>();
+
+        String query = "SELECT s.SeatNumber, s.SeatType, s.SeatStatus \n" +
+                "FROM seating s\n" +
+                "JOIN booking b ON s.BookingID = b.BookingID\n" +
+                "WHERE b.BookingType = ? AND s.SeatType = 'Reserved'";
+
+        try {
+            PreparedStatement stm = connection.prepareStatement(query);
+            stm.setString(1, hallName);
+            // setString(int parameterIndex, String x) Sets the designated parameter to the given Java String value.
+            ResultSet resultSet = stm.executeQuery();
+
+            while (resultSet.next()) {
+                SeatingConfiguration configuration = new SeatingConfiguration(
+                        resultSet.getString("SeatNumber"),
+                        resultSet.getString("SeatType"),
+                        resultSet.getString("SeatStatus")
+                );
+                reservedSeating.add(configuration);
+            }
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        return reservedSeating;
+    }
+
+    /**
+     * Seats that are of type wheelChair
+     * @param connection connection the SQL DB
+     * @param hallName name of the hall required
+     * @return seats that are for wheelChair users
      */
     @Override
     public List<WheelChairSeatConfig> isAccessible(Connection connection, String hallName) {
@@ -106,17 +178,17 @@ public class MarketingData implements Marketing {
     }
 
     /**
-     * Collects the data from the DB of empty TimeSlots on a specific BookingDate
-     * @param connection connection to the SQL DB
-     * @param BookingDate date for available TimeSlots
-     * @return TimeSlots on a date that is available
+     * Calendar TimeSlots that are available for a specific date
+     * @param connection connection the SQL DB
+     * @param BookingDate date that is required
+     * @return TimeSlots that are available on that BookingDate
      */
     @Override
     public List<String> getCalendarAvailability(Connection connection, Date BookingDate) {
         List<String> calendarAvailability = new ArrayList<>();
         String query = "SELECT ts.SlotTime \n" +
-                "FROM TimeSlots ts\n" +
-                "LEFT JOIN Booking b \n" +
+                "FROM timeslots ts\n" +
+                "LEFT JOIN booking b \n" +
                 "ON ts.SlotTime BETWEEN b.StartTime AND b.EndTime\n" +
                 "AND b.BookingDate = ?\n" +
                 "WHERE b.BookingID IS NULL";
@@ -125,6 +197,7 @@ public class MarketingData implements Marketing {
         // command and the user-provided data separately
 
         try {
+            // set a stm string here for the dates
             PreparedStatement stm = connection.prepareStatement(query);
             stm.setDate(1, BookingDate);
             ResultSet resultSet = stm.executeQuery();
@@ -157,18 +230,15 @@ public class MarketingData implements Marketing {
         int rightSeat = Integer.parseInt(seatNumber) + 1;  // Seat to the right
 
         // Query to check if an adjacent seat is taken based on hall name
-        String seatStatusQuery = "SELECT SeatStatus FROM Seating WHERE RowNumber = ? AND SeatNumber = ? AND hallName = ?";
-
+        String seatStatusQuery = "SELECT SeatStatus FROM seating WHERE RowNumber = ? AND SeatNumber = ? AND hallName = ?";
         // Check if the left seat is taken
         if (isSeatTaken(connection, seatStatusQuery, rowNumber, leftSeat, hallName)) {
             return true;  // Left seat is taken
         }
-
         // Check if the right seat is taken
         if (isSeatTaken(connection, seatStatusQuery, rowNumber, rightSeat, hallName)) {
             return true;  // Right seat is taken
         }
-
         // If neither adjacent seat is taken
         return false;
     }
@@ -199,3 +269,5 @@ public class MarketingData implements Marketing {
         return false;
     }
 }
+
+

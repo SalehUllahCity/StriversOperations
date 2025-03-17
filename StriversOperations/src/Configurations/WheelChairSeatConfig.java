@@ -1,3 +1,5 @@
+package Configurations;
+
 public class WheelChairSeatConfig {
     private final String rowNumber;
     private final String seatNumber;

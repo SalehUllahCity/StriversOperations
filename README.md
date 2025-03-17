@@ -2,7 +2,7 @@
 (Group 9) Team 26: StriversOperations
 
 Team: Shakeel, Samir, Mai-linh, Hussein, Giacomo, Numair, Saleh | Coach: Dr Dhawal Beohar 
-Team Leader (Marketing) - Filippo
+Team Leader (MarketingInterface.Marketing) - Filippo
 Team Leader (Box Office) - Denis
 
 Points of Contact:
