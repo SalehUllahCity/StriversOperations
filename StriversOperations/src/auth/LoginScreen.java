@@ -1,26 +1,29 @@
-package GUI;
+package auth;
 
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
+import ui.MainScreen;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.IOException;
 
 
-public class TitleScreen extends JFrame {
+public class LoginScreen extends JFrame {
 
     private int fontSize = 30;
+    private JTextField usernameField;
+    private JPasswordField passwordField;
 
-    public TitleScreen() {
+
+    public LoginScreen() {
         setTitle("Lancaster's Music Hall Software");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1400, 1000);
         setLocationRelativeTo(null);
 
-        getContentPane().setBackground(new Color(90, 85, 116));
+        getContentPane().setBackground(new Color(18,32,35,255));
 
-        JLabel titleLabel = new JLabel("Lancaster's Music Hall");
+        JLabel titleLabel = new JLabel("");
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 50));
         titleLabel.setForeground(new Color(255,255,255));
 
@@ -52,30 +55,28 @@ public class TitleScreen extends JFrame {
         // Add title panel to the top
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.weighty = 0.2;
+        gbc.weighty = 0;
         getContentPane().add(titlePanel, gbc);
 
         // Add character label to the middle
-        gbc.gridy = 1;
-        gbc.weighty = 0.6;
+        gbc.gridy = 0;
+        gbc.weighty = 0;
         getContentPane().add(characterLabel, gbc);
 
         // Add button panel to the bottom
-        gbc.gridy = 2;
+        gbc.gridy = 6;
         gbc.weighty = 0.2;
         getContentPane().add(buttonPanel, gbc);
 
         // Add action listeners
-        /*
-        loginButton.addActionListener(e -> {
-            try {
 
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
+        loginButton.addActionListener(e -> {
+            MainScreen mainScreen = new MainScreen();
+
         });
 
-         */
+
+
 
         /*
 
@@ -122,6 +123,13 @@ public class TitleScreen extends JFrame {
     }
 
 
+    // after a successful login
+    private void startMainScreen() throws IOException {
+        MainScreen mainScreen = new MainScreen();
+        setVisible(false);
+    }
+
+
     private void quitGame() {
         System.exit(0);
 
@@ -129,7 +137,7 @@ public class TitleScreen extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            TitleScreen titleScreen = new TitleScreen();
+            LoginScreen titleScreen = new LoginScreen();
             titleScreen.setVisible(true);
 
         });
