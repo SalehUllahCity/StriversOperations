@@ -1,21 +1,47 @@
 package auth;
 
+
 import ui.MainScreen;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.IOException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
-public class LoginScreen extends JFrame {
+public class UserHome extends JFrame {
 
+    private static final long serialVersionUID = 1;
+    private JPanel contentPane;
     private int fontSize = 30;
     private JTextField usernameField;
     private JPasswordField passwordField;
 
 
-    public LoginScreen() {
+    /**
+     * Launch the application.
+     */
+    public static void main(String[] args) {
+        EventQueue.invokeLater(() -> {
+            try {
+                UserHome frame = new UserHome();
+                frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+
+
+    /**
+     * Create the frame.
+     */
+    public UserHome() { // pass String UserName
+
         setTitle("Lancaster's Music Hall Software");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1400, 1000);
@@ -123,25 +149,8 @@ public class LoginScreen extends JFrame {
             }
         });
     }
-
-
-    // after a successful login
-    private void startMainScreen() throws IOException {
-        MainScreen mainScreen = new MainScreen();
-        setVisible(false);
-    }
-
-
     private void quitGame() {
         System.exit(0);
 
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            LoginScreen titleScreen = new LoginScreen();
-            titleScreen.setVisible(true);
-
-        });
     }
 }
