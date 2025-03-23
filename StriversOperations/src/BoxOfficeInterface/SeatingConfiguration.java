@@ -1,5 +1,9 @@
 package BoxOfficeInterface;
-
+/**
+ * Represents the configuration of a single seat in a venue.
+ * Stores details about the seat number, whether it has a restricted view,
+ * and whether it is currently available.
+ */
 public class SeatingConfiguration {
     private final String seatNumber;
     private final String isRestrictedView;
