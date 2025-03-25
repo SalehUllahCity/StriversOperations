@@ -4,6 +4,18 @@ import java.sql.*;
 import java.util.List;
 
 public class JDBC {
+    /**
+     * This class demonstrates how to use JDBC to connect to the City University
+     * MySQL database and retrieve various box office-related data using the
+     * BoxOfficeData class.
+     * The data includes:
+     * - Venue unavailability (existing bookings)
+     * - Seating configurations
+     * - Restricted seats
+     * - Reserved seats
+     * - Wheelchair accessible seats
+     * - Calendar availability
+     */
     public static void main(String[] args) {
         // URL
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26"; // local but this would become the university DB Server
