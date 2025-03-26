@@ -21,6 +21,9 @@ public class Booking extends JFrame {
     private final Color backgroundColour = new Color(18, 32, 35, 255);
     private final int fontSize = 25;
 
+    /**
+     * Launch the application.
+     */
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
@@ -32,8 +35,11 @@ public class Booking extends JFrame {
         });
     }
 
+    /**
+     * Create the frame.
+     */
     public Booking() {
-        setTitle("Lancaster's Music Hall Software - New Booking");
+        setTitle("Lancaster's Music Hall Software");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 800);
         setLocationRelativeTo(null);
