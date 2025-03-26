@@ -77,7 +77,7 @@ public class SettingScreen extends JPanel  {
             logoutBtn.addActionListener(e -> {
                 dispose();
                 parent.dispose();
-                new LoginScreen().setVisible(true);
+                new UserLogin().setVisible(true);
             });
 
             JButton accessibilityBtn = createDialogButton("Accessibility Settings", btnFont, buttonColor);

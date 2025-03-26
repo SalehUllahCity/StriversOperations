@@ -1,16 +1,11 @@
 package auth;
 
 
-import ui.MainScreen;
-
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 
 public class UserHome extends JFrame {
 
@@ -44,7 +39,7 @@ public class UserHome extends JFrame {
 
         setTitle("Lancaster's Music Hall Software");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1400, 1000);
+        setSize(1200, 800);
         setLocationRelativeTo(null);
 
 
@@ -60,17 +55,19 @@ public class UserHome extends JFrame {
         titlePanel.setOpaque(false);
         titlePanel.add(titleLabel);
 
-        JButton loginButton = createStyledButton("Login");
-        JButton helpButton = createStyledButton("Help");
-        JButton quitButton = createStyledButton("Quit");
+        JButton reportButton = createStyledButton("Reports");
+        JButton calendarButton = createStyledButton("Calendar");
+        JButton bookingButton = createStyledButton("Bookings");
+        JButton logoutButton = createStyledButton("Logout");
 
         // Add buttons to the frame directly at the bottom
         JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 10, 10));
         // buttonPanel.setBackground(Color.black);
         buttonPanel.setOpaque(false);
-        buttonPanel.add(loginButton);
-        buttonPanel.add(helpButton);
-        buttonPanel.add(quitButton);
+        buttonPanel.add(reportButton);
+        buttonPanel.add(calendarButton);
+        buttonPanel.add(bookingButton);
+        buttonPanel.add(logoutButton);
 
         // Load logo
         ImageIcon characterIcon = new ImageIcon("data/logo/logo.png");
@@ -98,31 +95,40 @@ public class UserHome extends JFrame {
 
         // Add action listeners
 
-        loginButton.addActionListener(e -> {
-            MainScreen mainScreen = new MainScreen();
+        reportButton.addActionListener(e -> {
+            setVisible(false);
+            new Report().setVisible(true);
 
         });
 
 
 
 
-        /*
 
-        helpButton.addActionListener(e -> {
-            try {
 
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
+        calendarButton.addActionListener(e -> {
+            setVisible(false);
+            new Calendar().setVisible(true);
+
         });
 
-         */
-        quitButton.addActionListener(e -> quitGame());
+        bookingButton.addActionListener(e -> {
+            setVisible(false);
+            new Booking().setVisible(true);
+
+        });
+
+
+        logoutButton.addActionListener(e -> {
+            setVisible(false);
+            new UserLogin().setVisible(true);
+
+        });
 
         // Add mouse listeners to the buttons for hover effect
-        addHoverEffect(loginButton);
-        addHoverEffect(helpButton);
-        addHoverEffect(quitButton);
+        addHoverEffect(calendarButton);
+        addHoverEffect(reportButton);
+        addHoverEffect(bookingButton);
     }
 
     // Method to create styled buttons
@@ -149,8 +155,11 @@ public class UserHome extends JFrame {
             }
         });
     }
-    private void quitGame() {
+    /*
+    private void quitMenu() {
         System.exit(0);
 
     }
+
+     */
 }

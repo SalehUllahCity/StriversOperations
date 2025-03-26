@@ -3,6 +3,10 @@ package auth;
 
 import ui.MainScreen;
 
+/*
+Duplicate of Login screen, but I think login screen is used in other code
+ */
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
