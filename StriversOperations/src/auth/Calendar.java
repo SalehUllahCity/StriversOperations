@@ -1,7 +1,6 @@
 package auth;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -15,7 +14,7 @@ import java.util.Locale;
 public class Calendar extends JFrame {
 
     private JPanel calendarPanel;
-    private JLabel monthLabel;
+    private JLabel monthYearLabel;
     private LocalDate currentDate;
 
     private Color backgroundColour = new Color(18, 32, 35, 255);
@@ -51,23 +50,8 @@ public class Calendar extends JFrame {
 
         currentDate = LocalDate.now().withDayOfMonth(1);
 
-        //Top Header Panel
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(backgroundColour);
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
-
-        JButton prevButton = createStyledButton("<");
-        JButton nextButton = createStyledButton(">");
-
-        monthLabel = new JLabel("", JLabel.CENTER);
-        monthLabel.setForeground(Color.WHITE);
-        monthLabel.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
-
-        headerPanel.add(prevButton, BorderLayout.WEST);
-        headerPanel.add(monthLabel, BorderLayout.CENTER);
-        headerPanel.add(nextButton, BorderLayout.EAST);
-
-        add(headerPanel, BorderLayout.NORTH);
+        //Header panel: contains settings, title, and month navigation
+        createHeaderPanel();
 
         //Calendar Grid
         calendarPanel = new JPanel();
@@ -76,18 +60,49 @@ public class Calendar extends JFrame {
         calendarPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 50, 50));
         add(calendarPanel, BorderLayout.CENTER);
 
-        //Button Actions
+        //Populate calendar with days
+        refreshCalendar();
+    }
+
+    /**
+     * Creates the top section with navigation buttons, month label, and settings.
+     */
+    private void createHeaderPanel() {
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(backgroundColour);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
+
+        // Navigation buttons
+        JButton prevButton = createStyledButton("<");
+        JButton nextButton = createStyledButton(">");
         prevButton.addActionListener(e -> {
             currentDate = currentDate.minusMonths(1);
             refreshCalendar();
         });
-
         nextButton.addActionListener(e -> {
             currentDate = currentDate.plusMonths(1);
             refreshCalendar();
         });
 
-        refreshCalendar();
+        //Current month label and year label
+        monthYearLabel = new JLabel("", JLabel.CENTER);
+        monthYearLabel.setForeground(Color.WHITE);
+        monthYearLabel.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
+
+        headerPanel.add(prevButton, BorderLayout.WEST);
+        headerPanel.add(monthYearLabel, BorderLayout.CENTER);
+        headerPanel.add(nextButton, BorderLayout.EAST);
+
+        //Wrapper to include settings panel and header
+        JPanel topWrapper = new JPanel();
+        topWrapper.setLayout(new BoxLayout(topWrapper, BoxLayout.Y_AXIS));
+        topWrapper.setBackground(backgroundColour);
+
+        //Add Settings bar and header
+        topWrapper.add(new SettingScreen(this));
+        topWrapper.add(headerPanel);
+
+        add(topWrapper, BorderLayout.NORTH);
     }
 
     private void refreshCalendar() {
@@ -95,9 +110,11 @@ public class Calendar extends JFrame {
 
         Month month = currentDate.getMonth();
         int year = currentDate.getYear();
-        monthLabel.setText(month.getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase() + " " + year);
 
-        //Day headers
+        //Update the label at the top
+        monthYearLabel.setText(month.getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase() + " " + year);
+
+        //Add weekday headers (Mon - Sun)
         for (DayOfWeek dow : DayOfWeek.values()) {
             JLabel dayLabel = new JLabel(dow.getDisplayName(TextStyle.SHORT, Locale.ENGLISH).toUpperCase(), JLabel.CENTER);
             dayLabel.setForeground(Color.WHITE);
@@ -105,6 +122,7 @@ public class Calendar extends JFrame {
             calendarPanel.add(dayLabel);
         }
 
+        //Calculate how many blank spaces before the 1st day
         LocalDate firstDayOfMonth = currentDate;
         int startDayOfWeek = firstDayOfMonth.getDayOfWeek().getValue(); //Monday = 1
         int shift = startDayOfWeek % 7;
@@ -114,6 +132,7 @@ public class Calendar extends JFrame {
             calendarPanel.add(new JLabel(""));
         }
 
+        //Fill in the actual calendar days
         for (int day = 1; day <= daysInMonth; day++) {
             final int d = day;
             JButton dayButton = new JButton(String.valueOf(day));
@@ -131,6 +150,21 @@ public class Calendar extends JFrame {
         calendarPanel.repaint();
     }
 
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
+        button.setBackground(Color.BLACK);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        addHoverEffect(button);
+        return button;
+    }
+
+    private void showBookingDialog(int day) {
+        JOptionPane.showMessageDialog(this, "Booking info for " + currentDate.withDayOfMonth(day), "Booking Details", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     private void addHoverEffect(JButton button) {
         button.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
         button.addMouseListener(new MouseAdapter() {
@@ -145,20 +179,5 @@ public class Calendar extends JFrame {
                 button.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
             }
         });
-    }
-
-    private JButton createStyledButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
-        button.setBackground(Color.BLACK);
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        addHoverEffect(button);
-        return button;
-    }
-
-    private void showBookingDialog(int day) {
-        JOptionPane.showMessageDialog(this, "Booking info for " + currentDate.withDayOfMonth(day), "Booking Details", JOptionPane.INFORMATION_MESSAGE);
     }
 }
