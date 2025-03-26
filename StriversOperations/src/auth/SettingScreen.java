@@ -2,7 +2,6 @@ package auth;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -16,7 +15,7 @@ public class SettingScreen extends JPanel  {
         this.parentFrame = parentFrame;
         setLayout(new BorderLayout());
         setBackground(new Color(30, 40, 45));
-        setPreferredSize(new Dimension(1200, 60));
+        setPreferredSize(new Dimension(1200, 40));
 
         //Settings button
         JButton settingsBtn = createStyledButton("⚙ Settings");
@@ -42,10 +41,12 @@ public class SettingScreen extends JPanel  {
 
     private void addHoverEffect(JButton button) {
         button.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseEntered(MouseEvent e) {
                 button.setForeground(Color.LIGHT_GRAY);
             }
 
+            @Override
             public void mouseExited(MouseEvent e) {
                 button.setForeground(Color.WHITE);
             }
@@ -59,30 +60,55 @@ public class SettingScreen extends JPanel  {
 
         public SettingsDialog(JFrame parent) {
             super(parent, "Settings", true);
-            setSize(400, 300);
+            setSize(400, 250);
             setLocationRelativeTo(parent);
-            getContentPane().setBackground(new Color(25, 35, 40));
-            setLayout(new GridLayout(4, 1, 10, 10));
+            getContentPane().setBackground(new Color(30, 40, 45));
+            setLayout(new GridLayout(3, 1, 20, 20));
+            ((JComponent) getContentPane()).setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+
+            //Remove the "X" close button
+            setUndecorated(true);
+            getRootPane().setWindowDecorationStyle(JRootPane.NONE);
 
             Font btnFont = new Font("TimesRoman", Font.PLAIN, 20);
+            Color buttonColor = new Color(45, 55, 60);
 
-            JButton logoutBtn = new JButton("Logout");
-            logoutBtn.setFont(btnFont);
-            logoutBtn.setBackground(Color.BLACK);
-            logoutBtn.setForeground(Color.WHITE);
-            logoutBtn.setFocusPainted(false);
+            JButton logoutBtn = createDialogButton("Logout", btnFont, buttonColor);
             logoutBtn.addActionListener(e -> {
                 dispose();
                 parent.dispose();
                 new LoginScreen().setVisible(true);
             });
 
-            JButton accessibilityBtn = new JButton("Accessibility Settings");
-            accessibilityBtn.setFont(btnFont);
-            accessibilityBtn.setEnabled(false); // Placeholder
+            JButton accessibilityBtn = createDialogButton("Accessibility Settings", btnFont, buttonColor);
+            accessibilityBtn.setEnabled(false); //Placeholder
+
+            JButton closeBtn = createDialogButton("Close", btnFont, buttonColor);
+            closeBtn.addActionListener(e -> dispose());
 
             add(accessibilityBtn);
             add(logoutBtn);
+            add(closeBtn);
+        }
+
+        private JButton createDialogButton(String text, Font font, Color bgColor) {
+            JButton button = new JButton(text);
+            button.setFont(font);
+            button.setBackground(bgColor);
+            button.setForeground(Color.WHITE);
+            button.setFocusPainted(false);
+            button.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+            button.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    button.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+                }
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    button.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+                }
+            });
+            return button;
         }
     }
 }
