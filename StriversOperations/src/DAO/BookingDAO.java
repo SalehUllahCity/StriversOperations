@@ -1,28 +1,25 @@
 package DAO;
 
-import Models.Booking;
 import auth.DatabaseConnection;
-import java.sql.*;
+import Models.Booking;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class BookingDAO {
-    public boolean addBooking(Booking booking) {
-        String sql = "INSERT INTO booking (UserID, BookingDate, StartTime, EndTime, BookingType, PaymentStatus) VALUES (?, ?, ?, ?, ?, ?)";
-
+    public static void insertBooking(Booking booking) {
+        String query = "INSERT INTO booking (UserID, BookingDate, StartTime, EndTime, BookingType, PaymentStatus) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
+             PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, booking.getUserID());
-            stmt.setDate(2, booking.getBookingDate());
-            stmt.setTime(3, booking.getStartTime());
-            stmt.setTime(4, booking.getEndTime());
+            stmt.setString(2, booking.getBookingDate());
+            stmt.setString(3, booking.getStartTime());
+            stmt.setString(4, booking.getEndTime());
             stmt.setString(5, booking.getBookingType());
             stmt.setString(6, booking.getPaymentStatus());
-
-            int rowsInserted = stmt.executeUpdate();
-            return rowsInserted > 0;
-        } catch (Exception e) {
+            stmt.executeUpdate();
+        } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
     }
 }
