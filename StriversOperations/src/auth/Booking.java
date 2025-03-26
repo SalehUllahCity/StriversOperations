@@ -54,7 +54,16 @@ public class Booking extends JFrame {
         titleLabel.setBounds(450, 20, 400, 50);
         getContentPane().add(titleLabel);
 
-        //Booking and Client name inputs
+        buildInputFields();
+        buildBookingTable();
+        buildActions();
+    }
+
+    /**
+     * Create labels and input fields for booking details.
+     */
+    private void buildInputFields() {
+        //Booking Name
         JLabel bookingNameLabel = createLabel("Booking Name:");
         bookingNameLabel.setBounds(100, 100, 200, 40);
         getContentPane().add(bookingNameLabel);
@@ -63,6 +72,7 @@ public class Booking extends JFrame {
         bookingNameField.setBounds(300, 100, 250, 40);
         getContentPane().add(bookingNameField);
 
+        //Client Name
         JLabel clientNameLabel = createLabel("Client Name:");
         clientNameLabel.setBounds(600, 100, 200, 40);
         getContentPane().add(clientNameLabel);
@@ -71,7 +81,7 @@ public class Booking extends JFrame {
         clientNameField.setBounds(800, 100, 250, 40);
         getContentPane().add(clientNameField);
 
-        //Start and End date pickers
+        //Start Date
         JLabel startDateLabel = createLabel("Start Date:");
         startDateLabel.setBounds(100, 150, 200, 40);
         getContentPane().add(startDateLabel);
@@ -80,6 +90,7 @@ public class Booking extends JFrame {
         startDateSpinner.setBounds(300, 150, 250, 40);
         getContentPane().add(startDateSpinner);
 
+        //End Date
         JLabel endDateLabel = createLabel("End Date:");
         endDateLabel.setBounds(600, 150, 200, 40);
         getContentPane().add(endDateLabel);
@@ -87,48 +98,50 @@ public class Booking extends JFrame {
         endDateSpinner = createDateSpinner();
         endDateSpinner.setBounds(800, 150, 250, 40);
         getContentPane().add(endDateSpinner);
+    }
 
-        //Table to show added booking slots
+    /**
+     * Table to show added slots.
+     */
+    private void buildBookingTable() {
         String[] columns = {"Date", "Time", "Booking Space", "Rate Type", "Purpose", "Cost"};
         tableModel = new DefaultTableModel(columns, 0);
+
         bookingTable = new JTable(tableModel);
         bookingTable.setFont(new Font("TimesRoman", Font.PLAIN, 20));
         bookingTable.setRowHeight(30);
         bookingTable.getTableHeader().setReorderingAllowed(false);
         bookingTable.getTableHeader().setResizingAllowed(false);
+
         JScrollPane tableScroll = new JScrollPane(bookingTable);
         tableScroll.setBounds(100, 220, 1000, 280);
         getContentPane().add(tableScroll);
+    }
 
-        //Buttons
+    /**
+     * Buttons for interaction: Add, Calculate, Save, Cancel.
+     */
+    private void buildActions() {
         JButton addSlotBtn = createStyledButton("Add Slot");
         addSlotBtn.setBounds(100, 520, 200, 50);
+        addSlotBtn.addActionListener(e -> addBookingSlot());
         getContentPane().add(addSlotBtn);
 
-        JButton calculateBtn = createStyledButton("Calculate Cost");
-        calculateBtn.setBounds(320, 520, 250, 50);
-        getContentPane().add(calculateBtn);
-
         JButton saveBtn = createStyledButton("Save Booking");
-        saveBtn.setBounds(590, 520, 200, 50);
+        saveBtn.setBounds(320, 520, 250, 50);
+        saveBtn.addActionListener(e -> JOptionPane.showMessageDialog(this, "Booking saved."));
         getContentPane().add(saveBtn);
 
         JButton cancelBtn = createStyledButton("Cancel");
-        cancelBtn.setBounds(810, 520, 150, 50);
+        cancelBtn.setBounds(590, 520, 200, 50);
+        cancelBtn.addActionListener(e -> dispose());
         getContentPane().add(cancelBtn);
 
-        //Total cost display
         totalLabel = new JLabel("Total: £0");
         totalLabel.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
         totalLabel.setForeground(Color.WHITE);
         totalLabel.setBounds(100, 590, 300, 40);
         getContentPane().add(totalLabel);
-
-        //Actions
-        addSlotBtn.addActionListener(e -> addBookingSlot());
-        calculateBtn.addActionListener(e -> JOptionPane.showMessageDialog(this, "Cost calculation not implemented."));
-        saveBtn.addActionListener(e -> JOptionPane.showMessageDialog(this, "Booking saved."));
-        cancelBtn.addActionListener(e -> dispose());
     }
 
     private JLabel createLabel(String text) {
@@ -223,7 +236,7 @@ public class Booking extends JFrame {
             }
         });
 
-        // Show input dialog
+        //Show input dialog
         int result = JOptionPane.showConfirmDialog(this, panel, "Add Booking Slot", JOptionPane.OK_CANCEL_OPTION);
 
         if (result == JOptionPane.OK_OPTION) {
@@ -254,9 +267,68 @@ public class Booking extends JFrame {
             row.add(room);
             row.add(rate);
             row.add(purpose);
-            row.add("£0"); //Placeholder cost for now
+
+            //Get price from the map
+            int cost = 0;
+            if (ratePrices.containsKey(room) && ratePrices.get(room).containsKey(rate)) {
+                cost = ratePrices.get(room).get(rate);
+            }
+            row.add("£" + cost);
             tableModel.addRow(row);
+            updateTotalCost();
         }
     }
 
+    //Booking rates per room and rate type
+    private final java.util.Map<String, java.util.Map<String, Integer>> ratePrices = new java.util.HashMap<>() {{
+        put("The Green Room", new java.util.HashMap<>() {{
+            put("1 Hour", 20);
+            put("Morning/Afternoon", 50);
+            put("All Day", 90);
+            put("Week", 400);
+        }});
+        put("Main Hall", new java.util.HashMap<>() {{
+            put("Hourly Rate", 75);
+            put("Evening Rate", 250);
+            put("Daily Rate", 450);
+        }});
+        put("Small Hall", new java.util.HashMap<>() {{
+            put("Hourly Rate", 50);
+            put("Evening Rate", 180);
+            put("Daily Rate", 300);
+        }});
+        put("Rehearsal Space", new java.util.HashMap<>() {{
+            put("Hourly Rate", 30);
+            put("Daily Rate", 100);
+            put("Weekly Rate", 400);
+        }});
+        put("Entire Venue", new java.util.HashMap<>() {{
+            put("Evening Rate", 600);
+            put("Full Day", 1000);
+        }});
+    }};
+
+    /**
+     * Calculates the total cost of all booking slots in the table
+     * and updates the totalLabel with the sum.
+     */
+    private void updateTotalCost() {
+        int total = 0;
+        //Go through each row in the table
+        for (int row = 0; row < tableModel.getRowCount(); row++) {
+            //Get the cost from column 5 (index starts at 0)
+            Object value = tableModel.getValueAt(row, 5);
+            if (value != null) {
+                String costText = value.toString().replace("£", "").trim();
+                //Try to turn the text into a number
+                try {
+                    int cost = Integer.parseInt(costText);
+                    total += cost;
+                } catch (NumberFormatException e) {
+                    //If it's not a number, skip it
+                }
+            }
+        }
+        totalLabel.setText("Total: £" + total);
+    }
 }
