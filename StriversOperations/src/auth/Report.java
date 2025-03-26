@@ -34,18 +34,15 @@ public class Report extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
 
-        JPanel contentPane = new JPanel();
+        //Main content pane
+        JPanel contentPane = new JPanel(new BorderLayout());
         contentPane.setBackground(background);
-        contentPane.setLayout(new BorderLayout());
         setContentPane(contentPane);
 
-        JLabel title = new JLabel("Reports", JLabel.CENTER);
-        title.setForeground(Color.WHITE);
-        title.setFont(new Font("TimesRoman", Font.BOLD, 36));
-        title.setBorder(new EmptyBorder(20, 0, 20, 0));
-        contentPane.add(title, BorderLayout.NORTH);
+        //Header panel: contains settings and title
+        contentPane.add(createHeaderPanel(), BorderLayout.NORTH);
 
-        //Tabs for each report type
+        //Tabs for reports
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
 
@@ -54,6 +51,31 @@ public class Report extends JFrame {
         tabbedPane.addTab("Financial Summary", createFinanceTab());
 
         contentPane.add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    /**
+     * Creates the top section with Settings and Title.
+     */
+    private JPanel createHeaderPanel() {
+        JPanel topWrapper = new JPanel();
+        topWrapper.setLayout(new BoxLayout(topWrapper, BoxLayout.Y_AXIS));
+        topWrapper.setBackground(background);
+
+        // Settings button bar
+        topWrapper.add(new SettingScreen(this));
+
+        // Centered title
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        titlePanel.setBackground(background);
+
+        JLabel titleLabel = new JLabel("Reports");
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 36));
+        titlePanel.add(titleLabel);
+
+        topWrapper.add(titlePanel);
+
+        return topWrapper;
     }
 
     //Tab 1: Venue usage report across dates/spaces/bookings
@@ -67,10 +89,7 @@ public class Report extends JFrame {
 
         JTable table = new JTable(new DefaultTableModel(columns, 0));
         styleTable(table);
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
         return panel;
     }
 
@@ -85,10 +104,7 @@ public class Report extends JFrame {
 
         JTable table = new JTable(new DefaultTableModel(columns, 0));
         styleTable(table);
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
         return panel;
     }
 
@@ -103,14 +119,11 @@ public class Report extends JFrame {
 
         JTable table = new JTable(new DefaultTableModel(columns, 0));
         styleTable(table);
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
         return panel;
     }
 
-    // Shared table styling
+    //Shared table styling
     private void styleTable(JTable table) {
         table.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         table.setRowHeight(30);
