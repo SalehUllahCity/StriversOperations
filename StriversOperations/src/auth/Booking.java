@@ -152,7 +152,7 @@ public class Booking extends JFrame {
      * Booking slots table
      */
     private void buildBookingTable() {
-        String[] columns = {"Date", "Time", "Booking Space", "Rate Type", "Purpose", "Cost"};
+        String[] columns = {"Date", "Time", "Booking Space", "Rate Type", "Booking Type", "Cost"};
         tableModel = new DefaultTableModel(columns, 0);
 
         bookingTable = new JTable(tableModel);
@@ -251,7 +251,7 @@ public class Booking extends JFrame {
                 "10:00", "11:00", "12:00", "13:00", "14:00",
                 "15:00", "16:00", "17:00", "18:00", "19:00"
         });
-        JTextField purposeField = new JTextField();
+        JTextField bookingTypeField = new JTextField();
         JSpinner slotDateSpinner = createDateSpinner();
 
         JPanel panel = new JPanel(new GridLayout(5, 2));
@@ -259,7 +259,7 @@ public class Booking extends JFrame {
         panel.add(new JLabel("Time:")); panel.add(timeBox);
         panel.add(new JLabel("Room:")); panel.add(roomBox);
         panel.add(new JLabel("Rate Type:")); panel.add(rateBox);
-        panel.add(new JLabel("Purpose:")); panel.add(purposeField);
+        panel.add(new JLabel("Booking Type:")); panel.add(bookingTypeField);
 
         // Dynamically update rate options based on room selection
         roomBox.addItemListener(e -> {
@@ -295,16 +295,16 @@ public class Booking extends JFrame {
             String room = (String) roomBox.getSelectedItem();
             String time = (String) timeBox.getSelectedItem();
             String rate = (String) rateBox.getSelectedItem();
-            String purpose = purposeField.getText().trim();
+            String booking = bookingTypeField.getText().trim();
 
-            if (purpose.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Purpose cannot be empty.");
+            if (booking.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "BookingType cannot be empty.");
                 return;
             }
 
-            String[] purposes = {
+            String[] bookingType = {
                     "Meeting", "Theatre", "Conference", "Seminar",
-                    "Screenings", "", "Charity", "Fashion Shows",
+                    "Screenings", "Charity", "Fashion Shows",
                     "Other"
             };
 
@@ -315,7 +315,7 @@ public class Booking extends JFrame {
             row.add(time);
             row.add(room);
             row.add(rate);
-            row.add(purpose);
+            row.add(booking);
 
             //Get price from the map
             int cost = 0;

@@ -6,6 +6,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.*;
 
 public class Report extends JFrame {
 
@@ -52,6 +53,7 @@ public class Report extends JFrame {
         tabbedPane.addTab("Daily Sheets", createDailySheetsTab());
         tabbedPane.addTab("Financial Summary", createFinanceTab());
         tabbedPane.addTab("Reviews", createReviewsTab());
+        tabbedPane.addTab("Data by Day", createDailyDataTab());
 
         contentPane.add(tabbedPane, BorderLayout.CENTER);
     }
@@ -120,13 +122,48 @@ public class Report extends JFrame {
         panel.setBackground(background);
 
         String[] columns = {
-                "Booking Name", "Client", "Space", "Start Date", "End Date", "Configuration", "Held?", "Contracted?"
+                "Booking Name", "Client", "Space", "Start Date", "End Date", "Configuration"
         };
-
-        JTable table = new JTable(new DefaultTableModel(columns, 0));
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
         styleTable(table);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        loadVenueUsageData(model);
+
+
         return panel;
+    }
+
+    private void loadVenueUsageData(DefaultTableModel model) {
+        String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
+
+        String user = "in2033t26_a";
+        String password = "jLxOPuQ69Mg";
+
+        String query = "SELECT BookingName, Client, Room, BookingDate, BookingEndDate, SeatingConfig " +
+                "FROM booking"; // Fetches only today's records
+
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Object[] row = {
+                        rs.getString("BookingName"),
+                        rs.getString("Client"),
+                        rs.getString("Room"),
+                        rs.getDate("BookingDate"),
+                        rs.getDate("BookingEndDate"),
+                        rs.getString("SeatingConfig")
+                };
+                model.addRow(row);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error retrieving daily sheets data: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     // Review columns will change based on the API that Martin is yet to provide
@@ -151,13 +188,48 @@ public class Report extends JFrame {
         panel.setBackground(background);
 
         String[] columns = {
-                "Date", "Room", "Used By", "Setup Required", "Seating Config", "Accessibility Notes"
+                "Date", "Room", "Used By", "Seating Config", "Accessibility Notes"
         };
 
-        JTable table = new JTable(new DefaultTableModel(columns, 0));
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
         styleTable(table);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        loadDailySheetsData(model);
+
         return panel;
+    }
+
+    // method to load daily sheets data from the DB
+    private void loadDailySheetsData(DefaultTableModel model) {
+        String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
+
+        String user = "in2033t26_a";
+        String password = "jLxOPuQ69Mg";
+
+        String query = "SELECT BookingDate, Room, Client, SeatingConfig, Notes " +
+                "FROM booking WHERE BookingDate = CURDATE()"; // Fetches only today's records
+
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Object[] row = {
+                        rs.getDate("BookingDate"),
+                        rs.getString("Room"),
+                        rs.getString("Client"),
+                        rs.getString("SeatingConfig"),
+                        rs.getString("Notes")
+                };
+                model.addRow(row);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error retrieving daily sheets data: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     //Tab 3: Financial summary per booking
@@ -188,6 +260,57 @@ public class Report extends JFrame {
             }
         });
     }
+
+    private JPanel createDailyDataTab() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(background);
+
+        String[] columns = {
+                "BookingDate", "Client", "Room", "Booking Type" // add tickets sold
+        };
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
+        styleTable(table);
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        // loadDailyUsageData(model);
+
+
+        return panel;
+    }
+
+    /*
+    private void loadDailyUsageData(DefaultTableModel model) {
+        String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
+
+        String user = "in2033t26_a";
+        String password = "jLxOPuQ69Mg";
+
+        String query = "SELECT BookingDate, Client, Room, BookingType" + // add tickets sold from the other team API
+                "FROM booking WHERE BookingDate = CURDATE()"; // Add a roll date button to allow the staff to pick a date
+
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Object[] row = {
+                        rs.getDate("BookingDate"),
+                        rs.getString("Client"),
+                        rs.getString("Room"),
+                        rs.getString("BookingType"),
+                        // add tickets sold here from the other team API
+                };
+                model.addRow(row);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error retrieving daily sheets data: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+     */
 
     //Shared table styling
     private void styleTable(JTable table) {
