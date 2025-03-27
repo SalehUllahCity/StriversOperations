@@ -1,15 +1,20 @@
 package auth;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.Year;
 import java.time.format.TextStyle;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class Calendar extends JFrame {
 
@@ -186,7 +191,69 @@ public class Calendar extends JFrame {
     }
 
     private void showBookingDialog(int day) {
-        JOptionPane.showMessageDialog(this, "Booking info for " + currentDate.withDayOfMonth(day), "Booking Details", JOptionPane.INFORMATION_MESSAGE);
+        // JOptionPane.showMessageDialog(this, "Booking info for " + currentDate.withDayOfMonth(day), "Booking Details", JOptionPane.INFORMATION_MESSAGE);
+
+        LocalDate selectedDate = currentDate.withDayOfMonth(day);
+
+        // Create a dialog window
+        JDialog dialog = new JDialog(this, "Bookings for " + selectedDate, true);
+        dialog.setSize(600, 400);
+        dialog.setLocationRelativeTo(this);
+
+        // Table model
+        String[] columns = {"Booking Name", "Client", "Room", "Start Time", "End Time"};
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
+
+        // Load data from database
+        loadBookingsForDate(selectedDate, model);
+
+        // Apply color renderer to Room column (index 1)
+        table.getColumnModel().getColumn(2).setCellRenderer(new Calendar.RoomColorRenderer());
+
+
+        // Add table to dialog
+        dialog.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        // Close button
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> dialog.dispose());
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(closeButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
+
+    private void loadBookingsForDate(LocalDate date, DefaultTableModel model) {
+        String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
+
+        String user = "in2033t26_a"; // change to team username
+        String password = "jLxOPuQ69Mg"; // default password is local password -> change to team password when it works
+
+        String query = "SELECT BookingName, Client, Room, StartTime, EndTime FROM booking WHERE BookingDate = ?";
+
+        try (Connection conn = DriverManager.getConnection(url, user, password);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setDate(1, java.sql.Date.valueOf(date));
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Object[] row = {
+                        rs.getString("BookingName"),
+                        rs.getString("Client"),
+                        rs.getString("Room"),
+                        rs.getString("StartTime"),
+                        rs.getString("EndTime")
+                };
+                model.addRow(row);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error fetching bookings: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void addHoverEffect(JButton button) {
@@ -205,5 +272,24 @@ public class Calendar extends JFrame {
             }
         });
     }
+    // Custom Renderer to Color Code Room/Space Columns
+    class RoomColorRenderer extends DefaultTableCellRenderer {
+        private final Map<String, Color> roomColorMap = new HashMap<>();
+        private final Color[] colors = {Color.CYAN, Color.ORANGE, Color.PINK, Color.GREEN, Color.YELLOW, Color.BLUE, Color.MAGENTA, Color.LIGHT_GRAY};
+        private int colorIndex = 0;
 
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            if (value != null) {
+                String room = value.toString();
+                roomColorMap.putIfAbsent(room, colors[colorIndex++ % colors.length]);
+                cell.setBackground(roomColorMap.get(room));
+            }
+
+            return cell;
+        }
+
+}
 }
