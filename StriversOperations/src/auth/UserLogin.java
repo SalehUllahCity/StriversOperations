@@ -176,7 +176,7 @@ public class UserLogin extends JFrame {
 
             @Override
             public void mouseExited(MouseEvent e) {
-                button.setForeground(new Color(255, 255, 255));
+                button.setForeground(new Color(0, 0, 0));
             }
         });
     }

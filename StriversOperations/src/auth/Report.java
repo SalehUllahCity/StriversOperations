@@ -51,6 +51,7 @@ public class Report extends JFrame {
         tabbedPane.addTab("Venue Usage", createVenueUsageTab());
         tabbedPane.addTab("Daily Sheets", createDailySheetsTab());
         tabbedPane.addTab("Financial Summary", createFinanceTab());
+        tabbedPane.addTab("Reviews", createReviewsTab());
 
         contentPane.add(tabbedPane, BorderLayout.CENTER);
     }
@@ -120,6 +121,22 @@ public class Report extends JFrame {
 
         String[] columns = {
                 "Booking Name", "Client", "Space", "Start Date", "End Date", "Configuration", "Held?", "Contracted?"
+        };
+
+        JTable table = new JTable(new DefaultTableModel(columns, 0));
+        styleTable(table);
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        return panel;
+    }
+
+    // Review columns will change based on the API that Martin is yet to provide
+
+    private JPanel createReviewsTab() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(background);
+
+        String[] columns = {
+                "Date", "Event", "Customer", "Seat", "Review", "Stars"
         };
 
         JTable table = new JTable(new DefaultTableModel(columns, 0));
