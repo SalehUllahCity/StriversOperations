@@ -2,11 +2,14 @@ package auth;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Report extends JFrame {
 
@@ -122,12 +125,15 @@ public class Report extends JFrame {
         panel.setBackground(background);
 
         String[] columns = {
-                "Booking Name", "Client", "Space", "Start Date", "End Date", "Configuration"
+                "Booking Name", "Client", "Room", "Start Date", "End Date", "Configuration"
         };
         DefaultTableModel model = new DefaultTableModel(columns, 0);
         JTable table = new JTable(model);
         styleTable(table);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        // Apply color renderer to Room column (index 1)
+        table.getColumnModel().getColumn(2).setCellRenderer(new RoomColorRenderer());
 
         loadVenueUsageData(model);
 
@@ -194,6 +200,10 @@ public class Report extends JFrame {
         DefaultTableModel model = new DefaultTableModel(columns, 0);
         JTable table = new JTable(model);
         styleTable(table);
+
+        // Apply color renderer to Room column (index 1)
+        table.getColumnModel().getColumn(1).setCellRenderer(new RoomColorRenderer());
+
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
 
         loadDailySheetsData(model);
@@ -273,21 +283,27 @@ public class Report extends JFrame {
         styleTable(table);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // loadDailyUsageData(model);
+         // loadDailyUsageData(model); method is commented below
 
 
         return panel;
     }
 
-    /*
+    /* Keeps giving an error of not recognising BookingDate: Unknown column 'BookingDate' in 'field list'
     private void loadDailyUsageData(DefaultTableModel model) {
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
 
         String user = "in2033t26_a";
         String password = "jLxOPuQ69Mg";
 
+        String query = "SELECT BookingDate, Client, Room, BookingType" +
+                "FROM booking"; // Fetches only today's records
+
+        /*
         String query = "SELECT BookingDate, Client, Room, BookingType" + // add tickets sold from the other team API
-                "FROM booking WHERE BookingDate = CURDATE()"; // Add a roll date button to allow the staff to pick a date
+                "FROM booking"; // Add a roll date button to allow the staff to pick a date
+
+
 
         try (Connection conn = DriverManager.getConnection(url, user, password);
              PreparedStatement stmt = conn.prepareStatement(query);
@@ -312,6 +328,9 @@ public class Report extends JFrame {
 
      */
 
+
+
+
     //Shared table styling
     private void styleTable(JTable table) {
         table.setFont(new Font("TimesRoman", Font.PLAIN, 18));
@@ -319,5 +338,25 @@ public class Report extends JFrame {
         table.getTableHeader().setFont(new Font("TimesRoman", Font.BOLD, 20));
         table.getTableHeader().setReorderingAllowed(false);
         table.getTableHeader().setResizingAllowed(false);
+    }
+
+    // Custom Renderer to Color Code Room/Space Columns
+    class RoomColorRenderer extends DefaultTableCellRenderer {
+        private final Map<String, Color> roomColorMap = new HashMap<>();
+        private final Color[] colors = {Color.CYAN, Color.ORANGE, Color.PINK, Color.GREEN, Color.YELLOW, Color.BLUE, Color.MAGENTA, Color.LIGHT_GRAY};
+        private int colorIndex = 0;
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            if (value != null) {
+                String room = value.toString();
+                roomColorMap.putIfAbsent(room, colors[colorIndex++ % colors.length]);
+                cell.setBackground(roomColorMap.get(room));
+            }
+
+            return cell;
+        }
     }
 }
