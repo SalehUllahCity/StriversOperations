@@ -68,11 +68,37 @@ public class Calendar extends JFrame {
      * Creates the top section with navigation buttons, month label, and settings.
      */
     private void createHeaderPanel() {
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(backgroundColour);
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
+        // Main top header container
+        JPanel topWrapper = new JPanel();
+        topWrapper.setLayout(new BorderLayout());
+        topWrapper.setBackground(backgroundColour);
+        topWrapper.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        // Navigation buttons
+        // Left: ← Home Button
+        JButton homeBtn = createStyledButton("← Home");
+        homeBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
+        topWrapper.add(homeBtn, BorderLayout.WEST);
+        homeBtn.addActionListener(e -> {
+            dispose();
+            new UserHome().setVisible(true);
+        });
+
+        // Right: ⚙ Settings Button
+        JButton settingsBtn = createStyledButton("⚙ Settings");
+        settingsBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
+        settingsBtn.setPreferredSize(new Dimension(120, 40));
+        settingsBtn.addActionListener(e -> new SettingScreen.SettingsDialog(this).setVisible(true));
+
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        rightPanel.setOpaque(false);
+        rightPanel.add(settingsBtn);
+        topWrapper.add(rightPanel, BorderLayout.EAST);
+
+        // Center: Month navigation panel
+        JPanel navPanel = new JPanel(new BorderLayout());
+        navPanel.setBackground(backgroundColour);
+        navPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+
         JButton prevButton = createStyledButton("<");
         JButton nextButton = createStyledButton(">");
         prevButton.addActionListener(e -> {
@@ -84,26 +110,24 @@ public class Calendar extends JFrame {
             refreshCalendar();
         });
 
-        //Current month label and year label
         monthYearLabel = new JLabel("", JLabel.CENTER);
         monthYearLabel.setForeground(Color.WHITE);
         monthYearLabel.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
 
-        headerPanel.add(prevButton, BorderLayout.WEST);
-        headerPanel.add(monthYearLabel, BorderLayout.CENTER);
-        headerPanel.add(nextButton, BorderLayout.EAST);
+        navPanel.add(prevButton, BorderLayout.WEST);
+        navPanel.add(monthYearLabel, BorderLayout.CENTER);
+        navPanel.add(nextButton, BorderLayout.EAST);
 
-        //Wrapper to include settings panel and header
-        JPanel topWrapper = new JPanel();
-        topWrapper.setLayout(new BoxLayout(topWrapper, BoxLayout.Y_AXIS));
-        topWrapper.setBackground(backgroundColour);
+        // Stack navPanel below topWrapper
+        JPanel stackedHeader = new JPanel();
+        stackedHeader.setLayout(new BoxLayout(stackedHeader, BoxLayout.Y_AXIS));
+        stackedHeader.setBackground(backgroundColour);
+        stackedHeader.add(topWrapper);
+        stackedHeader.add(navPanel);
 
-        //Add Settings bar and header
-        topWrapper.add(new SettingScreen(this));
-        topWrapper.add(headerPanel);
-
-        add(topWrapper, BorderLayout.NORTH);
+        add(stackedHeader, BorderLayout.NORTH);
     }
+
 
     private void refreshCalendar() {
         calendarPanel.removeAll();
@@ -153,7 +177,7 @@ public class Calendar extends JFrame {
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
         button.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
-        button.setBackground(Color.BLACK);
+        button.setBackground(backgroundColour);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setBorderPainted(false);
@@ -171,13 +195,15 @@ public class Calendar extends JFrame {
             @Override
             public void mouseEntered(MouseEvent e) {
                 button.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
-
+                button.setForeground(Color.LIGHT_GRAY); // change text color on hover
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 button.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
+                button.setForeground(Color.WHITE); // revert text color
             }
         });
     }
+
 }

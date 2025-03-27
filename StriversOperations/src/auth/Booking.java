@@ -36,7 +36,7 @@ public class Booking extends JFrame {
     }
 
     /**
-     * Create the frame.
+     * Create the booking frame UI
      */
     public Booking() {
         setTitle("Lancaster's Music Hall Software");
@@ -47,12 +47,16 @@ public class Booking extends JFrame {
         getContentPane().setBackground(backgroundColour);
         getContentPane().setLayout(null);
 
-        //Title
+        JPanel topBar = createTopBar(this);
+        topBar.setBounds(0, 0, 1200, 50);
+        getContentPane().add(topBar);
+
         JLabel titleLabel = new JLabel("New Booking");
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 40));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setBounds(450, 20, 400, 50);
         getContentPane().add(titleLabel);
+        getContentPane().setComponentZOrder(titleLabel, 0);
 
         buildInputFields();
         buildBookingTable();
@@ -60,48 +64,92 @@ public class Booking extends JFrame {
     }
 
     /**
-     * Create labels and input fields for booking details.
+     * Create input fields for booking details.
      */
     private void buildInputFields() {
-        //Booking Name
+        int labelHeight = 40;
+        int fieldHeight = 40;
+        int labelWidth = 200;
+        int fieldWidth = 250;
+
+        // Booking Name
         JLabel bookingNameLabel = createLabel("Booking Name:");
-        bookingNameLabel.setBounds(100, 100, 200, 40);
+        bookingNameLabel.setBounds(100, 100, labelWidth, labelHeight);
         getContentPane().add(bookingNameLabel);
 
         bookingNameField = createTextField();
-        bookingNameField.setBounds(300, 100, 250, 40);
+        bookingNameField.setBounds(300, 100, fieldWidth, fieldHeight);
         getContentPane().add(bookingNameField);
 
-        //Client Name
+        // Client Name
         JLabel clientNameLabel = createLabel("Client Name:");
-        clientNameLabel.setBounds(600, 100, 200, 40);
+        clientNameLabel.setBounds(600, 100, labelWidth, labelHeight);
         getContentPane().add(clientNameLabel);
 
         clientNameField = createTextField();
-        clientNameField.setBounds(800, 100, 250, 40);
+        clientNameField.setBounds(800, 100, fieldWidth, fieldHeight);
         getContentPane().add(clientNameField);
 
-        //Start Date
+        // Start Date
         JLabel startDateLabel = createLabel("Start Date:");
-        startDateLabel.setBounds(100, 150, 200, 40);
+        startDateLabel.setBounds(100, 160, labelWidth, labelHeight);
         getContentPane().add(startDateLabel);
 
         startDateSpinner = createDateSpinner();
-        startDateSpinner.setBounds(300, 150, 250, 40);
+        startDateSpinner.setBounds(300, 160, fieldWidth, fieldHeight);
         getContentPane().add(startDateSpinner);
 
-        //End Date
+        // End Date
         JLabel endDateLabel = createLabel("End Date:");
-        endDateLabel.setBounds(600, 150, 200, 40);
+        endDateLabel.setBounds(600, 160, labelWidth, labelHeight);
         getContentPane().add(endDateLabel);
 
         endDateSpinner = createDateSpinner();
-        endDateSpinner.setBounds(800, 150, 250, 40);
+        endDateSpinner.setBounds(800, 160, fieldWidth, fieldHeight);
         getContentPane().add(endDateSpinner);
     }
 
     /**
-     * Table to show added slots.
+     * Top bar with Home and Settings buttons
+     */
+    private JPanel createTopBar(JFrame parentFrame) {
+        JPanel topWrapper = new JPanel(new BorderLayout());
+        topWrapper.setBackground(backgroundColour);
+        topWrapper.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        // Home button: returns to UserHome
+        JButton homeBtn = new JButton("← Home");
+        styleTopButton(homeBtn);
+        homeBtn.addActionListener(e -> {
+            parentFrame.dispose();
+            new UserHome().setVisible(true);
+        });
+        topWrapper.add(homeBtn, BorderLayout.WEST);
+
+        // Settings button: opens settings dialog
+        JButton settingsBtn = new JButton("⚙ Settings");
+        styleTopButton(settingsBtn);
+        settingsBtn.addActionListener(e -> new SettingScreen.SettingsDialog(parentFrame).setVisible(true));
+
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        rightPanel.setOpaque(false);
+        rightPanel.add(settingsBtn);
+        topWrapper.add(rightPanel, BorderLayout.EAST);
+
+        return topWrapper;
+    }
+
+    private void styleTopButton(JButton button) {
+        button.setFont(new Font("TimesRoman", Font.PLAIN, 18));
+        button.setBackground(backgroundColour);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        addHoverEffect(button);
+    }
+
+    /**
+     * Booking slots table
      */
     private void buildBookingTable() {
         String[] columns = {"Date", "Time", "Booking Space", "Rate Type", "Purpose", "Cost"};
@@ -119,29 +167,25 @@ public class Booking extends JFrame {
     }
 
     /**
-     * Buttons for interaction: Add, Calculate, Save, Cancel.
+     * Buttons for slot management and save/cancel actions
      */
     private void buildActions() {
-        JButton addSlotBtn = createStyledButton("Add Slot");
-        addSlotBtn.setBounds(100, 520, 200, 50);
-        addSlotBtn.addActionListener(e -> addBookingSlot());
-        getContentPane().add(addSlotBtn);
-
-        JButton saveBtn = createStyledButton("Save Booking");
-        saveBtn.setBounds(320, 520, 250, 50);
-        saveBtn.addActionListener(e -> JOptionPane.showMessageDialog(this, "Booking saved."));
-        getContentPane().add(saveBtn);
-
-        JButton cancelBtn = createStyledButton("Cancel");
-        cancelBtn.setBounds(590, 520, 200, 50);
-        cancelBtn.addActionListener(e -> dispose());
-        getContentPane().add(cancelBtn);
+        createActionButton("Add Slot", 100, e -> addBookingSlot());
+        createActionButton("Save Booking", 320, e -> JOptionPane.showMessageDialog(this, "Booking saved."));
+        createActionButton("Cancel", 590, e -> dispose());
 
         totalLabel = new JLabel("Total: £0");
         totalLabel.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
         totalLabel.setForeground(Color.WHITE);
         totalLabel.setBounds(100, 590, 300, 40);
         getContentPane().add(totalLabel);
+    }
+
+    private void createActionButton(String text, int x, java.awt.event.ActionListener action) {
+        JButton button = createStyledButton(text);
+        button.setBounds(x, 520, 200, 50);
+        button.addActionListener(action);
+        getContentPane().add(button);
     }
 
     private JLabel createLabel(String text) {
@@ -159,7 +203,7 @@ public class Booking extends JFrame {
 
     private JSpinner createDateSpinner() {
         JSpinner spinner = new JSpinner(new SpinnerDateModel());
-        spinner.setEditor(new JSpinner.DateEditor(spinner, "yyyy-MM-dd"));
+        spinner.setEditor(new JSpinner.DateEditor(spinner, "dd-MM-yyyy"));
         return spinner;
     }
 
@@ -180,7 +224,6 @@ public class Booking extends JFrame {
             public void mouseEntered(MouseEvent e) {
                 button.setForeground(Color.LIGHT_GRAY);
             }
-
             @Override
             public void mouseExited(MouseEvent e) {
                 button.setForeground(Color.WHITE);
@@ -282,10 +325,40 @@ public class Booking extends JFrame {
     //Booking rates per room and rate type
     private final java.util.Map<String, java.util.Map<String, Integer>> ratePrices = new java.util.HashMap<>() {{
         put("The Green Room", new java.util.HashMap<>() {{
-            put("1 Hour", 20);
-            put("Morning/Afternoon", 50);
-            put("All Day", 90);
-            put("Week", 400);
+            put("1 Hour", 25);
+            put("Morning/Afternoon", 75);
+            put("All Day", 130);
+            put("Week", 600);
+        }});
+        put("Bronte Boardroom", new java.util.HashMap<>() {{
+            put("1 Hour", 40);
+            put("Morning/Afternoon", 120);
+            put("All Day", 200);
+            put("Week", 900);
+        }});
+        put("Dickens Den", new java.util.HashMap<>() {{
+            put("1 Hour", 30);
+            put("Morning/Afternoon", 90);
+            put("All Day", 150);
+            put("Week", 700);
+        }});
+        put("Poe Parlor", new java.util.HashMap<>() {{
+            put("1 Hour", 35);
+            put("Morning/Afternoon", 100);
+            put("All Day", 170);
+            put("Week", 800);
+        }});
+        put("Globe Room", new java.util.HashMap<>() {{
+            put("1 Hour", 50);
+            put("Morning/Afternoon", 150);
+            put("All Day", 250);
+            put("Week", 1100);
+        }});
+        put("Chekhov Chamber", new java.util.HashMap<>() {{
+            put("1 Hour", 38);
+            put("Morning/Afternoon", 110);
+            put("All Day", 180);
+            put("Week", 850);
         }});
         put("Main Hall", new java.util.HashMap<>() {{
             put("Hourly Rate", 75);

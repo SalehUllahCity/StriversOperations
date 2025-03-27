@@ -31,7 +31,6 @@ public class SettingScreen extends JPanel  {
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
         button.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
-        button.setBackground(backgroundColour);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
@@ -56,7 +55,7 @@ public class SettingScreen extends JPanel  {
     /**
      * The settings popup dialog shown when the settings button is clicked.
      */
-    private static class SettingsDialog extends JDialog {
+    protected static class SettingsDialog extends JDialog {
 
         public SettingsDialog(JFrame parent) {
             super(parent, "Settings", true);
@@ -98,17 +97,24 @@ public class SettingScreen extends JPanel  {
             button.setForeground(Color.WHITE);
             button.setFocusPainted(false);
             button.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+            addHoverEffect(button);
+            return button;
+        }
+
+        private void addHoverEffect(JButton button) {
+            button.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
             button.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseEntered(MouseEvent e) {
-                    button.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+                    button.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
+
                 }
+
                 @Override
                 public void mouseExited(MouseEvent e) {
-                    button.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+                    button.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
                 }
             });
-            return button;
         }
     }
 }

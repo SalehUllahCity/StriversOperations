@@ -4,6 +4,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class Report extends JFrame {
 
@@ -57,26 +59,59 @@ public class Report extends JFrame {
      * Creates the top section with Settings and Title.
      */
     private JPanel createHeaderPanel() {
-        JPanel topWrapper = new JPanel();
-        topWrapper.setLayout(new BoxLayout(topWrapper, BoxLayout.Y_AXIS));
-        topWrapper.setBackground(background);
+        JPanel headerContainer = new JPanel();
+        headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
+        headerContainer.setBackground(background);
 
-        // Settings button bar
-        topWrapper.add(new SettingScreen(this));
+        // Top bar: Home and Settings buttons
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBackground(background);
+        topBar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        // Centered title
+        // ← Home button
+        JButton homeBtn = new JButton("← Home");
+        homeBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
+        homeBtn.setBackground(background);
+        homeBtn.setForeground(Color.WHITE);
+        homeBtn.setFocusPainted(false);
+        homeBtn.setBorderPainted(false);
+        homeBtn.addActionListener(e -> {
+            dispose();
+            new UserHome().setVisible(true);
+        });
+        addHoverEffect(homeBtn);
+        topBar.add(homeBtn, BorderLayout.WEST);
+
+        //Settings button
+        JButton settingsBtn = new JButton("⚙ Settings");
+        settingsBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
+        settingsBtn.setBackground(background);
+        settingsBtn.setForeground(Color.WHITE);
+        settingsBtn.setFocusPainted(false);
+        settingsBtn.setBorderPainted(false);
+        settingsBtn.addActionListener(e -> new SettingScreen.SettingsDialog(this).setVisible(true));
+        addHoverEffect(settingsBtn);
+
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        rightPanel.setOpaque(false);
+        rightPanel.add(settingsBtn);
+        topBar.add(rightPanel, BorderLayout.EAST);
+
+        // Title Panel
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         titlePanel.setBackground(background);
-
         JLabel titleLabel = new JLabel("Reports");
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 36));
         titlePanel.add(titleLabel);
 
-        topWrapper.add(titlePanel);
+        // Stack both into the header container
+        headerContainer.add(topBar);
+        headerContainer.add(titlePanel);
 
-        return topWrapper;
+        return headerContainer;
     }
+
 
     //Tab 1: Venue usage report across dates/spaces/bookings
     private JPanel createVenueUsageTab() {
@@ -121,6 +156,20 @@ public class Report extends JFrame {
         styleTable(table);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
         return panel;
+    }
+
+    private void addHoverEffect(JButton button) {
+        button.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 2));
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setForeground(Color.LIGHT_GRAY);
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setForeground(Color.WHITE);
+            }
+        });
     }
 
     //Shared table styling
