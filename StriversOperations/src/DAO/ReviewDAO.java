@@ -16,7 +16,7 @@ public class ReviewDAO {
             stmt.setInt(3, review.getRating());
             stmt.setString(4, review.getComments());
             stmt.executeUpdate();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

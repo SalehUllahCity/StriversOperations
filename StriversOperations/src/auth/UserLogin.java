@@ -111,7 +111,7 @@ public class UserLogin extends JFrame {
         btnNewButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                /*  // code it to make sure that just pressing login does not allow passthrough
+
                 String userName = textField.getText();
                 String password = passwordField.getText();
                 try {
@@ -119,7 +119,7 @@ public class UserLogin extends JFrame {
                             "in2033t26_a", "jLxOPuQ69Mg");
 
                     PreparedStatement st = (PreparedStatement) connection
-                            .prepareStatement("Select name, password from student where name=? and password=?");
+                            .prepareStatement("Select Email, Password from user where Email=? and Password=?");
 
                     st.setString(1, userName);
                     st.setString(2, password);
@@ -127,19 +127,19 @@ public class UserLogin extends JFrame {
                     if (rs.next()) {
                         dispose();
 
-                 */     setVisible(false);
+                     setVisible(false);
                         UserHome ah = new UserHome(); // pass username
                         ah.setTitle("Welcome");
                         ah.setVisible(true);
                         // JOptionPane.showMessageDialog(btnNewButton, "You have successfully logged in"); - the message pop-up is annoying
-                   /* } else {
+                    } else {
                         JOptionPane.showMessageDialog(btnNewButton, "Wrong Username & Password");
                     }
                 } catch (SQLException sqlException) {
                     sqlException.printStackTrace();
                 }
 
-                    */
+
             }
         });
 

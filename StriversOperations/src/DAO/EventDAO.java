@@ -18,6 +18,8 @@ public class EventDAO {
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

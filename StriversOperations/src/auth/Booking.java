@@ -261,7 +261,7 @@ public class Booking extends JFrame {
         panel.add(new JLabel("Rate Type:")); panel.add(rateBox);
         panel.add(new JLabel("Purpose:")); panel.add(purposeField);
 
-        //Dynamically update rate options based on room selection
+        // Dynamically update rate options based on room selection
         roomBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 String selectedRoom = (String) roomBox.getSelectedItem();
@@ -301,6 +301,12 @@ public class Booking extends JFrame {
                 JOptionPane.showMessageDialog(this, "Purpose cannot be empty.");
                 return;
             }
+
+            String[] purposes = {
+                    "Meeting", "Theatre", "Conference", "Seminar",
+                    "Screenings", "", "Charity", "Fashion Shows",
+                    "Other"
+            };
 
             String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(slotDate);
 

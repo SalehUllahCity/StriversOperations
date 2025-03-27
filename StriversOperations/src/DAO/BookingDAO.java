@@ -18,7 +18,7 @@ public class BookingDAO {
             stmt.setString(5, booking.getBookingType());
             stmt.setString(6, booking.getPaymentStatus());
             stmt.executeUpdate();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
