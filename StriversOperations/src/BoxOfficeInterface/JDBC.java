@@ -4,6 +4,20 @@ import java.sql.*;
 import java.util.List;
 
 public class JDBC {
+    private final Connection connection;
+    private BoxOfficeData boxOfficeData;
+
+
+    public JDBC() throws SQLException, ClassNotFoundException {
+        String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
+        String userName = "in2033t26_d";
+        String password = "h9DHknCPLaU";
+
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        this.connection = DriverManager.getConnection(url, userName, password);
+        this.boxOfficeData = new BoxOfficeData();
+    }
+
     /**
      * This class demonstrates how to use JDBC to connect to the City University
      * MySQL database and retrieve various box office-related data using the
@@ -16,7 +30,8 @@ public class JDBC {
      * - Wheelchair accessible seats
      * - Calendar availability
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException, ClassNotFoundException {
+        /*
         // URL
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26"; // local but this would become the university DB Server
         // String userName = "root"; // change to team username
@@ -26,17 +41,22 @@ public class JDBC {
         String password = "h9DHknCPLaU"; // default password is local password -> change to team password when it works
         // make sure that you are connection the city vpn beforehand
 
+         */
+        // JDBC accessor = new JDBC();
+
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            // Class.forName("com.mysql.cj.jdbc.Driver");
 
             // create the connection, git connection
-            Connection connection = DriverManager.getConnection(url, userName, password);
+            // Connection connection = DriverManager.getConnection(url, userName, password);
 
             BoxOfficeData boxOfficeData = new BoxOfficeData();
 
             // Venue Unavailability/Schedule
-            List<String> venueUnavailability = boxOfficeData.getVenueUnavailability(connection);
+            // List<String> venueUnavailability = boxOfficeData.getVenueUnavailability(connection);
+            // List<String> venueUnavailability = getVenueUnavailability();
 
+            /*
             System.out.println("Venue Unavailability (Current Bookings):");
             for (String unavailability : venueUnavailability) {
                 System.out.println(unavailability);
@@ -44,6 +64,9 @@ public class JDBC {
 
             System.out.println("\n");
 
+             */
+
+            /*
             // Seating Configuration for a specific hall
             List<SeatingConfiguration> seatingConfigurationList = boxOfficeData.seatingConfigurations(connection, "Meeting");
 
@@ -95,6 +118,43 @@ public class JDBC {
 
         } catch (Exception e) {
             System.out.println("Database Error: SQLException: " + e.getMessage());
+        }
+
+             */
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    // Wrapper methods that delegate to BoxOfficeData
+    public List<String> getVenueUnavailability() {
+        return boxOfficeData.getVenueUnavailability(connection);
+    }
+
+    public List<SeatingConfiguration> getSeatingConfigurations(String hallName) {
+        return boxOfficeData.seatingConfigurations(connection, hallName);
+    }
+
+    public List<SeatingConfiguration> getRestrictedSeats(String hallName) {
+        return boxOfficeData.isRestricted(connection, hallName);
+    }
+
+    public List<SeatingConfiguration> getReservedSeats(String hallName) {
+        return boxOfficeData.isReserved(connection, hallName);
+    }
+
+    public List<WheelChairSeatConfig> getWheelchairSeats(String hallName) {
+        return boxOfficeData.isAccessible(connection, hallName);
+    }
+
+    public List<String> getCalendarAvailability(Date date) {
+        return boxOfficeData.getCalendarAvailability(connection, date);
+    }
+
+    public void close() throws SQLException {
+        if (connection != null) {
+            connection.close();
         }
     }
 }

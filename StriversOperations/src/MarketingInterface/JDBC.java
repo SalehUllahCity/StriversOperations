@@ -4,7 +4,22 @@ import java.sql.*;
 import java.util.List;
 
 public class JDBC {
+    private final Connection connection;
+    private MarketingData marketingData;
+
+    public JDBC() throws SQLException, ClassNotFoundException {
+        String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
+        String userName = "in2033t26_d";
+        String password = "h9DHknCPLaU";
+
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        this.connection = DriverManager.getConnection(url, userName, password);
+        this.marketingData = new MarketingData();
+    }
+
     public static void main(String[] args) {
+
+        /*
         // URL
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26"; // local but this would become the university DB Server
         // String userName = "root"; // change to team username
@@ -67,4 +82,28 @@ public class JDBC {
             System.out.println(e);
         }
     }
+
+         */
+
+    }
+
+    // Wrapper methods that delegate to BoxOfficeData
+    public List<String> getVenueUnavailability() {
+        return marketingData.getVenueUnavailability(connection);
+    }
+
+    public List<SeatingConfiguration> getSeatingConfigurations(String hallName) {
+        return marketingData.seatingConfigurations(connection, hallName);
+    }
+
+    public List<WheelChairSeatConfig> getWheelChairSeats(String hallName) {
+        return marketingData.isAccessible(connection, hallName);
+    }
+
+    public List<String> getCalendarAvailability(Date BookingDate) {
+        return marketingData.getCalendarAvailability(connection, BookingDate);
+    }
+
+
+
 }
