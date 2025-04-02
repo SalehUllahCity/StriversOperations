@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="StriversOperations:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/StriversOperations_jar</output-path>
+    <root id="archive" name="StriversOperations.jar">
+      <element id="module-output" name="StriversOperation" />
+      <element id="extracted-dir" path="$USER_HOME$/Downloads/mysql-connector-j-9.2.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

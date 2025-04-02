@@ -10,8 +10,8 @@ public class JDBC {
         // String userName = "root"; // change to team username
         // String password = "root"; // default password is local password -> change to team password when it works
 
-        String userName = "in2033t26_a"; // change to team username
-        String password = "jLxOPuQ69Mg"; // default password is local password -> change to team password when it works
+        String userName = "in2033t26_d"; // change to team username
+        String password = "h9DHknCPLaU"; // default password is local password -> change to team password when it works
         // make sure that you are connection the city vpn beforehand
 
         try {
