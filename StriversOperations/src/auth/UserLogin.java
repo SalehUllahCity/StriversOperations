@@ -1,7 +1,6 @@
 package auth;
 
 
-import ui.MainScreen;
 
 /*
 Duplicate of Login screen, but I think login screen is used in other code
@@ -182,11 +181,7 @@ public class UserLogin extends JFrame {
     }
 
 
-    // after a successful login
-    private void startMainScreen() throws IOException {
-        MainScreen mainScreen = new MainScreen();
-        setVisible(false);
-    }
+
 
 
     private void quitGame() {
