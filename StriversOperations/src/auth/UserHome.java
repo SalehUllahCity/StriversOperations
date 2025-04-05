@@ -4,6 +4,7 @@ package auth;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.SQLException;
 
 import javax.swing.*;
 
@@ -37,7 +38,7 @@ public class UserHome extends JFrame {
      */
     public UserHome() { // pass String UserName
 
-        setTitle("Lancaster's Music Hall Software");
+        setTitle("Lancaster's Music Hall Software: Home");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 800);
         setLocationRelativeTo(null);
@@ -56,6 +57,7 @@ public class UserHome extends JFrame {
         titlePanel.add(titleLabel);
 
         JButton reportButton = createStyledButton("Reports");
+        JButton reviewsButton = createStyledButton("Reviews");
         JButton calendarButton = createStyledButton("Calendar");
         JButton bookingButton = createStyledButton("Bookings");
         JButton logoutButton = createStyledButton("Logout");
@@ -69,6 +71,7 @@ public class UserHome extends JFrame {
         buttonPanel.add(reportButton);
         buttonPanel.add(calendarButton);
         buttonPanel.add(bookingButton);
+        buttonPanel.add(reviewsButton);
         buttonPanel.add(diaryButton);
         buttonPanel.add(helpButton);
         buttonPanel.add(logoutButton);
@@ -102,7 +105,13 @@ public class UserHome extends JFrame {
 
         reportButton.addActionListener(e -> {
             setVisible(false);
-            new Report().setVisible(true);
+            try {
+                new Report().setVisible(true);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            } catch (ClassNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
 
         });
 
@@ -131,7 +140,13 @@ public class UserHome extends JFrame {
         });
 
         helpButton.addActionListener(e -> {
+            setVisible(false);
             new Help().setVisible(true);
+        });
+
+        reviewsButton.addActionListener(e -> {
+            setVisible(false);
+            new Reviews().setVisible(true);
         });
 
         // Add mouse listeners to the buttons for hover effect
@@ -140,6 +155,7 @@ public class UserHome extends JFrame {
         addHoverEffect(bookingButton);
         addHoverEffect(diaryButton);
         addHoverEffect(logoutButton);
+        addHoverEffect(reviewsButton);
     }
 
     // Method to create styled buttons

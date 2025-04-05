@@ -1,5 +1,8 @@
 package auth;
 
+import boxoffice.database.TicketSale;
+import operations.implementation.JDBC;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -10,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 public class Report extends JFrame {
 
@@ -33,7 +37,7 @@ public class Report extends JFrame {
     /**
      * Create the frame.
      */
-    public Report(){
+    public Report() throws SQLException, ClassNotFoundException {
         setTitle("Lancaster's Music Hall Software");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 800);
@@ -55,8 +59,10 @@ public class Report extends JFrame {
         tabbedPane.addTab("Venue Usage", createVenueUsageTab());
         tabbedPane.addTab("Daily Sheets", createDailySheetsTab());
         tabbedPane.addTab("Financial Summary", createFinanceTab());
-        tabbedPane.addTab("Reviews", createReviewsTab());
+        tabbedPane.addTab("Ticket Sales", createTicketsTab());
+        // tabbedPane.addTab("Reviews", createReviewsTab());
         tabbedPane.addTab("Data by Day", createDailyDataTab());
+        tabbedPane.addTab("Monthly Revenue", createMonthRevTab());
 
         contentPane.add(tabbedPane, BorderLayout.CENTER);
     }
@@ -172,8 +178,8 @@ public class Report extends JFrame {
         }
     }
 
-    // Review columns will change based on the API that Martin is yet to provide
 
+    /* To be its own page
     private JPanel createReviewsTab() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(background);
@@ -187,6 +193,8 @@ public class Report extends JFrame {
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
         return panel;
     }
+
+     */
 
     //Tab 2: Daily run sheet for operational setup
     private JPanel createDailySheetsTab() {
@@ -251,11 +259,106 @@ public class Report extends JFrame {
                 "Booking Name", "Client", "Hire Fee (£)", "Ticket Revenue (£)", "Payable to Client (£)", "Net Income (£)"
         };
 
+
         JTable table = new JTable(new DefaultTableModel(columns, 0));
         styleTable(table);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
         return panel;
     }
+
+    private JPanel createTicketsTab() throws SQLException, ClassNotFoundException {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(background);
+
+        String[] columns = {
+                "Date", "Total Seats", "Value (£)"
+        };
+
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+
+        JTable table = new JTable(new DefaultTableModel(columns, 0));
+        styleTable(table);
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+       // loadTicketsData(model);
+
+        return panel;
+    }
+
+    /*
+    private void loadTicketsData(DefaultTableModel model) throws SQLException, ClassNotFoundException {
+        try {
+            JDBC jdbc = new JDBC();
+
+            List<TicketSale> ticketSales = jdbc.getTicketSalesBasedOnEvent("Great Man Show");
+            for (TicketSale ticketSale : ticketSales) {
+                model.addRow();
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error retrieving daily sheets data: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+     */
+
+    private JPanel createMonthRevTab() throws SQLException, ClassNotFoundException {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(background);
+
+        String[] columns = {
+                "Last Sale Date", "Revenue" , "Tickets Sold", "First Sale Date"
+        };
+
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        JTable table = new JTable(model);
+        styleTable(table);
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        loadMonthlyRevenue(model);
+
+        return panel;
+    }
+
+    private void loadMonthlyRevenue(DefaultTableModel model) throws SQLException, ClassNotFoundException {
+        try {
+            JDBC jdbc = new JDBC();
+
+            // change it to be an input to see previous months
+            // try and make it visual
+
+
+
+            Map<String, Object> monthlyRevenueReport = jdbc.getMonthlyRevenueReport(2025, 4);
+
+            // Create a single row with all 4 values in the correct order
+            Object[] row = {
+                    monthlyRevenueReport.get("last_sale").toString(),
+                    monthlyRevenueReport.get("revenue"),
+                    monthlyRevenueReport.get("tickets_sold"),
+                    monthlyRevenueReport.get("first_sale").toString()
+            };
+
+            System.out.println("Monthly Revenue: \n");
+            for (Map.Entry<String, Object> entry : monthlyRevenueReport.entrySet()) {
+                System.out.println(entry.getKey() + ": " + entry.getValue());
+            }
+
+            model.addRow(row);
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error retrieving Monthly Revenue" +
+                    "Data: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
+
+
+
 
     private void addHoverEffect(JButton button) {
         button.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 2));

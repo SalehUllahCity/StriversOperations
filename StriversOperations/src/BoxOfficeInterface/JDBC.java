@@ -10,8 +10,8 @@ public class JDBC {
 
     public JDBC() throws SQLException, ClassNotFoundException {
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
-        String userName = "in2033t26_d";
-        String password = "h9DHknCPLaU";
+        String userName = "in2033t26_a";
+        String password = "jLxOPuQ69Mg";
 
         Class.forName("com.mysql.cj.jdbc.Driver");
         this.connection = DriverManager.getConnection(url, userName, password);
@@ -151,6 +151,45 @@ public class JDBC {
     public List<String> getCalendarAvailability(Date date) {
         return boxOfficeData.getCalendarAvailability(connection, date);
     }
+
+    /**
+     * For SELECT queries that return results
+     */
+    public ResultSet executeQuery(String query) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeQuery(query);
+    }
+
+    /**
+     * For parameterized SELECT queries (prevent SQL injection)
+     */
+    public ResultSet executeQuery(String query, Object... params) throws SQLException {
+        PreparedStatement pstmt = connection.prepareStatement(query);
+        for (int i = 0; i < params.length; i++) {
+            pstmt.setObject(i + 1, params[i]);
+        }
+        return pstmt.executeQuery();
+    }
+
+    /**
+     * For INSERT, UPDATE, DELETE operations
+     */
+    public int executeUpdate(String query) throws SQLException {
+        Statement stmt = connection.createStatement();
+        return stmt.executeUpdate(query);
+    }
+
+    /**
+     * For parameterized UPDATE queries (prevent SQL injection)
+     */
+    public void executeUpdate(String query, Object... params) throws SQLException {
+        PreparedStatement pstmt = connection.prepareStatement(query);
+        for (int i = 0; i < params.length; i++) {
+            pstmt.setObject(i + 1, params[i]);
+        }
+        pstmt.executeUpdate();
+    }
+
 
     public void close() throws SQLException {
         if (connection != null) {
