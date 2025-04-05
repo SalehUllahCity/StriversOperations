@@ -10,6 +10,8 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class Reviews extends JFrame {
@@ -19,6 +21,7 @@ public class Reviews extends JFrame {
     private final int fontSize = 22;
     private JTable reviewsTable;
     private DefaultTableModel tableModel;
+    Map<Integer, Boolean> sentReviews = new HashMap<>();
 
     public Reviews() {
         setTitle("Lancaster's Music Hall Software: Reviews");
@@ -44,6 +47,8 @@ public class Reviews extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(background);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+
 
         // Filter panel
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
@@ -74,20 +79,23 @@ public class Reviews extends JFrame {
         filterPanel.add(filterButton);
 
         // Reviews table
-        String[] columns = {"ID", "User", "Booking ID", "Rating", "Comment", "Date", "Response"};
+        String[] columns = {"ReviewID", "User Email", "Client Name", "Booking Name", "Rating", "Comment", "Date", "Response"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 6; // Only Response column (index 6) is editable
+                return column == 7; // Only Response column (index 6) is editable
             }
         };
-
-
 
         reviewsTable = new JTable(tableModel);
         styleTable(reviewsTable);
         JScrollPane scrollPane = new JScrollPane(reviewsTable);
         scrollPane.setBackground(background);
+
+        ReviewRenderer renderer = new ReviewRenderer();
+        for (int i = 0; i < reviewsTable.getColumnCount(); i++) {
+            reviewsTable.getColumnModel().getColumn(i).setCellRenderer(renderer);
+        }
 
         // 2. Configure comment column rendering & row height
         reviewsTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
@@ -96,7 +104,7 @@ public class Reviews extends JFrame {
                                                            boolean isSelected, boolean hasFocus, int row, int column) {
 
                 // For comment column only (index 4)
-                if (column == 4) {
+                if (column == 5) {
                     JTextArea textArea = new JTextArea(value != null ? value.toString() : "");
                     textArea.setLineWrap(true);
                     textArea.setWrapStyleWord(true);
@@ -133,15 +141,17 @@ public class Reviews extends JFrame {
         reviewsTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    int row = reviewsTable.rowAtPoint(e.getPoint());
-                    int col = reviewsTable.columnAtPoint(e.getPoint());
+                int row = reviewsTable.rowAtPoint(e.getPoint());
+                int col = reviewsTable.columnAtPoint(e.getPoint());
 
-                    if (col == 4) {  // Comment column
-                        showTextPopup("Full Comment", (String) tableModel.getValueAt(row, col), false);
+                if (row >= 0) {
+                    if (col == 5) {  // Comment column (now index 5)
+                        String comment = (String) tableModel.getValueAt(row, col);
+                        showTextPopup("Full Review Comment", comment, false);
                     }
-                    else if (col == 6) {  // Response column
-                        showTextPopup("Edit Response", (String) tableModel.getValueAt(row, col), true);
+                    else if (col == 7) {  // Response column (now index 7)
+                        String response = (String) tableModel.getValueAt(row, col);
+                        showTextPopup("Edit Response", response, true);
                     }
                 }
             }
@@ -165,14 +175,14 @@ public class Reviews extends JFrame {
             }
         };
 
-        reviewsTable.getColumnModel().getColumn(6).setCellEditor(responseEditor);
+        reviewsTable.getColumnModel().getColumn(7).setCellEditor(responseEditor);
 
 // Add listener to save changes to database
         tableModel.addTableModelListener(e -> {
-            if (e.getColumn() == 6) { // Only handle Response column changes
+            if (e.getColumn() == 7) { // Now checking column 7 for Response
                 int row = e.getFirstRow();
-                int reviewId = (Integer) tableModel.getValueAt(row, 0); // Get ID from first column
-                String response = (String) tableModel.getValueAt(row, 6);
+                int reviewId = (Integer) tableModel.getValueAt(row, 0);
+                String response = (String) tableModel.getValueAt(row, 7);
 
                 // Save to database in background
                 new SwingWorker<Void, Void>() {
@@ -204,7 +214,14 @@ public class Reviews extends JFrame {
         });
 
         // 3. Set comment column width
-        reviewsTable.getColumnModel().getColumn(4).setPreferredWidth(300);
+        reviewsTable.getColumnModel().getColumn(0).setPreferredWidth(80);  // ReviewID
+        reviewsTable.getColumnModel().getColumn(1).setPreferredWidth(130); // User Email
+        reviewsTable.getColumnModel().getColumn(2).setPreferredWidth(120); // Client Name
+        reviewsTable.getColumnModel().getColumn(3).setPreferredWidth(120); // Booking Name
+        reviewsTable.getColumnModel().getColumn(4).setPreferredWidth(60);  // Rating
+        reviewsTable.getColumnModel().getColumn(5).setPreferredWidth(200); // Comment
+        reviewsTable.getColumnModel().getColumn(6).setPreferredWidth(100); // Date
+        reviewsTable.getColumnModel().getColumn(7).setPreferredWidth(150); // Response
 
         // Action buttons panel
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
@@ -230,7 +247,309 @@ public class Reviews extends JFrame {
         mainPanel.add(scrollPane, BorderLayout.CENTER);
         mainPanel.add(actionPanel, BorderLayout.SOUTH);
 
+        JButton sendToClientButton = new JButton("Sent to Client?");
+        styleButton(sendToClientButton);
+        sendToClientButton.addActionListener(e -> sendToClient());
+        actionPanel.add(sendToClientButton);
+
+        JButton addReviewButton = new JButton("Add Review");
+        styleButton(addReviewButton);
+        addReviewButton.addActionListener(e -> showAddReviewDialog());
+        actionPanel.add(addReviewButton);
+
         return mainPanel;
+    }
+
+    private void sendToClient() {
+        int selectedRow = reviewsTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a review to send to client",
+                    "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int reviewId = (Integer) tableModel.getValueAt(selectedRow, 0);
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to send this review to the client?",
+                "Confirm Send to Client",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            // Update database
+            updateSentStatusInDatabase(reviewId);
+
+            // Update our map
+            sentReviews.put(reviewId, true);
+
+            // Refresh the display
+            reviewsTable.repaint();
+        }
+    }
+
+    private void updateSentStatusInDatabase(int reviewId) {
+        try {
+            JDBC jdbc = new JDBC();
+            jdbc.executeUpdate(
+                    "UPDATE review SET SentToClient = 1 WHERE ReviewID = ?",
+                    reviewId
+            );
+        } catch (SQLException | ClassNotFoundException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Error updating sent status: " + ex.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
+    private void saveResponseToDatabase() {
+        int row = reviewsTable.getSelectedRow();
+        if (row == -1) return;
+
+        int reviewId = (Integer) tableModel.getValueAt(row, 0); // ReviewID is column 0
+        String response = (String) tableModel.getValueAt(row, 7); // Response is column 7
+
+        try {
+            JDBC jdbc = new JDBC();
+            jdbc.executeUpdate(
+                    "UPDATE review SET Response = 1 WHERE ReviewID = ?",
+                    response,
+                    reviewId
+            );
+        } catch (SQLException | ClassNotFoundException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Error saving response: " + ex.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private boolean validateAndSubmitReview(String email, String client, String booking, int rating, String comment) {
+        // Basic validation
+        if (email.isEmpty() || client == null || booking == null || comment.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill in all fields",
+                    "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        if (rating < 1 || rating > 5) {
+            JOptionPane.showMessageDialog(this, "Rating must be between 1 and 5",
+                    "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        try {
+            JDBC jdbc = new JDBC();
+
+            // First get the UserID from email
+            ResultSet rs = jdbc.executeQuery(
+                    "SELECT UserID FROM user WHERE Email = ?",
+                    email
+            );
+
+            if (!rs.next()) {
+                JOptionPane.showMessageDialog(this, "User with this email not found",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+
+            int userId = rs.getInt("UserID");
+
+            // Get BookingID from booking name (more reliable now since it's from dropdown)
+            rs = jdbc.executeQuery(
+                    "SELECT BookingID FROM booking WHERE BookingName = ?",
+                    booking
+            );
+
+            if (!rs.next()) {
+                JOptionPane.showMessageDialog(this, "Booking not found",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+
+            int bookingId = rs.getInt("BookingID");
+
+            // Insert the review
+            jdbc.executeUpdate(
+                    "INSERT INTO review (UserID, BookingID, Rating, Comment, ReviewDate, SentToClient) " +
+                            "VALUES (?, ?, ?, ?, CURRENT_DATE, FALSE)",
+                    userId, bookingId, rating, comment
+            );
+
+            // Refresh the table
+            loadReviews();
+
+            JOptionPane.showMessageDialog(this, "Review added successfully",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+            return true;
+
+        } catch (SQLException | ClassNotFoundException ex) {
+            JOptionPane.showMessageDialog(this, "Error adding review: " + ex.getMessage(),
+                    "Database Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    }
+
+    private void styleTextField(JTextField field) {
+        field.setFont(new Font("TimesRoman", Font.PLAIN, 16));
+        field.setBackground(new Color(60, 90, 100));
+        field.setForeground(Color.WHITE);
+        field.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+    }
+
+    private void styleSpinner(JSpinner spinner) {
+        spinner.setFont(new Font("TimesRoman", Font.PLAIN, 16));
+        spinner.setBackground(new Color(60, 90, 100));
+        spinner.setForeground(Color.WHITE);
+        JComponent editor = spinner.getEditor();
+        if (editor instanceof JSpinner.DefaultEditor) {
+            JTextField tf = ((JSpinner.DefaultEditor)editor).getTextField();
+            tf.setBackground(new Color(60, 90, 100));
+            tf.setForeground(Color.WHITE);
+            tf.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
+        }
+    }
+
+    private void loadClientNames(JComboBox<String> combo) {
+        try {
+            JDBC jdbc = new JDBC();
+            ResultSet rs = jdbc.executeQuery("SELECT DISTINCT Client FROM booking ORDER BY Client");
+            while (rs.next()) {
+                combo.addItem(rs.getString("Client"));
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            JOptionPane.showMessageDialog(this, "Error loading client names: " + e.getMessage(),
+                    "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void loadBookingNames(JComboBox<String> combo) {
+        try {
+            JDBC jdbc = new JDBC();
+            ResultSet rs = jdbc.executeQuery("SELECT BookingName FROM booking ORDER BY BookingName");
+            while (rs.next()) {
+                combo.addItem(rs.getString("BookingName"));
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            JOptionPane.showMessageDialog(this, "Error loading booking names: " + e.getMessage(),
+                    "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void showAddReviewDialog() {
+        JDialog dialog = new JDialog(this, "Add New Review", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(500, 500);  // Slightly taller to accommodate dropdowns
+        dialog.setLocationRelativeTo(this);
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(panelColor);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Form fields
+        JLabel emailLabel = new JLabel("User Email:");
+        emailLabel.setForeground(Color.WHITE);
+        JTextField emailField = new JTextField(20);
+        styleTextField(emailField);
+
+        // Client Name Dropdown
+        JLabel clientLabel = new JLabel("Client Name:");
+        clientLabel.setForeground(Color.WHITE);
+        JComboBox<String> clientCombo = new JComboBox<>();
+        styleComboBox(clientCombo);
+        loadClientNames(clientCombo);
+
+        // Booking Name Dropdown
+        JLabel bookingLabel = new JLabel("Booking Name:");
+        bookingLabel.setForeground(Color.WHITE);
+        JComboBox<String> bookingCombo = new JComboBox<>();
+        styleComboBox(bookingCombo);
+        loadBookingNames(bookingCombo);
+
+        // Rating
+        JLabel ratingLabel = new JLabel("Rating (1-5):");
+        ratingLabel.setForeground(Color.WHITE);
+        JSpinner ratingSpinner = new JSpinner(new SpinnerNumberModel(5, 1, 5, 1));
+        styleSpinner(ratingSpinner);
+
+        // Comment
+        JLabel commentLabel = new JLabel("Comment:");
+        commentLabel.setForeground(Color.WHITE);
+        JTextArea commentArea = new JTextArea(3, 20);
+        commentArea.setLineWrap(true);
+        commentArea.setWrapStyleWord(true);
+        JScrollPane commentScroll = new JScrollPane(commentArea);
+
+        // Add components to panel
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panel.add(emailLabel, gbc);
+        gbc.gridy++;
+        panel.add(clientLabel, gbc);
+        gbc.gridy++;
+        panel.add(bookingLabel, gbc);
+        gbc.gridy++;
+        panel.add(ratingLabel, gbc);
+        gbc.gridy++;
+        panel.add(commentLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        panel.add(emailField, gbc);
+        gbc.gridy++;
+        panel.add(clientCombo, gbc);
+        gbc.gridy++;
+        panel.add(bookingCombo, gbc);
+        gbc.gridy++;
+        panel.add(ratingSpinner, gbc);
+        gbc.gridy++;
+        panel.add(commentScroll, gbc);
+
+        // Button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(panelColor);
+
+        JButton submitButton = new JButton("Submit");
+        styleButton(submitButton);
+        submitButton.addActionListener(e -> {
+            // Show confirmation dialog
+            int confirm = JOptionPane.showConfirmDialog(
+                    dialog,
+                    "Are you sure you want to submit this review?",
+                    "Confirm Submission",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                if (validateAndSubmitReview(
+                        emailField.getText(),
+                        (String) clientCombo.getSelectedItem(),
+                        (String) bookingCombo.getSelectedItem(),
+                        (Integer) ratingSpinner.getValue(),
+                        commentArea.getText()
+                )) {
+                    dialog.dispose();
+                }
+            }
+        });
+
+        JButton cancelButton = new JButton("Cancel");
+        styleButton(cancelButton);
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        buttonPanel.add(submitButton);
+        buttonPanel.add(cancelButton);
+
+        dialog.add(panel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+        dialog.setVisible(true);
     }
 
     private void showTextPopup(String title, String text, boolean editable) {
@@ -255,54 +574,92 @@ public class Reviews extends JFrame {
             buttonPanel.add(saveButton);
             buttonPanel.add(cancelButton);
         }
+
+        // Main content panel
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        if (editable) {
+            contentPanel.add(buttonPanel, BorderLayout.SOUTH);
+        }
+
+        // Create the dialog
+        JDialog dialog = new JDialog(this, title, Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.getContentPane().add(contentPanel);
+
+        // Button actions
+        saveButton.addActionListener(e -> {
+            tableModel.setValueAt(textArea.getText(),
+                    reviewsTable.getSelectedRow(), 7); // Update table
+            saveResponseToDatabase(); // Save to DB
+            dialog.dispose();
+        });
+
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        // Configure dialog
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setResizable(true);
+        dialog.setVisible(true);
+
+        dialog.getRootPane().registerKeyboardAction(
+                e -> dialog.dispose(),
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
     }
 
-    private void saveResponseToDatabase() {
-        int row = reviewsTable.getSelectedRow();
-        int reviewId = (Integer) tableModel.getValueAt(row, 0);
-        String response = (String) tableModel.getValueAt(row, 6);
+    private class ReviewRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
 
-        try {
-            JDBC jdbc = new JDBC();
-            jdbc.executeUpdate(
-                    "UPDATE review SET response = ? WHERE review_id = ?",
-                    response,
-                    reviewId
-            );
-        } catch (SQLException | ClassNotFoundException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Error saving response: " + ex.getMessage(),
-                    "Database Error",
-                    JOptionPane.ERROR_MESSAGE);
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            // Get the ReviewID from column 0
+            int reviewId = (Integer) tableModel.getValueAt(row, 0);
+
+            if (sentReviews.containsKey(reviewId) && sentReviews.get(reviewId)) {
+                c.setBackground(new Color(50, 120, 70)); // Dark green
+                c.setForeground(Color.WHITE);
+            } else {
+                // Default colors
+                c.setBackground(isSelected ? table.getSelectionBackground() : panelColor);
+                c.setForeground(isSelected ? table.getSelectionForeground() : Color.WHITE);
+            }
+
+            return c;
         }
     }
 
     private void loadReviews() {
         try {
-            tableModel.setRowCount(0); // Clear existing data
+            tableModel.setRowCount(0);
+            sentReviews.clear(); // Clear previous data
 
-            // Connect to database and fetch reviews
             JDBC jdbc = new JDBC();
-            ResultSet rs = jdbc.executeQuery("SELECT * FROM review ORDER BY ReviewDate DESC");
+            String query = "SELECT r.ReviewID, u.Email, b.Client, b.BookingName, " +
+                    "r.Rating, r.Comment, r.ReviewDate, r.Response, r.SentToClient " +
+                    "FROM review r " +
+                    "LEFT JOIN user u ON r.UserID = u.UserID " +
+                    "LEFT JOIN booking b ON r.BookingID = b.BookingID " +
+                    "ORDER BY r.ReviewDate DESC";
+
+            ResultSet rs = jdbc.executeQuery(query);
 
             while (rs.next()) {
-                /*
-                String type = rs.getString("BookingID"); //.startsWith("SHOW") ? "Show" : "Venue";
-                Vector<Object> row = new Vector<>();
-                row.add(rs.getInt("ReviewID"));
-                row.add(type);
-                row.add(rs.getString("user_name"));
-                row.add(rs.getString("booking_id"));
-                row.add(rs.getInt("rating"));
-                row.add(rs.getString("comment"));
-                row.add(rs.getDate("review_date"));
-                row.add(rs.getString("response"));
+                int reviewId = rs.getInt("ReviewID");
+                boolean isSent = rs.getBoolean("SentToClient");
 
-                 */
+                // Store in our map
+                sentReviews.put(reviewId, isSent);
+
+                // Add to table model (without SentToClient column)
                 Object[] row = {
-                        rs.getInt("ReviewID"),
-                        rs.getInt("UserID"),
-                        rs.getInt("BookingID"),
+                        reviewId,
+                        rs.getString("Email"),
+                        rs.getString("Client"),
+                        rs.getString("BookingName"),
                         rs.getInt("Rating"),
                         rs.getString("Comment"),
                         rs.getDate("ReviewDate"),
@@ -310,6 +667,9 @@ public class Reviews extends JFrame {
                 };
                 tableModel.addRow(row);
             }
+
+            reviewsTable.repaint();
+
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Error loading reviews: " + e.getMessage(),
                     "Database Error", JOptionPane.ERROR_MESSAGE);
@@ -322,24 +682,29 @@ public class Reviews extends JFrame {
         try {
             tableModel.setRowCount(0);
             JDBC jdbc = new JDBC();
-            String query = "SELECT * FROM review ";
+            String query = "SELECT r.ReviewID, u.Email, b.Client, b.BookingName, " +
+                    "r.Rating, r.Comment, r.ReviewDate, r.Response " +
+                    "FROM review r " +
+                    "LEFT JOIN user u ON r.UserID = u.UserID " +
+                    "LEFT JOIN booking b ON r.BookingID = b.BookingID ";
 
             switch (filterType) {
-                case 1: query += "WHERE booking_id NOT LIKE 'SHOW%'"; break; // Venue only
-                case 2: query += "WHERE booking_id LIKE 'SHOW%'"; break; // Show only
-                case 3: query += "WHERE rating >= 4"; break; // High ratings
-                case 4: query += "WHERE rating <= 3"; break; // Low ratings
+                case 1: query += "WHERE b.BookingName NOT LIKE 'SHOW%'"; break; // Venue only
+                case 2: query += "WHERE b.BookingName LIKE 'SHOW%'"; break; // Show only
+                case 3: query += "WHERE r.Rating >= 4"; break; // High ratings
+                case 4: query += "WHERE r.Rating <= 3"; break; // Low ratings
                 default: break; // All reviews
             }
 
-            query += " ORDER BY ReviewDate DESC";
+            query += " ORDER BY r.ReviewDate DESC";
             ResultSet rs = jdbc.executeQuery(query);
 
             while (rs.next()) {
                 Object[] row = {
                         rs.getInt("ReviewID"),
-                        rs.getInt("UserID"),
-                        rs.getInt("BookingID"),
+                        rs.getString("Email"),
+                        rs.getString("Client"),
+                        rs.getString("BookingName"),
                         rs.getInt("Rating"),
                         rs.getString("Comment"),
                         rs.getDate("ReviewDate"),
@@ -362,9 +727,8 @@ public class Reviews extends JFrame {
         }
 
         try {
-            // Get values using correct column indices
-            int reviewId = (Integer) tableModel.getValueAt(selectedRow, 0); // ID is column 0
-            String response = (String) tableModel.getValueAt(selectedRow, 6); // Response is column 6
+            int reviewId = (Integer) tableModel.getValueAt(selectedRow, 0);
+            String response = (String) tableModel.getValueAt(selectedRow, 7); // Column 7
 
             if (response == null || response.trim().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Please enter a response",
@@ -372,29 +736,17 @@ public class Reviews extends JFrame {
                 return;
             }
 
-            // Update database
-            try {
-                JDBC jdbc = new JDBC();
-                jdbc.executeUpdate("UPDATE review SET Response = ? WHERE ReviewID = ?",
-                        response, reviewId);
+            JDBC jdbc = new JDBC();
+            jdbc.executeUpdate("UPDATE review SET Response = ? WHERE ReviewID = ?",
+                    response, reviewId);
 
-                // Refresh the table to show changes
-                loadReviews();
-
-                JOptionPane.showMessageDialog(this, "Response submitted successfully",
-                        "Success", JOptionPane.INFORMATION_MESSAGE);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch (HeadlessException e) {
-                throw new RuntimeException(e);
-            }
+            loadReviews(); // Refresh to show changes
+            JOptionPane.showMessageDialog(this, "Response submitted successfully",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
                     "Error submitting response: " + e.getMessage(),
                     "Database Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
         }
     }
 
@@ -408,12 +760,10 @@ public class Reviews extends JFrame {
 
         try {
             // Safely get all values with proper type conversion
-            String idStr = tableModel.getValueAt(selectedRow, 0).toString();
-            int id = Integer.parseInt(idStr);
-
-            String type = tableModel.getValueAt(selectedRow, 1).toString();
-            String user = tableModel.getValueAt(selectedRow, 2).toString();
-            String bookingId = tableModel.getValueAt(selectedRow, 3).toString();
+            String reviewId = tableModel.getValueAt(selectedRow, 0).toString();
+            String userEmail = tableModel.getValueAt(selectedRow, 1).toString();
+            String clientName = tableModel.getValueAt(selectedRow, 2).toString();
+            String bookingName = tableModel.getValueAt(selectedRow, 3).toString();
 
             String ratingStr = tableModel.getValueAt(selectedRow, 4).toString();
             int rating = Integer.parseInt(ratingStr);
@@ -426,9 +776,9 @@ public class Reviews extends JFrame {
 
             // Format for export
             String exportText = String.format(
-                    "Review Details:\n\nID: %s\nType: %s\nUser: %s\nBooking ID: %s\n" +
+                    "Review Details:\n\nReview ID: %s\nUser Email: %s\nClient: %s\nBooking: %s\n" +
                             "Rating: %d/5\nDate: %s\n\nComment:\n%s\n\nResponse:\n%s",
-                    idStr, type, user, bookingId, rating, date, comment, response);
+                    reviewId, userEmail, clientName, bookingName, rating, date, comment, response);
 
             // Copy to clipboard
             StringSelection selection = new StringSelection(exportText);
