@@ -48,7 +48,9 @@ public class Reviews extends JFrame {
         mainPanel.setBackground(background);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-
+        // Create a panel for the filter and legend
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(background);
 
         // Filter panel
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
@@ -65,6 +67,11 @@ public class Reviews extends JFrame {
         JLabel filterLabel = new JLabel("Filter By:");
         filterLabel.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         filterLabel.setForeground(Color.WHITE);
+
+        // Add legend panel to the right of filter panel
+        topPanel.add(createLegendPanel(), BorderLayout.EAST);
+
+        mainPanel.add(topPanel, BorderLayout.NORTH);
 
         String[] filterOptions = {"All Reviews", "Venue Reviews", "Show Reviews", "High Ratings (4-5)", "Low Ratings (1-3)"};
         JComboBox<String> filterCombo = new JComboBox<>(filterOptions);
@@ -243,9 +250,18 @@ public class Reviews extends JFrame {
         actionPanel.add(refreshButton);
         actionPanel.add(exportButton);
 
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setBackground(background);
+
+        // Add legend just above the table
+        centerPanel.add(createSimpleLegend(), BorderLayout.NORTH);
+        centerPanel.add(new JScrollPane(reviewsTable), BorderLayout.CENTER);
+
+
         mainPanel.add(filterPanel, BorderLayout.NORTH);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
         mainPanel.add(actionPanel, BorderLayout.SOUTH);
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
 
         JButton sendToClientButton = new JButton("Sent to Client?");
         styleButton(sendToClientButton);
@@ -287,6 +303,42 @@ public class Reviews extends JFrame {
             reviewsTable.repaint();
         }
     }
+
+    private JPanel createLegendPanel() {
+        JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        legendPanel.setBackground(panelColor);
+        legendPanel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(80, 80, 80)),
+                "Legend",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("TimesRoman", Font.BOLD, 18),
+                Color.WHITE));
+
+        // Create legend item
+        JPanel legendItem = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        legendItem.setBackground(panelColor);
+
+        // Color indicator
+        JLabel colorLabel = new JLabel();
+        colorLabel.setOpaque(true);
+        colorLabel.setBackground(new Color(50, 120, 70)); // Same green as your rows
+        colorLabel.setPreferredSize(new Dimension(20, 20));
+        colorLabel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+
+        // Text label
+        JLabel textLabel = new JLabel("Sent to Client");
+        textLabel.setForeground(Color.WHITE);
+        textLabel.setFont(new Font("TimesRoman", Font.PLAIN, 16));
+
+        legendItem.add(colorLabel);
+        legendItem.add(textLabel);
+
+        legendPanel.add(legendItem);
+
+        return legendPanel;
+    }
+
 
     private void updateSentStatusInDatabase(int reviewId) {
         try {
@@ -676,6 +728,28 @@ public class Reviews extends JFrame {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private JPanel createSimpleLegend() {
+        JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        legendPanel.setBackground(panelColor);
+
+        // Create the colored box
+        JLabel colorBox = new JLabel("  ");
+        colorBox.setOpaque(true);
+        colorBox.setBackground(new Color(50, 120, 70)); // Same green as your rows
+        colorBox.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+        colorBox.setPreferredSize(new Dimension(20, 20));
+
+        // Create the text label
+        JLabel textLabel = new JLabel("Sent to Client");
+        textLabel.setForeground(Color.WHITE);
+        textLabel.setFont(new Font("TimesRoman", Font.PLAIN, 16));
+
+        legendPanel.add(colorBox);
+        legendPanel.add(textLabel);
+
+        return legendPanel;
     }
 
     private void applyFilter(int filterType) {
