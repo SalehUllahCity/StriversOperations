@@ -501,16 +501,13 @@ public class Calendar extends JFrame {
     }
 
     private void loadBookingsForDate(LocalDate date, DefaultTableModel model, int dayColumnIndex) {
-        // UNCOMMENT THIS SECTION TO USE TEST DATA INSTEAD OF DATABASE
-        if (useTestData(date, model, dayColumnIndex)) {
-            return;
-        }
-
-
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
-        String user = "in2033t26_a"; // change to team username
-        String password = "jLxOPuQ69Mg"; // default password is local password -> change to team password when it works
-        String query = "SELECT BookingName, Client, Room, StartTime, EndTime FROM booking WHERE BookingDate = ? ORDER BY StartTime";
+        String user = "in2033t26_a";
+        String password = "jLxOPuQ69Mg";
+        String query = "SELECT BookingName, Client, " +
+                      "REPLACE(Room, 'ë', 'e') as Room, " +  // Replace ë with e in room names
+                      "StartTime, EndTime " +
+                      "FROM booking WHERE BookingDate = ? ORDER BY StartTime";
 
         try (Connection conn = DriverManager.getConnection(url, user, password);
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -556,47 +553,6 @@ public class Calendar extends JFrame {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error fetching bookings: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    // Test method to add sample bookings - can be commented out when not needed
-    private boolean useTestData(LocalDate date, DefaultTableModel model, int dayColumnIndex) {
-        // Check if it's the test date (April 5th, 2025)
-        if (date.equals(LocalDate.of(2025, 4, 5))) {
-            Map<String, List<String>> timeSlotBookings = new HashMap<>();
-
-            // Create list of test bookings for 14:00
-            List<String> bookings = new ArrayList<>();
-            bookings.add("Bronte Boardroom: Team Meeting (John Smith)");
-            bookings.add("Main Hall: Performance Setup (Theatre Group)");
-            bookings.add("The Green Room: Client Meeting (Tech Corp)");
-
-
-            // Add all bookings to the 14:00 time slot
-            LocalTime startTime = LocalTime.of(14, 0);
-            LocalTime endTime = LocalTime.of(15, 0);
-
-            // Add bookings to affected time slots
-            LocalTime currentTime = startTime;
-            while (!currentTime.isAfter(endTime.minusMinutes(30))) {
-                String timeKey = currentTime.format(timeFormatter);
-                timeSlotBookings.put(timeKey, bookings);
-                currentTime = currentTime.plusMinutes(30);
-            }
-
-            // Update the table with test bookings
-            for (int row = 0; row < model.getRowCount(); row++) {
-                String timeSlot = (String) model.getValueAt(row, 0);
-                List<String> slotBookings = timeSlotBookings.get(timeSlot);
-                if (slotBookings != null && !slotBookings.isEmpty()) {
-                    String combinedBookings = String.join(" | ", slotBookings);
-                    model.setValueAt(combinedBookings, row, dayColumnIndex);
-                }
-            }
-
-            return true; // Indicates we used test data
-        }
-
-        return false; // Indicates we should use database data
     }
 
     // Custom popup for booking details
@@ -664,6 +620,12 @@ public class Calendar extends JFrame {
     class RoomColorRenderer extends DefaultTableCellRenderer {
         private final BookingPopup popup = new BookingPopup();
 
+        private String normalizeRoomName(String room) {
+            return room.replace("ë", "e")  // Replace ë with e
+                      .replace("\n", " ")  // Replace newlines with spaces
+                      .trim();            // Remove extra spaces
+        }
+
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
@@ -683,19 +645,20 @@ public class Calendar extends JFrame {
                 if (!trimmedBooking.isEmpty()) {
                     // Extract room name and other details
                     String[] parts = trimmedBooking.split(":");
-                    String room = parts[0].trim();
+                    String originalRoom = parts[0].trim();
+                    String normalizedRoom = normalizeRoomName(originalRoom);
                     String details = parts[1].trim();
 
                     // Create a label for each booking with normal text alignment
                     JLabel bookingLabel = new JLabel("<html><div style='margin: 3px;'>" +
-                            "<b>" + room + "</b><br>" +
+                            "<b>" + originalRoom + "</b><br>" +  // Use original room name for display
                             details + "</div></html>");
                     bookingLabel.setOpaque(true);
                     bookingLabel.setHorizontalAlignment(SwingConstants.LEFT);
                     bookingLabel.setVerticalAlignment(SwingConstants.TOP);
 
-                    // Set the background color based on the room
-                    Color bgColor = spaceColors.getOrDefault(room, Color.GRAY);
+                    // Set the background color based on the normalized room name
+                    Color bgColor = spaceColors.getOrDefault(normalizedRoom, Color.GRAY);
                     bookingLabel.setBackground(bgColor);
 
                     // Set text color based on background brightness
