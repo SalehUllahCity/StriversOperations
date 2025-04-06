@@ -483,9 +483,13 @@ public class Calendar extends JFrame {
         DefaultTableModel model = (DefaultTableModel) calendarTable.getModel();
         model.setRowCount(0);
 
-        for (int hour = 8; hour <= 20; hour++) {
+        // Start from 10:00 and go until 00:00 (midnight)
+        for (int hour = 10; hour <= 24; hour++) {
             for (int min = 0; min < 60; min += 30) {
-                LocalTime time = LocalTime.of(hour, min);
+                // Skip the last iteration at midnight (24:30)
+                if (hour == 24 && min > 0) continue;
+                
+                LocalTime time = LocalTime.of(hour == 24 ? 0 : hour, min);
                 Vector<String> row = new Vector<>();
                 row.add(time.format(timeFormatter));
                 for (int i = 0; i < 7; i++) {
