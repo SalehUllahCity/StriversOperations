@@ -35,6 +35,11 @@ public class Calendar extends JFrame {
     private JLabel monthYearLabel;
     private JTextArea bookingDetails;
 
+    // For visuals on the calendar top left
+    private final Color NO_BOOKINGS_COLOR = new Color(100, 100, 100); // Grey
+    private final Color PARTIAL_BOOKINGS_COLOR = new Color(255, 152, 0); // Orange
+    private final Color FULLY_BOOKED_COLOR = new Color(76, 175, 80); // Green
+
     // Space categories and their colors
     private final Map<String, Color> spaceColors = new HashMap<>() {{
         // Meeting Rooms
@@ -100,15 +105,20 @@ public class Calendar extends JFrame {
 
                         String[] bookings = value.toString().split("\\|");
                         for (String booking : bookings) {
-                            details.append("\n• ").append(booking.trim());
+                            // Extract the time range from the booking string
+                            String[] parts = booking.trim().split(" ");
+                            String timeRange = parts[parts.length-1]; // Get the last part which is the time range
+                            String bookingWithoutTime = booking.substring(0, booking.lastIndexOf(" ")).trim();
+
+                            details.append("\n• ").append(bookingWithoutTime)
+                                    .append("\n  ").append(timeRange);
                         }
                         bookingDetails.setText(details.toString());
                     } else {
                         bookingDetails.setText("No bookings for this slot");
                     }
                 }
-            }
-        });
+            }});
     }
 
     private void createHeaderPanel() {
@@ -518,8 +528,9 @@ public class Calendar extends JFrame {
                 LocalTime start = rs.getTime("StartTime").toLocalTime();
                 LocalTime end = rs.getTime("EndTime").toLocalTime();
 
-                // Format the booking text
-                String bookingText = room + ": " + bookingName + " (" + client + ")";
+                // Format the booking text with start and end time
+                String bookingText = room + ": " + bookingName + " (" + client + ") " +
+                        start.format(timeFormatter) + "-" + end.format(timeFormatter);
 
                 // Add booking to each affected time slot
                 LocalTime currentTime = start;
