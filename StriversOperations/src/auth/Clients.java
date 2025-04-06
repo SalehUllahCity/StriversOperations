@@ -66,6 +66,34 @@ public class Clients extends JFrame {
         clientPanel.setBackground(panelColor);
         clientPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        // Create search panel
+        JPanel searchPanel = new JPanel(new BorderLayout());
+        searchPanel.setBackground(panelColor);
+        searchPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+
+        // Create search field
+        JTextField searchField = new JTextField();
+        searchField.setPreferredSize(new Dimension(200, 30));
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.DARK_GRAY),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        searchField.setForeground(Color.WHITE);
+        searchField.setBackground(new Color(50, 70, 75));
+        searchField.setCaretColor(Color.WHITE);
+        searchField.putClientProperty("JTextField.placeholderText", "Search by company name...");
+
+        // Search button
+        JButton searchBtn = new JButton("Search");
+        styleButton(searchBtn);
+        searchBtn.addActionListener(e -> filterClients(searchField.getText()));
+
+        // Search field listener for Enter key
+        searchField.addActionListener(e -> filterClients(searchField.getText()));
+
+        searchPanel.add(searchField, BorderLayout.CENTER);
+        searchPanel.add(searchBtn, BorderLayout.EAST);
+
         // Client table
         clientTable = new JTable();
         clientTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -76,7 +104,6 @@ public class Clients extends JFrame {
                     String clientId = clientTable.getValueAt(selectedRow, 0).toString();
                     loadBookingHistory(clientId);
                     loadPaymentHistory(clientId);
-                    // Switch to booking history tab when client is selected
                     tabbedPane.setSelectedIndex(1);
                 }
             }
@@ -90,10 +117,20 @@ public class Clients extends JFrame {
         styleButton(addClientBtn);
         addClientBtn.addActionListener(e -> showAddClientDialog());
 
+        // Clear search button
+        JButton clearSearchBtn = new JButton("Clear");
+        styleButton(clearSearchBtn);
+        clearSearchBtn.addActionListener(e -> {
+            searchField.setText("");
+            loadClientData();
+        });
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(panelColor);
+        buttonPanel.add(clearSearchBtn);
         buttonPanel.add(addClientBtn);
 
+        clientPanel.add(searchPanel, BorderLayout.NORTH);
         clientPanel.add(clientScrollPane, BorderLayout.CENTER);
         clientPanel.add(buttonPanel, BorderLayout.SOUTH);
 
@@ -103,11 +140,11 @@ public class Clients extends JFrame {
     private void loadClientData() {
         try {
             String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
-            String user = "in2033t26_a";
+            String userName = "in2033t26_a";
             String password = "jLxOPuQ69Mg";
             String query = "SELECT ClientID, CompanyName, ContactName, ContactEmail, PhoneNumber, City FROM client";
 
-            Connection conn = DriverManager.getConnection(url, user, password);
+            Connection conn = DriverManager.getConnection(url, userName, password);
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
 
@@ -146,7 +183,12 @@ public class Clients extends JFrame {
             String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
             String user = "in2033t26_a";
             String password = "jLxOPuQ69Mg";
-            String query = "SELECT CompanyName FROM client WHERE ClientID = ?";
+            // Changed to query bookings where Client matches the company name
+            String query = "SELECT b.BookingID, b.BookingDate, b.StartTime, b.EndTime, b.Room, " +
+                    "b.BookingType, b.PaymentStatus " +
+                    "FROM booking b " +
+                    "JOIN client c ON b.Client = c.CompanyName " +
+                    "WHERE c.ClientID = ?";
 
             Connection conn = DriverManager.getConnection(url, user, password);
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -161,7 +203,9 @@ public class Clients extends JFrame {
                 }
             };
 
+            boolean hasResults = false;
             while (rs.next()) {
+                hasResults = true;
                 model.addRow(new Object[]{
                         rs.getInt("BookingID"),
                         rs.getDate("BookingDate"),
@@ -171,6 +215,12 @@ public class Clients extends JFrame {
                         rs.getString("BookingType"),
                         rs.getString("PaymentStatus")
                 });
+            }
+
+            if (hasResults) {
+                paymentHistoryTable.setModel(model);
+            } else {
+                JOptionPane.showMessageDialog(this, "No booking history found");
             }
 
             bookingHistoryTable.setModel(model);
@@ -272,7 +322,9 @@ public class Clients extends JFrame {
                 }
             };
 
+            boolean hasResults = false;
             while (rs.next()) {
+                hasResults = true;
                 model.addRow(new Object[]{
                         rs.getInt("PaymentID"),
                         rs.getDate("PaymentDate"),
@@ -281,6 +333,12 @@ public class Clients extends JFrame {
                         rs.getString("Status"),
                         rs.getString("BookingName")
                 });
+            }
+
+            if (hasResults) {
+                paymentHistoryTable.setModel(model);
+            } else {
+                JOptionPane.showMessageDialog(this, "No payment history found");
             }
 
             paymentHistoryTable.setModel(model);
@@ -329,8 +387,10 @@ public class Clients extends JFrame {
 
         JButton saveBtn = new JButton("Save");
         styleButton(saveBtn);
+
         saveBtn.addActionListener(e -> {
             saveNewClient(
+
                     companyField.getText(),
                     contactField.getText(),
                     emailField.getText(),
@@ -341,8 +401,10 @@ public class Clients extends JFrame {
                     billingNameField.getText(),
                     billingEmailField.getText()
             );
+
             dialog.dispose();
         });
+
 
         JButton cancelBtn = new JButton("Cancel");
         styleButton(cancelBtn);
@@ -355,6 +417,51 @@ public class Clients extends JFrame {
         dialog.add(buttonPanel, BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
+
+    private void filterClients(String searchText) {
+        try {
+            String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
+            String user = "in2033t26_a";
+            String password = "jLxOPuQ69Mg";
+            String query = "SELECT ClientID, CompanyName, ContactName, ContactEmail, PhoneNumber, City " +
+                    "FROM client WHERE CompanyName LIKE ?";
+
+            Connection conn = DriverManager.getConnection(url, user, password);
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, "%" + searchText + "%");
+            ResultSet rs = stmt.executeQuery();
+
+            DefaultTableModel model = new DefaultTableModel(
+                    new Object[]{"ID", "Company", "Contact", "Email", "Phone", "City"}, 0) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+
+            while (rs.next()) {
+                model.addRow(new Object[]{
+                        rs.getInt("ClientID"),
+                        rs.getString("CompanyName"),
+                        rs.getString("ContactName"),
+                        rs.getString("ContactEmail"),
+                        rs.getString("PhoneNumber"),
+                        rs.getString("City")
+                });
+            }
+
+            clientTable.setModel(model);
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error searching clients: " + e.getMessage(),
+                    "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
 
     private void addFormField(JPanel panel, String label, JTextField field) {
         JLabel jLabel = new JLabel(label);
