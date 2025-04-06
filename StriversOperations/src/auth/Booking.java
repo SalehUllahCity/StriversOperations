@@ -336,10 +336,13 @@ public class Booking extends JFrame {
         // Initialize space availability map
         initializeSpaceAvailability();
         
-        // Start from 10:00 and go until 23:30
-        for (int hour = 10; hour <= 23; hour++) {
+        // Start from 10:00 and go until 00:00
+        for (int hour = 10; hour <= 24; hour++) {
             for (int min = 0; min < 60; min += 30) {
-                LocalTime time = LocalTime.of(hour, min);
+                // Skip the last iteration at midnight (24:30)
+                if (hour == 24 && min > 0) continue;
+                
+                LocalTime time = LocalTime.of(hour == 24 ? 0 : hour, min);
                 String timeSlot = time.format(timeFormatter);
                 timeSlots.add(timeSlot);
                 availabilityMap.put(timeSlot, "Available");
@@ -363,10 +366,13 @@ public class Booking extends JFrame {
         Map<LocalDate, Map<LocalTime, Boolean>> dateMap = spaceAvailability.get(space);
         if (!dateMap.containsKey(date)) {
             Map<LocalTime, Boolean> timeSlots = new HashMap<>();
-            // Update time range to match new hours (10:00 to 23:30)
-            for (int hour = 10; hour <= 23; hour++) {
+            // Update time range to match new hours (10:00 to 00:00)
+            for (int hour = 10; hour <= 24; hour++) {
                 for (int min = 0; min < 60; min += 30) {
-                    LocalTime time = LocalTime.of(hour, min);
+                    // Skip the last iteration at midnight (24:30)
+                    if (hour == 24 && min > 0) continue;
+                    
+                    LocalTime time = LocalTime.of(hour == 24 ? 0 : hour, min);
                     timeSlots.put(time, true);
                 }
             }
@@ -435,13 +441,68 @@ public class Booking extends JFrame {
             }
         };
 
-        // Add rows for each time slot
-        for (int hour = 10; hour <= 20; hour++) {
-            timeSlotModel.addRow(new Object[]{String.format("%02d:00", hour), ""});
-            if (hour < 20) {
-                timeSlotModel.addRow(new Object[]{String.format("%02d:30", hour), ""});
+        // Add rows for each time slot from 10:00 to 00:00
+        for (int hour = 10; hour <= 24; hour++) {
+            if (hour == 24) {
+                timeSlotModel.addRow(new Object[]{"00:00", "Available"});
+                continue;
             }
+            timeSlotModel.addRow(new Object[]{String.format("%02d:00", hour), "Available"});
+            timeSlotModel.addRow(new Object[]{String.format("%02d:30", hour), "Available"});
         }
+    }
+
+    private JScrollPane createTimeSlotTable() {
+        // Initialize the time slot model
+        initializeTimeSlotModel();
+
+        // Create the table with the initialized model
+        timeSlotTable = new JTable(timeSlotModel);
+        TimeSlotCellRenderer renderer = new TimeSlotCellRenderer();
+        setupTimeSlotTable(renderer);
+
+        JScrollPane scrollPane = new JScrollPane(timeSlotTable);
+        return scrollPane;
+    }
+
+    private void setupTimeSlotTable(TimeSlotCellRenderer renderer) {
+        timeSlotTable.setDefaultRenderer(Object.class, renderer);
+        timeSlotTable.setRowHeight(25);
+        timeSlotTable.getTableHeader().setReorderingAllowed(false);
+        timeSlotTable.setCellSelectionEnabled(true);
+        timeSlotTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // Set column widths
+        timeSlotTable.getColumnModel().getColumn(0).setPreferredWidth(50);
+        timeSlotTable.getColumnModel().getColumn(1).setPreferredWidth(150);
+        timeSlotTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        timeSlotTable.getColumnModel().getColumn(0).setMinWidth(50);
+
+        setupTimeSlotTableListeners(renderer);
+    }
+
+    private void setupTimeSlotTableListeners(TimeSlotCellRenderer renderer) {
+        timeSlotTable.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int row = timeSlotTable.rowAtPoint(e.getPoint());
+                renderer.setHoveredRow(row);
+                timeSlotTable.repaint();
+            }
+        });
+
+        timeSlotTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseExited(MouseEvent e) {
+                renderer.setHoveredRow(-1);
+                timeSlotTable.repaint();
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                handleTimeSlotClick();
+            }
+        });
     }
 
     private JPanel createLeftPanel() {
@@ -840,74 +901,6 @@ public class Booking extends JFrame {
         mainPanel.add(contentPanel, BorderLayout.CENTER);
 
         return mainPanel;
-    }
-
-    private JScrollPane createTimeSlotTable() {
-        // Initialize the time slot model first
-        String[] columnNames = {"Time", "Status"};
-        timeSlotModel = new DefaultTableModel(columnNames, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        // Add rows for each time slot from 10:00 to 23:30
-        for (int hour = 10; hour <= 23; hour++) {
-            for (int min = 0; min < 60; min += 30) {
-                LocalTime time = LocalTime.of(hour, min);
-                String timeSlot = time.format(timeFormatter);
-                timeSlotModel.addRow(new Object[]{timeSlot, "Available"});
-            }
-        }
-
-        // Create the table with the initialized model
-        timeSlotTable = new JTable(timeSlotModel);
-        TimeSlotCellRenderer renderer = new TimeSlotCellRenderer();
-        setupTimeSlotTable(renderer);
-
-        JScrollPane scrollPane = new JScrollPane(timeSlotTable);
-        return scrollPane;
-    }
-
-    private void setupTimeSlotTable(TimeSlotCellRenderer renderer) {
-        timeSlotTable.setDefaultRenderer(Object.class, renderer);
-        timeSlotTable.setRowHeight(25);
-        timeSlotTable.getTableHeader().setReorderingAllowed(false);
-        timeSlotTable.setCellSelectionEnabled(true);
-        timeSlotTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        // Set column widths
-        timeSlotTable.getColumnModel().getColumn(0).setPreferredWidth(50);
-        timeSlotTable.getColumnModel().getColumn(1).setPreferredWidth(150);
-        timeSlotTable.getColumnModel().getColumn(0).setMaxWidth(50);
-        timeSlotTable.getColumnModel().getColumn(0).setMinWidth(50);
-
-        setupTimeSlotTableListeners(renderer);
-    }
-
-    private void setupTimeSlotTableListeners(TimeSlotCellRenderer renderer) {
-        timeSlotTable.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                int row = timeSlotTable.rowAtPoint(e.getPoint());
-                renderer.setHoveredRow(row);
-                timeSlotTable.repaint();
-            }
-        });
-
-        timeSlotTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseExited(MouseEvent e) {
-                renderer.setHoveredRow(-1);
-                timeSlotTable.repaint();
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                handleTimeSlotClick();
-            }
-        });
     }
 
     private JPanel createLegendPanel() {
