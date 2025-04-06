@@ -140,11 +140,11 @@ public class Clients extends JFrame {
     private void loadClientData() {
         try {
             String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
-            String user = "in2033t26_a";
+            String userName = "in2033t26_a";
             String password = "jLxOPuQ69Mg";
             String query = "SELECT ClientID, CompanyName, ContactName, ContactEmail, PhoneNumber, City FROM client";
 
-            Connection conn = DriverManager.getConnection(url, user, password);
+            Connection conn = DriverManager.getConnection(url, userName, password);
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
 
