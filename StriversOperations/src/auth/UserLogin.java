@@ -65,7 +65,7 @@ public class UserLogin extends JFrame {
         getContentPane().setBackground(new Color(18,32,35,255));
 
         // Load logo
-        ImageIcon characterIcon = new ImageIcon("data/logo/logo.png");
+        ImageIcon characterIcon = new ImageIcon(getClass().getResource("/data/logo/logo.png"));
         JLabel characterLabel = new JLabel(characterIcon);
         characterLabel.setBounds(200, 0, characterIcon.getIconWidth()*2, characterIcon.getIconHeight()*2);
         contentPane.add(characterLabel);
