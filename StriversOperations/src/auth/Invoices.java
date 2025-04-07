@@ -12,15 +12,12 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.SQLException;
-import java.sql.PreparedStatement;
 import java.util.HashMap;
 import java.util.Map;
 
-// Help guide for the user to navigate the application
 public class Invoices extends JFrame {
 
     private final Color background = new Color(18, 32, 35, 255);
-    private final int fontSize = 22;
     private JTable invoiceTable;
     private DefaultTableModel tableModel;
 
@@ -32,19 +29,15 @@ public class Invoices extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
 
-        // Main content pane
         JPanel contentPane = new JPanel(new BorderLayout());
         contentPane.setBackground(background);
         setContentPane(contentPane);
         contentPane.add(createHeaderPanel(), BorderLayout.NORTH);
 
-        // Add the table panel
+
         contentPane.add(createTablePanel(), BorderLayout.CENTER);
 
-        // Add control buttons at the bottom
         contentPane.add(createControlPanel(), BorderLayout.SOUTH);
-
-        // Load data from database
         loadInvoiceData();
     }
 
@@ -67,12 +60,9 @@ public class Invoices extends JFrame {
         headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
         headerContainer.setBackground(background);
 
-        // Top bar: Home and Settings buttons
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(background);
         topBar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-
-        // ← Home button
         JButton homeBtn = new JButton("← Home");
         homeBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         homeBtn.setBackground(background);
@@ -84,11 +74,9 @@ public class Invoices extends JFrame {
             new UserHome().setVisible(true);
         });
         addHoverEffect(homeBtn);
-        // Add tooltip to home button
         homeBtn.setToolTipText("Return to home screen");
         topBar.add(homeBtn, BorderLayout.WEST);
 
-        //Settings button
         JButton settingsBtn = new JButton("⚙ Settings");
         settingsBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         settingsBtn.setBackground(background);
@@ -97,7 +85,7 @@ public class Invoices extends JFrame {
         settingsBtn.setBorderPainted(false);
         settingsBtn.addActionListener(e -> new SettingScreen.SettingsDialog(this).setVisible(true));
         addHoverEffect(settingsBtn);
-        // Add tooltip to settings button
+
         settingsBtn.setToolTipText("Open settings dialog");
 
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -105,7 +93,7 @@ public class Invoices extends JFrame {
         rightPanel.add(settingsBtn);
         topBar.add(rightPanel, BorderLayout.EAST);
 
-        // Title Panel
+
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         titlePanel.setBackground(background);
         JLabel titleLabel = new JLabel("Invoices");
@@ -113,7 +101,6 @@ public class Invoices extends JFrame {
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 36));
         titlePanel.add(titleLabel);
 
-        // Stack both into the header container
         headerContainer.add(topBar);
         headerContainer.add(titlePanel);
 
@@ -125,22 +112,18 @@ public class Invoices extends JFrame {
         tablePanel.setBackground(background);
         tablePanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Create column names
         String[] columnNames = {
                 "Invoice ID", "Client", "Booking Name", "Start Date", "End Date",
                 "Booking Costs (£)", "Ticket Sales", "Ticket Revenue (£)", "Due (£)"
         };
 
-        // Create table model with column names
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                // Make only Ticket Sales and Ticket Revenue editable
                 return column == 6 || column == 7;
             }
         };
 
-        // Create the table with the model
         invoiceTable = new JTable(tableModel);
         invoiceTable.setFont(new Font("TimesRoman", Font.PLAIN, 14));
         invoiceTable.setRowHeight(25);
@@ -149,20 +132,16 @@ public class Invoices extends JFrame {
         invoiceTable.setSelectionForeground(Color.WHITE);
         invoiceTable.setGridColor(new Color(100, 100, 100));
 
-        // Add tooltips to table cells
         invoiceTable.setDefaultRenderer(Object.class, new TooltipTableCellRenderer());
 
-        // Add tooltips to table headers
         invoiceTable.getTableHeader().setDefaultRenderer(new TooltipHeaderRenderer(invoiceTable.getTableHeader().getDefaultRenderer()));
 
-        // Add a scroll pane containing the table
         JScrollPane scrollPane = new JScrollPane(invoiceTable);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 2));
         tablePanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Add table value change listener to recalculate the "Due" column
         invoiceTable.getModel().addTableModelListener(e -> {
-            if (e.getColumn() == 6 || e.getColumn() == 7) { // If Ticket Sales or Revenue changed
+            if (e.getColumn() == 6 || e.getColumn() == 7) {
                 int row = e.getFirstRow();
                 calculateDueAmount(row);
             }
@@ -227,6 +206,7 @@ public class Invoices extends JFrame {
             public void mouseEntered(MouseEvent e) {
                 button.setForeground(Color.LIGHT_GRAY);
             }
+
             @Override
             public void mouseExited(MouseEvent e) {
                 button.setForeground(Color.WHITE);
@@ -235,11 +215,9 @@ public class Invoices extends JFrame {
     }
 
     private void loadInvoiceData() {
-        // Clear existing table data
         tableModel.setRowCount(0);
 
         try {
-            // Load the JDBC driver
             Class.forName("com.mysql.cj.jdbc.Driver");
 
             String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
@@ -247,7 +225,6 @@ public class Invoices extends JFrame {
             String password = "jLxOPuQ69Mg";
 
             try (Connection conn = DriverManager.getConnection(url, userName, password)) {
-                // Modified query to only pull booking and client data without ticket info
                 String query = "SELECT b.BookingID, c.CompanyName, b.BookingName, " +
                         "b.BookingDate, b.BookingEndDate, b.TotalCost " +
                         "FROM booking b " +
@@ -265,12 +242,10 @@ public class Invoices extends JFrame {
                         String endDate = rs.getString("BookingEndDate");
                         double bookingCost = rs.getDouble("TotalCost");
 
-                        // Set default values for ticket data that will be manually entered
                         int ticketSales = 0;
                         double ticketRevenue = 0.0;
                         double due = bookingCost - ticketRevenue;
 
-                        // Add row to table
                         Object[] row = {
                                 id, client, bookingName, startDate, endDate,
                                 String.format("%.2f", bookingCost), ticketSales,
@@ -290,33 +265,22 @@ public class Invoices extends JFrame {
     }
 
     private void loadTicketData() {
-        // This method will simulate fetching ticket data from another database
-        // based on the provided ticketSale data
 
         try {
-            // Create a map to store event names and their ticket information
             Map<String, EventTicketInfo> eventTicketMap = new HashMap<>();
-
-            // Use the data from the output to populate the map
-            // Based on the output provided, "Great Man Show" had 14 paid tickets and 5 free ones
-            // with total revenue of 350
             eventTicketMap.put("Great Man Show", new EventTicketInfo(19, 350.0));
 
-            // Add more events as needed based on data
             eventTicketMap.put("Jazz Night", new EventTicketInfo(25, 625.0));
             eventTicketMap.put("Classical Concert", new EventTicketInfo(32, 960.0));
 
-            // Update the table with ticket data where the booking name matches
             for (int i = 0; i < tableModel.getRowCount(); i++) {
                 String bookingName = tableModel.getValueAt(i, 2).toString();
                 EventTicketInfo ticketInfo = eventTicketMap.get(bookingName);
 
                 if (ticketInfo != null) {
-                    // Update ticket sales and revenue
                     tableModel.setValueAt(ticketInfo.getTicketCount(), i, 6);
                     tableModel.setValueAt(String.format("%.2f", ticketInfo.getRevenue()), i, 7);
 
-                    // Recalculate due amount
                     calculateDueAmount(i);
                 }
             }
@@ -333,7 +297,6 @@ public class Invoices extends JFrame {
         }
     }
 
-    // Inner class to store ticket information for an event
     private static class EventTicketInfo {
         private final int ticketCount;
         private final double revenue;
@@ -354,20 +317,16 @@ public class Invoices extends JFrame {
 
     private void calculateDueAmount(int row) {
         try {
-            // Get booking cost
             double bookingCost = Double.parseDouble(tableModel.getValueAt(row, 5).toString().replace("£", ""));
 
-            // Get ticket revenue
             double ticketRevenue = 0.0;
             Object revenueObj = tableModel.getValueAt(row, 7);
             if (revenueObj != null && !revenueObj.toString().isEmpty()) {
                 ticketRevenue = Double.parseDouble(revenueObj.toString().replace("£", ""));
             }
 
-            // Calculate due amount
             double due = bookingCost - ticketRevenue;
 
-            // Update the Due column
             tableModel.setValueAt(String.format("%.2f", due), row, 8);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this,
@@ -377,12 +336,7 @@ public class Invoices extends JFrame {
     }
 
     private void saveInvoiceData() {
-        // Since ticket data is not in this database,
-        // we'll create a method to save it to an external file
-        // that can be imported to the other system later
-
         try {
-            // Create a simple CSV export of the ticket data
             StringBuilder csvData = new StringBuilder();
             csvData.append("Invoice ID,Client,Booking Name,Ticket Sales,Ticket Revenue,Due\n");
 
@@ -397,8 +351,6 @@ public class Invoices extends JFrame {
                 csvData.append(String.format("%d,\"%s\",\"%s\",%d,%.2f,%.2f\n",
                         bookingId, client, bookingName, ticketSales, ticketRevenue, due));
             }
-
-            // Save to file - normally would use a file chooser
             String fileName = "ticket_sales_export.csv";
             try {
                 java.io.FileWriter writer = new java.io.FileWriter(fileName);
@@ -435,7 +387,6 @@ public class Invoices extends JFrame {
         }
 
         try {
-            // Get selected invoice data
             String client = tableModel.getValueAt(selectedRow, 1).toString();
             String bookingName = tableModel.getValueAt(selectedRow, 2).toString();
             String startDate = tableModel.getValueAt(selectedRow, 3).toString();
@@ -445,7 +396,6 @@ public class Invoices extends JFrame {
             String ticketRevenue = tableModel.getValueAt(selectedRow, 7).toString();
             String due = tableModel.getValueAt(selectedRow, 8).toString();
 
-            // Create print dialog
             JFrame printFrame = new JFrame("Print Invoice");
             printFrame.setSize(600, 800);
             printFrame.setLocationRelativeTo(this);
@@ -465,7 +415,6 @@ public class Invoices extends JFrame {
             JPanel dataPanel = new JPanel(new GridLayout(8, 2, 10, 10));
             dataPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
-            // Create labels with tooltips for the invoice print
             JLabel clientLabel = new JLabel(client);
             clientLabel.setToolTipText(client);
 
@@ -526,7 +475,6 @@ public class Invoices extends JFrame {
         }
     }
 
-    // Custom cell renderer that displays tooltips for table cells
     private class TooltipTableCellRenderer extends DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
@@ -537,7 +485,6 @@ public class Invoices extends JFrame {
 
             if (c instanceof JComponent) {
                 JComponent jc = (JComponent) c;
-                // Set tooltip text to the cell value
                 if (value != null) {
                     jc.setToolTipText(value.toString());
                 }
@@ -546,7 +493,6 @@ public class Invoices extends JFrame {
         }
     }
 
-    // Custom header renderer that displays tooltips for column headers
     private class TooltipHeaderRenderer implements TableCellRenderer {
         private final TableCellRenderer defaultRenderer;
 
@@ -564,7 +510,6 @@ public class Invoices extends JFrame {
             if (c instanceof JComponent) {
                 JComponent jc = (JComponent) c;
 
-                // Set tooltip text based on column
                 switch (column) {
                     case 0:
                         jc.setToolTipText("Unique identifier for the invoice/booking");
@@ -601,21 +546,4 @@ public class Invoices extends JFrame {
         }
     }
 
-    // Method to create styled buttons
-    private JButton createStyledButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setBackground(Color.black);
-        button.setForeground(Color.white);
-        return button;
-    }
-
-    // Method to create styled buttons with tooltip descriptions
-    private JButton createButtonWithDescription(String text, String description) {
-        JButton button = createStyledButton(text);
-        button.setToolTipText(description);
-        return button;
-    }
 }

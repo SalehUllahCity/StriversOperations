@@ -3,7 +3,6 @@ package auth;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -14,7 +13,6 @@ import java.util.List;
 public class Events extends JFrame {
 
     private final Color background = new Color(18, 32, 35, 255);
-    private final int fontSize = 22;
     private JTable eventsTable;
     private DefaultTableModel tableModel;
     private List<Booking> allBookings;
@@ -26,21 +24,17 @@ public class Events extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
 
-        // Main content pane
         JPanel contentPane = new JPanel(new BorderLayout());
         contentPane.setBackground(background);
         setContentPane(contentPane);
         contentPane.add(createHeaderPanel(), BorderLayout.NORTH);
 
-        // Create main content with proper layout
         JPanel centralContent = new JPanel(new BorderLayout(0, 10));
         centralContent.setBackground(background);
         centralContent.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Add components to central content
         centralContent.add(createDiscountKeyPanel(), BorderLayout.NORTH);
 
-        // Panel that contains search and table
         JPanel contentPanel = new JPanel(new BorderLayout(0, 10));
         contentPanel.setBackground(background);
         contentPanel.add(createSearchPanel(), BorderLayout.NORTH);
@@ -76,7 +70,6 @@ public class Events extends JFrame {
         resetButton.setFocusPainted(false);
         addHoverEffect(resetButton);
 
-        // Add action listeners for search and reset
         searchButton.addActionListener(e -> {
             String searchText = searchField.getText().toLowerCase().trim();
             filterEvents(searchText);
@@ -87,7 +80,6 @@ public class Events extends JFrame {
             resetTableData();
         });
 
-        // Add components to panel
         searchPanel.add(searchLabel);
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
@@ -102,10 +94,8 @@ public class Events extends JFrame {
             return;
         }
 
-        // Clear the table
         tableModel.setRowCount(0);
 
-        // Filter bookings and add matching ones to the table
         for (Booking booking : allBookings) {
             if (matchesSearch(booking, searchText)) {
                 tableModel.addRow(new Object[]{
@@ -124,7 +114,6 @@ public class Events extends JFrame {
     }
 
     private boolean matchesSearch(Booking booking, String searchText) {
-        // Check if any field contains the search text
         return booking.getBookingName().toLowerCase().contains(searchText)
                 || booking.getRoom().toLowerCase().contains(searchText)
                 || booking.getDescription().toLowerCase().contains(searchText)
@@ -137,10 +126,12 @@ public class Events extends JFrame {
     }
 
     private void resetTableData() {
-        // Clear the table
+
+
         tableModel.setRowCount(0);
 
-        // Add all bookings back to the table
+
+
         for (Booking booking : allBookings) {
             tableModel.addRow(new Object[]{
                     booking.getBookingName(),
@@ -161,23 +152,21 @@ public class Events extends JFrame {
         panel.setBackground(background);
         panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
-        // Title
+
         JLabel title = new JLabel("Maximum Discounts Per Hall (Discounts do not stack)");
         title.setForeground(Color.WHITE);
         title.setFont(new Font("TimesRoman", Font.BOLD, 18));
         panel.add(title);
 
-        // Small Hall
+
         JLabel smallHall = new JLabel("Small Hall: Overall 15% | Students 10% | NHS 10% | Friends of Lancasters 15%");
         smallHall.setForeground(Color.WHITE);
         panel.add(smallHall);
 
-        // Main Hall
         JLabel mainHall = new JLabel("Main Hall: Overall 10% | Students 10% | NHS 10% | Friends of Lancasters 10%");
         mainHall.setForeground(Color.WHITE);
         panel.add(mainHall);
 
-        // Rehearsal Space
         JLabel rehearsal = new JLabel("Rehearsal Space: Overall 20% | Students 10% | NHS 10% | Friends of Lancasters 15%");
         rehearsal.setForeground(Color.WHITE);
         panel.add(rehearsal);
@@ -186,15 +175,15 @@ public class Events extends JFrame {
     }
 
     private JScrollPane createEventsTable() {
-        // Table model with columns
+
         tableModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Make table non-editable
+                return false;
             }
         };
 
-        // Add columns with appropriate widths
+
         tableModel.addColumn("Client");
         tableModel.addColumn("Booking Name");
         tableModel.addColumn("Start Date");
@@ -205,7 +194,7 @@ public class Events extends JFrame {
         tableModel.addColumn("Max Discount");
         tableModel.addColumn("Description");
 
-        // Get data from database
+
         allBookings = fetchBookingsFromDatabase();
         for (Booking booking : allBookings) {
             tableModel.addRow(new Object[]{
@@ -221,7 +210,7 @@ public class Events extends JFrame {
             });
         }
 
-        // Create table
+
         eventsTable = new JTable(tableModel);
         eventsTable.setFont(new Font("TimesRoman", Font.PLAIN, 16));
         eventsTable.setRowHeight(30);
@@ -230,18 +219,16 @@ public class Events extends JFrame {
         eventsTable.setGridColor(Color.DARK_GRAY);
         eventsTable.setSelectionBackground(new Color(50, 70, 70));
 
-        // Set column widths to prevent Max Discount from being obscured
-        eventsTable.getColumnModel().getColumn(0).setPreferredWidth(120); // Client
-        eventsTable.getColumnModel().getColumn(1).setPreferredWidth(150); // Booking Name
-        eventsTable.getColumnModel().getColumn(2).setPreferredWidth(100); // Start Date
-        eventsTable.getColumnModel().getColumn(3).setPreferredWidth(100); // End Date
-        eventsTable.getColumnModel().getColumn(4).setPreferredWidth(80);  // Start Time
-        eventsTable.getColumnModel().getColumn(5).setPreferredWidth(80);  // End Time
-        eventsTable.getColumnModel().getColumn(6).setPreferredWidth(100); // Room
-        eventsTable.getColumnModel().getColumn(7).setPreferredWidth(100); // Max Discount
-        eventsTable.getColumnModel().getColumn(8).setPreferredWidth(200); // Description
+        eventsTable.getColumnModel().getColumn(0).setPreferredWidth(120);
+        eventsTable.getColumnModel().getColumn(1).setPreferredWidth(150);
+        eventsTable.getColumnModel().getColumn(2).setPreferredWidth(100);
+        eventsTable.getColumnModel().getColumn(3).setPreferredWidth(100);
+        eventsTable.getColumnModel().getColumn(4).setPreferredWidth(80);
+        eventsTable.getColumnModel().getColumn(5).setPreferredWidth(80);
+        eventsTable.getColumnModel().getColumn(6).setPreferredWidth(100);
+        eventsTable.getColumnModel().getColumn(7).setPreferredWidth(100);
+        eventsTable.getColumnModel().getColumn(8).setPreferredWidth(200);
 
-        // Add tooltip for cells to show full text on hover
         eventsTable.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -260,27 +247,26 @@ public class Events extends JFrame {
             }
         });
 
-        // Ensure the header is always visible
+
         eventsTable.getTableHeader().setReorderingAllowed(false);
         eventsTable.getTableHeader().setResizingAllowed(true);
 
-        // Custom header
+
         JTableHeader header = eventsTable.getTableHeader();
         header.setFont(new Font("TimesRoman", Font.BOLD, 16));
         header.setForeground(Color.WHITE);
         header.setBackground(new Color(30, 50, 50));
-        header.setPreferredSize(new Dimension(header.getWidth(), 40)); // Make header taller
+        header.setPreferredSize(new Dimension(header.getWidth(), 40));
 
-        // Scroll pane
         JScrollPane scrollPane = new JScrollPane(eventsTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(background);
 
-        // Make sure the horizontal scrollbar appears if needed
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         return scrollPane;
     }
+
 
     private List<Booking> fetchBookingsFromDatabase() {
         List<Booking> bookings = new ArrayList<>();
@@ -289,7 +275,6 @@ public class Events extends JFrame {
         String password = "jLxOPuQ69Mg";
 
         try (Connection conn = DriverManager.getConnection(url, userName, password)) {
-            // Modified query to match the new column order (client first)
             String query = "SELECT c.CompanyName, b.BookingName, b.BookingDate, b.BookingEndDate, " +
                     "b.StartTime, b.EndTime, b.Room, b.MaxDiscount, b.Description " +
                     "FROM booking b " +
@@ -300,14 +285,14 @@ public class Events extends JFrame {
 
                 while (rs.next()) {
                     Booking booking = new Booking(
-                            rs.getString("CompanyName"),    // Client (now first)
-                            rs.getString("BookingName"),     // Booking Name (now second)
-                            rs.getDate("BookingDate"),       // Start Date
-                            rs.getDate("BookingEndDate"),    // End Date
-                            rs.getString("StartTime"),       // Start Time
-                            rs.getString("EndTime"),         // End Time
-                            rs.getString("Room"),            // Room
-                            rs.getInt("MaxDiscount"),        // Max Discount
+                            rs.getString("CompanyName"),
+                            rs.getString("BookingName"),
+                            rs.getDate("BookingDate"),
+                            rs.getDate("BookingEndDate"),
+                            rs.getString("StartTime"),
+                            rs.getString("EndTime"),
+                            rs.getString("Room"),
+                            rs.getInt("MaxDiscount"),
                             rs.getString("Description")
                     );
                     bookings.add(booking);
@@ -321,10 +306,10 @@ public class Events extends JFrame {
         return bookings;
     }
 
-    // Inner class to hold booking data
+
     private static class Booking {
-        private final String client;          // Now first
-        private final String bookingName;     // Now second
+        private final String client;
+        private final String bookingName;
         private final Date bookingDate;
         private final Date bookingEndDate;
         private final String startTime;
@@ -347,7 +332,6 @@ public class Events extends JFrame {
             this.description = description;
         }
 
-        // Getters
         public String getBookingName() { return bookingName != null ? bookingName : ""; }
         public Date getBookingDate() { return bookingDate; }
         public Date getBookingEndDate() { return bookingEndDate; }
@@ -364,12 +348,10 @@ public class Events extends JFrame {
         headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
         headerContainer.setBackground(background);
 
-        // Top bar: Home and Settings buttons
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(background);
         topBar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        // ← Home button
         JButton homeBtn = new JButton("← Home");
         homeBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         homeBtn.setBackground(background);
@@ -383,7 +365,6 @@ public class Events extends JFrame {
         addHoverEffect(homeBtn);
         topBar.add(homeBtn, BorderLayout.WEST);
 
-        //Settings button
         JButton settingsBtn = new JButton("⚙ Settings");
         settingsBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         settingsBtn.setBackground(background);
@@ -398,7 +379,6 @@ public class Events extends JFrame {
         rightPanel.add(settingsBtn);
         topBar.add(rightPanel, BorderLayout.EAST);
 
-        // Title Panel
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         titlePanel.setBackground(background);
         JLabel titleLabel = new JLabel("Events");
@@ -406,7 +386,8 @@ public class Events extends JFrame {
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 36));
         titlePanel.add(titleLabel);
 
-        // Stack both into the header container
+
+
         headerContainer.add(topBar);
         headerContainer.add(titlePanel);
 
@@ -425,24 +406,6 @@ public class Events extends JFrame {
                 button.setForeground(Color.WHITE);
             }
         });
-    }
-
-    // Method to create styled buttons
-    private JButton createStyledButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setBackground(Color.black);
-        button.setForeground(Color.white);
-        return button;
-    }
-
-    // Method to create styled buttons with tooltip descriptions
-    private JButton createButtonWithDescription(String text, String description) {
-        JButton button = createStyledButton(text);
-        button.setToolTipText(description);
-        return button;
     }
 
     /**

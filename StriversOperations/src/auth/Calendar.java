@@ -667,7 +667,7 @@ public class Calendar extends JFrame {
         }
 
         public void showPopup(String text, Point location) {
-            JTextArea textArea = (JTextArea) ((JPanel)getContentPane()).getComponent(0);
+            JTextArea textArea = (JTextArea) getContentPane().getComponent(0);
             textArea.setText(text);
             pack();
 

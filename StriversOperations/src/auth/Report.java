@@ -45,8 +45,6 @@ public class Report extends JFrame {
         // Entire Venue
         put("Entire Venue", new Color(63, 81, 181));      // Indigo
     }};
-
-    private JCheckBox allTimeCheckbox;
     private JSpinner startDateSpinner;
     private JSpinner endDateSpinner;
 
@@ -152,23 +150,6 @@ public class Report extends JFrame {
         return headerContainer;
     }
 
-    // // Add a helper method to get the display name
-    // private String getDisplayName(String dbName) {
-    //     if (dbName == null) return "null";
-        
-    //     // Normalize room name
-    //     String normalized = dbName.replace("ë", "e")  // Replace ë with e
-    //                               .replace("\n", " ")  // Replace newlines with spaces
-    //                               .trim();            // Remove extra spaces
-        
-    //     // Map of display names if needed
-    //     switch (normalized) {
-    //         case "Brontë Boardroom": return "Brontë Boardroom";
-    //         default: return normalized;
-    //     }
-    // }
-
-    //Tab 1: Venue usage report across dates/spaces/bookings
     private JPanel createVenueUsageTab() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(background);
@@ -467,7 +448,6 @@ public class Report extends JFrame {
         }
         
         // Calculate positions
-        int x = padding;
         int y = padding + titleHeight;
 
         // Draw title
@@ -498,13 +478,12 @@ public class Report extends JFrame {
             String room = entry.getKey();
             // Use the consistent color from ROOM_COLORS map
             g.setColor(spaceColors.getOrDefault(room, new Color(149, 165, 166))); // Default to gray if room not found
-            g.fillArc(x, y, diameter, diameter, startAngle, arcAngle);
+            g.fillArc(padding, y, diameter, diameter, startAngle, arcAngle);
             startAngle += arcAngle;
         }
 
         // Draw legend
-        int legendX = x + diameter + 14;
-        int legendY = y;
+        int legendX = padding + diameter + 14;
         int legendSpacing = 21;
         int i = 0;
 
@@ -512,26 +491,25 @@ public class Report extends JFrame {
         FontMetrics fm = g.getFontMetrics();
         
         for (Map.Entry<String, Integer> entry : spaceUsage.entrySet()) {
-            if (legendY + (i * legendSpacing) + 24 > getHeight()) {
+            if (y + (i * legendSpacing) + 24 > getHeight()) {
                 legendX += 152;
                 i = 0;
             }
             
             String room = entry.getKey();
             g.setColor(spaceColors.getOrDefault(room, new Color(149, 165, 166)));
-            g.fillRect(legendX, legendY + (i * legendSpacing), 10, 10);
+            g.fillRect(legendX, y + (i * legendSpacing), 10, 10);
             
             g.setColor(Color.WHITE);
-            String normalizedRoom = normalizeRoomName(room);
-            String displayName = normalizedRoom;
+            String displayName = normalizeRoomName(room);
             String legendText = String.format("%s (%d)", displayName, entry.getValue());
             if (fm.stringWidth(legendText) > 133) {
-                while (fm.stringWidth(legendText + "...") > 133 && legendText.length() > 0) {
+                while (fm.stringWidth(legendText + "...") > 133 && !legendText.isEmpty()) {
                     legendText = legendText.substring(0, legendText.length() - 1);
                 }
                 legendText += "...";
             }
-            g.drawString(legendText, legendX + 15, legendY + (i * legendSpacing) + 9);
+            g.drawString(legendText, legendX + 15, y + (i * legendSpacing) + 9);
             i++;
         }
     }
@@ -1234,7 +1212,7 @@ public class Report extends JFrame {
     }
 
     //Tab 3: Financial summary per booking
-    private JPanel createFinanceTab() throws SQLException, ClassNotFoundException {
+    private JPanel createFinanceTab() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(background);
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
@@ -1503,7 +1481,6 @@ public class Report extends JFrame {
                 double totalClientPayouts = 0.0;
                 double totalNetIncome = 0.0;
 
-                // Initialize category totals array [meetingRooms, performanceSpaces, rehearsal, entireVenue]
                 final double[] categoryTotals = new double[4];
 
                 ResultSet rs = stmt.executeQuery();
@@ -1512,19 +1489,15 @@ public class Report extends JFrame {
                     int duration = rs.getInt("Duration");
                     Date bookingDate = rs.getDate("BookingDate");
                     
-                    // Calculate hire fee based on room and duration
+
                     double hireFee = calculateHireFee(room, duration);
-                    
-                    // Update category totals
+
                     updateCategoryTotals(room, hireFee, categoryTotals);
-                    
-                    // Get ticket sales from Box Office API and convert to double
-                    double ticketRevenue = (double) jdbc.getRevenueBasedOnEvent(rs.getString("BookingName"));
-                    
-                    // Calculate client payout (assuming 70% of ticket sales)
+
+                    double ticketRevenue = jdbc.getRevenueBasedOnEvent(rs.getString("BookingName"));
+
                     double clientPayout = ticketRevenue * 0.7;
-                    
-                    // Calculate net income
+
                     double netIncome = hireFee + (ticketRevenue - clientPayout);
 
                     Object[] row = {
@@ -1541,7 +1514,6 @@ public class Report extends JFrame {
                     };
                     model.addRow(row);
 
-                    // Update totals
                     totalHireFees += hireFee;
                     totalTicketSales += ticketRevenue;
                     totalClientPayouts += clientPayout;
@@ -1550,11 +1522,9 @@ public class Report extends JFrame {
                 
                 totalRevenue = totalHireFees + totalTicketSales;
 
-                // Update summary cards
                 updateFinancialSummary(summaryPanel, totalRevenue, totalHireFees, 
                     totalTicketSales, totalClientPayouts, totalNetIncome);
 
-                // Update category summary cards
                 updateCategorySummary(categoryPanel, categoryTotals[0], categoryTotals[1], 
                     categoryTotals[2], categoryTotals[3]);
 
@@ -1584,25 +1554,23 @@ public class Report extends JFrame {
 
     private void updateCategorySummary(JPanel categoryPanel, double meetingRoomsIncome,
             double performanceSpacesIncome, double rehearsalSpaceIncome, double entireVenueIncome) {
-        // Update meeting rooms income
+
         ((JLabel) ((JPanel) categoryPanel.getComponent(0)).getComponent(2))
             .setText(String.format("£%.2f", meetingRoomsIncome));
 
-        // Update performance spaces income
+
         ((JLabel) ((JPanel) categoryPanel.getComponent(1)).getComponent(2))
             .setText(String.format("£%.2f", performanceSpacesIncome));
 
-        // Update rehearsal space income
+
         ((JLabel) ((JPanel) categoryPanel.getComponent(2)).getComponent(2))
             .setText(String.format("£%.2f", rehearsalSpaceIncome));
 
-        // Update entire venue income
         ((JLabel) ((JPanel) categoryPanel.getComponent(3)).getComponent(2))
             .setText(String.format("£%.2f", entireVenueIncome));
     }
 
     private double calculateHireFee(String room, int duration) {
-        // Base weekly rates from the Booking class
         Map<String, Double> weeklyRates = new HashMap<>() {{
             put("The Green Room", 600.0);
             put("Brontë Boardroom", 900.0);
@@ -1628,22 +1596,18 @@ public class Report extends JFrame {
         }
     }
 
-    private void updateFinancialSummary(JPanel summaryPanel, double totalRevenue, 
-            double totalHireFees, double totalTicketSales, double totalClientPayouts, 
+    private void updateFinancialSummary(JPanel summaryPanel, double totalRevenue,
+            double totalHireFees, double totalTicketSales, double totalClientPayouts,
             double totalNetIncome) {
-        // Update total revenue
         ((JLabel) ((JPanel) summaryPanel.getComponent(0)).getComponent(2))
             .setText(String.format("£%.2f", totalRevenue));
 
-        // Update ticket sales
         ((JLabel) ((JPanel) summaryPanel.getComponent(1)).getComponent(2))
             .setText(String.format("£%.2f", totalTicketSales));
 
-        // Update client payouts
         ((JLabel) ((JPanel) summaryPanel.getComponent(2)).getComponent(2))
             .setText(String.format("£%.2f", totalClientPayouts));
 
-        // Update net income
         ((JLabel) ((JPanel) summaryPanel.getComponent(3)).getComponent(2))
             .setText(String.format("£%.2f", totalNetIncome));
     }
@@ -1653,11 +1617,9 @@ public class Report extends JFrame {
         panel.setBackground(background);
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // Create top panel for month/year controls
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         controlPanel.setBackground(background);
 
-        // Add month selector
         JLabel monthLabel = new JLabel("Month:");
         monthLabel.setForeground(Color.WHITE);
         monthLabel.setFont(new Font("TimesRoman", Font.BOLD, 13));
@@ -1669,7 +1631,6 @@ public class Report extends JFrame {
         monthSpinner.setFont(new Font("TimesRoman", Font.PLAIN, 13));
         controlPanel.add(monthSpinner);
 
-        // Add year selector
         JLabel yearLabel = new JLabel("Year:");
         yearLabel.setForeground(Color.WHITE);
         yearLabel.setFont(new Font("TimesRoman", Font.BOLD, 13));
@@ -1684,7 +1645,6 @@ public class Report extends JFrame {
         yearSpinner.setFont(new Font("TimesRoman", Font.PLAIN, 13));
         controlPanel.add(yearSpinner);
 
-        // Add refresh button
         JButton refreshButton = new JButton("Refresh");
         refreshButton.setFont(new Font("TimesRoman", Font.BOLD, 13));
         refreshButton.setBackground(new Color(30, 50, 55));
@@ -1694,7 +1654,6 @@ public class Report extends JFrame {
 
         panel.add(controlPanel, BorderLayout.NORTH);
 
-        // Create table with columns
         String[] columns = {
                 "Last Sale Date", "Revenue", "Tickets Sold", "First Sale Date"
         };
@@ -1708,7 +1667,6 @@ public class Report extends JFrame {
 
         JTable table = new JTable(model);
 
-        // Style the table to match other tabs
         table.setFont(new Font("TimesRoman", Font.PLAIN, 13));
         table.setRowHeight(28);
         table.setGridColor(new Color(45, 45, 45));
@@ -1719,20 +1677,17 @@ public class Report extends JFrame {
         table.setShowGrid(true);
         table.setIntercellSpacing(new Dimension(1, 1));
 
-        // Style the table header
         table.getTableHeader().setBackground(new Color(30, 50, 55));
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setFont(new Font("TimesRoman", Font.BOLD, 13));
         table.getTableHeader().setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
 
-        // Create scroll pane with dark styling
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
         scrollPane.getViewport().setBackground(table.getBackground());
 
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        // Add action listener for refresh button
         refreshButton.addActionListener(e -> {
             int year = (Integer) yearSpinner.getValue();
             int month = (Integer) monthSpinner.getValue();
@@ -1747,7 +1702,6 @@ public class Report extends JFrame {
             }
         });
 
-        // Load initial data with current month/year
         loadMonthlyRevenue(model, (Integer) yearSpinner.getValue(), (Integer) monthSpinner.getValue());
 
         return panel;
@@ -1756,11 +1710,10 @@ public class Report extends JFrame {
     private void loadMonthlyRevenue(DefaultTableModel model, int year, int month) throws SQLException, ClassNotFoundException {
         try {
             JDBC jdbc = new JDBC();
-            model.setRowCount(0); // Clear existing data
+            model.setRowCount(0);
 
             Map<String, Object> monthlyRevenueReport = jdbc.getMonthlyRevenueReport(year, month);
 
-            // Create a single row with all 4 values in the correct order
             Object[] row = {
                     monthlyRevenueReport.get("last_sale").toString(),
                     String.format("£%.2f", monthlyRevenueReport.get("revenue")),
@@ -1783,11 +1736,6 @@ public class Report extends JFrame {
         }
     }
 
-
-
-
-
-
     private void addHoverEffect(JButton button) {
         button.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 2));
         button.addMouseListener(new MouseAdapter() {
@@ -1802,7 +1750,6 @@ public class Report extends JFrame {
         });
     }
 
-    //Shared table styling
     private void styleTable(JTable table) {
         table.setFont(new Font("TimesRoman", Font.PLAIN, 13));
         table.setRowHeight(28);
@@ -1811,7 +1758,7 @@ public class Report extends JFrame {
         table.getTableHeader().setResizingAllowed(false);
     }
 
-    // Custom Renderer to Color Code Room/Space Columns
+
 class RoomColorRenderer extends DefaultTableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value,
@@ -1946,23 +1893,5 @@ class RoomColorRenderer extends DefaultTableCellRenderer {
         });
 
         return popup;
-    }
-
-    // Method to create styled buttons
-    private JButton createStyledButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setBackground(Color.black);
-        button.setForeground(Color.white);
-        return button;
-    }
-
-    // Method to create styled buttons with tooltip descriptions
-    private JButton createButtonWithDescription(String text, String description) {
-        JButton button = createStyledButton(text);
-        button.setToolTipText(description);
-        return button;
     }
 }

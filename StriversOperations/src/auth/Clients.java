@@ -3,19 +3,15 @@ package auth;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-// Bookings that are unconfirmed/not fully paid for within the 28 days time slot we provide
+
+
 public class Clients extends JFrame {
 
     private final Color background = new Color(18, 32, 35, 255);
     private final Color panelColor = new Color(30, 50, 55);
-    private final int fontSize = 22;
     private JTable clientTable;
     private JTable bookingHistoryTable;
     private JTable paymentHistoryTable;
@@ -28,7 +24,6 @@ public class Clients extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
 
-        //Main content pane
         JPanel contentPane = new JPanel(new BorderLayout());
         contentPane.setBackground(background);
         setContentPane(contentPane);
@@ -44,16 +39,13 @@ public class Clients extends JFrame {
         mainPanel.setBackground(background);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Create tabbed pane
         tabbedPane = new JTabbedPane();
         tabbedPane.setBackground(background);
         tabbedPane.setForeground(Color.WHITE);
         tabbedPane.setFont(new Font("TimesRoman", Font.BOLD, 16));
 
-        // Create client list tab
         createClientListTab();
 
-        // Create the other tabs
         createBookingHistoryTab();
         createPaymentHistoryTab();
 
@@ -66,12 +58,10 @@ public class Clients extends JFrame {
         clientPanel.setBackground(panelColor);
         clientPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Create search panel
         JPanel searchPanel = new JPanel(new BorderLayout());
         searchPanel.setBackground(panelColor);
         searchPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
-        // Create search field
         JTextField searchField = new JTextField();
         searchField.setPreferredSize(new Dimension(200, 30));
         searchField.setBorder(BorderFactory.createCompoundBorder(
@@ -83,18 +73,13 @@ public class Clients extends JFrame {
         searchField.setCaretColor(Color.WHITE);
         searchField.putClientProperty("JTextField.placeholderText", "Search by company name...");
 
-        // Search button
         JButton searchBtn = new JButton("Search");
         styleButton(searchBtn);
         searchBtn.addActionListener(e -> filterClients(searchField.getText()));
-
-        // Search field listener for Enter key
         searchField.addActionListener(e -> filterClients(searchField.getText()));
 
         searchPanel.add(searchField, BorderLayout.CENTER);
         searchPanel.add(searchBtn, BorderLayout.EAST);
-
-        // Client table
         clientTable = new JTable();
         clientTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         clientTable.getSelectionModel().addListSelectionListener(e -> {
@@ -112,12 +97,13 @@ public class Clients extends JFrame {
         JScrollPane clientScrollPane = new JScrollPane(clientTable);
         clientScrollPane.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
-        // Add client button
+
         JButton addClientBtn = new JButton("Add New Client");
         styleButton(addClientBtn);
         addClientBtn.addActionListener(e -> showAddClientDialog());
 
-        // Clear search button
+
+
         JButton clearSearchBtn = new JButton("Clear");
         styleButton(clearSearchBtn);
         clearSearchBtn.addActionListener(e -> {
@@ -183,7 +169,8 @@ public class Clients extends JFrame {
             String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
             String user = "in2033t26_a";
             String password = "jLxOPuQ69Mg";
-            // Changed to query bookings where Client matches the company name
+
+
             String query = "SELECT b.BookingID, b.BookingDate, b.StartTime, b.EndTime, b.Room, " +
                     "b.BookingType, b.PaymentStatus " +
                     "FROM booking b " +
@@ -239,13 +226,13 @@ public class Clients extends JFrame {
         bookingPanel.setBackground(panelColor);
         bookingPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Create table and scroll pane
+
+
         bookingHistoryTable = new JTable();
         bookingHistoryTable.setAutoCreateRowSorter(true);
         JScrollPane bookingScrollPane = new JScrollPane(bookingHistoryTable);
         bookingScrollPane.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
-        // Add refresh button
         JButton refreshBtn = new JButton("Refresh Bookings");
         styleButton(refreshBtn);
         refreshBtn.addActionListener(e -> {
@@ -271,13 +258,15 @@ public class Clients extends JFrame {
         paymentPanel.setBackground(panelColor);
         paymentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Create table and scroll pane
+
+
         paymentHistoryTable = new JTable();
         paymentHistoryTable.setAutoCreateRowSorter(true);
         JScrollPane paymentScrollPane = new JScrollPane(paymentHistoryTable);
         paymentScrollPane.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
-        // Add refresh button
+
+
         JButton refreshBtn = new JButton("Refresh Payments");
         styleButton(refreshBtn);
         refreshBtn.addActionListener(e -> {
@@ -306,7 +295,7 @@ public class Clients extends JFrame {
             String query = "SELECT p.PaymentID, p.PaymentDate, p.Amount, p.PaymentMethod, p.Status, " +
                     "b.BookingName FROM payment p " +
                     "JOIN booking b ON p.BookingID = b.BookingID " +
-                    "JOIN client c ON b.ClientID = c.ClientID " +  // Changed this line
+                    "JOIN client c ON b.ClientID = c.ClientID " +
                     "WHERE c.ClientID = ?";
 
             Connection conn = DriverManager.getConnection(url, user, password);
@@ -468,11 +457,13 @@ public class Clients extends JFrame {
         jLabel.setForeground(Color.WHITE);
         panel.add(jLabel);
         panel.add(field);
+
     }
 
     private void saveNewClient(String company, String contact, String email, String phone,
                                String address, String city, String postcode,
                                String billingName, String billingEmail) {
+
         try {
             String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
             String user = "in2033t26_a";
@@ -480,6 +471,8 @@ public class Clients extends JFrame {
             String query = "INSERT INTO client (CompanyName, ContactName, ContactEmail, PhoneNumber, " +
                     "StreetAddress, City, Postcode, BillingName, BillingEmail) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+
 
             Connection conn = DriverManager.getConnection(url, user, password);
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -526,24 +519,6 @@ public class Clients extends JFrame {
             }
         });
     }
-    // Method to create styled buttons
-    private JButton createStyledButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setBackground(Color.black);
-        button.setForeground(Color.white);
-        return button;
-    }
-
-    // Method to create styled buttons with tooltip descriptions
-    private JButton createButtonWithDescription(String text, String description) {
-        JButton button = createStyledButton(text);
-        button.setToolTipText(description);
-        return button;
-    }
-
 
     /**
      * Launch the application.
@@ -564,12 +539,10 @@ public class Clients extends JFrame {
         headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
         headerContainer.setBackground(background);
 
-        // Top bar: Home and Settings buttons
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(background);
         topBar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        // ← Home button
         JButton homeBtn = new JButton("← Home");
         homeBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         homeBtn.setBackground(background);
@@ -583,7 +556,6 @@ public class Clients extends JFrame {
         addHoverEffect(homeBtn);
         topBar.add(homeBtn, BorderLayout.WEST);
 
-        //Settings button
         JButton settingsBtn = new JButton("⚙ Settings");
         settingsBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         settingsBtn.setBackground(background);
@@ -598,7 +570,6 @@ public class Clients extends JFrame {
         rightPanel.add(settingsBtn);
         topBar.add(rightPanel, BorderLayout.EAST);
 
-        // Title Panel
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         titlePanel.setBackground(background);
         JLabel titleLabel = new JLabel("Client Data");
@@ -606,7 +577,6 @@ public class Clients extends JFrame {
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 36));
         titlePanel.add(titleLabel);
 
-        // Stack both into the header container
         headerContainer.add(topBar);
         headerContainer.add(titlePanel);
 

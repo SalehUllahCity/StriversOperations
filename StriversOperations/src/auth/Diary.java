@@ -11,16 +11,14 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-// Bookings that are unconfirmed/not fully paid for within the 28 days time slot we provide
+
 public class Diary extends JFrame {
 
     private final Color background = new Color(18, 32, 35, 255);
-    private final Color panelColor = new Color(30, 50, 55);
     private JTable scheduleTable;
     private JButton refreshBtn, confirmBtn, cancelBtn;
     private JLabel summaryLabel;
 
-    // Define colors for different payment statuses
     private final Color unpaidColor = new Color(255, 200, 200); // Light red
     private final Color paidColor = new Color(200, 255, 200);   // Light green
     private final Color pendingColor = new Color(255, 230, 200); // Light orange
@@ -32,7 +30,6 @@ public class Diary extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
 
-        // Main content pane
         JPanel contentPane = new JPanel(new BorderLayout());
         contentPane.setBackground(background);
         setContentPane(contentPane);
@@ -61,17 +58,14 @@ public class Diary extends JFrame {
         mainPanel.setBackground(background);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Title panel
         JLabel titleLabel = new JLabel("Venue Schedule & Hold Management");
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 24));
         titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
 
-        // Schedule table
         scheduleTable = new JTable();
         scheduleTable.setAutoCreateRowSorter(true);
 
-        // Add custom cell renderer for color coding
         scheduleTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -79,15 +73,14 @@ public class Diary extends JFrame {
                                                            int row, int column) {
                 Component comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-                // Get payment status from the Status column (index 7)
                 String paymentStatus = (String) table.getValueAt(row, 7);
 
-                // If the cell is selected, keep the selection color
                 if (isSelected) {
                     return comp;
                 }
 
-                // Apply color based on payment status
+
+
                 if ("Unpaid".equals(paymentStatus)) {
                     comp.setBackground(unpaidColor);
                 } else if ("Paid".equals(paymentStatus)) {
@@ -105,7 +98,6 @@ public class Diary extends JFrame {
         JScrollPane scrollPane = new JScrollPane(scheduleTable);
         scrollPane.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
-        // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(background);
 
@@ -121,7 +113,6 @@ public class Diary extends JFrame {
         buttonPanel.add(confirmBtn);
         buttonPanel.add(cancelBtn);
 
-        // Summary panel
         summaryLabel = new JLabel(" ", SwingConstants.RIGHT);
         summaryLabel.setForeground(Color.WHITE);
         summaryLabel.setFont(new Font("TimesRoman", Font.PLAIN, 16));
@@ -207,7 +198,6 @@ public class Diary extends JFrame {
     }
 
     private String calculateCost(String room, Date bookingDate, Time startTime, Time endTime) {
-        // Add null checks at the start
         if (room == null || bookingDate == null || startTime == null || endTime == null) {
             return "N/A";
         }
@@ -219,9 +209,8 @@ public class Diary extends JFrame {
             boolean isWeekend = dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY;
             boolean isFridayOrSaturday = dayOfWeek == Calendar.FRIDAY || dayOfWeek == Calendar.SATURDAY;
 
-            // Calculate duration in hours and minutes
             long durationMillis = endTime.getTime() - startTime.getTime();
-            if (durationMillis < 0) { // Handle midnight crossing
+            if (durationMillis < 0) {
                 durationMillis += 24 * 60 * 60 * 1000;
             }
             int totalMinutes = (int) (durationMillis / (60 * 1000));
@@ -229,16 +218,13 @@ public class Diary extends JFrame {
             int remainingMinutes = totalMinutes % 60;
             boolean hasHalfHour = remainingMinutes == 30;
 
-            // Check if it's an evening booking (starts at or after 17:00)
             boolean isEvening = startTime.getHours() >= 17;
 
-            // Check if it's an all-day booking (spans most of the day)
             boolean isAllDay = fullHours >= 7;
 
-            // Use String.equals for comparison instead of switch to avoid NPE
             if ("The Green Room".equals(room)) {
                 if (isAllDay) {
-                    return "£130.00 + VAT"; // All day rate
+                    return "£130.00 + VAT";
                 } else {
                     double hourlyRate = 25.0;
                     double cost = fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
@@ -246,7 +232,7 @@ public class Diary extends JFrame {
                 }
             } else if ("Brontë Boardroom".equals(room)) {
                 if (isAllDay) {
-                    return "£200.00 + VAT"; // All day rate
+                    return "£200.00 + VAT";
                 } else {
                     double hourlyRate = 40.0;
                     double cost = fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
@@ -254,7 +240,7 @@ public class Diary extends JFrame {
                 }
             } else if ("Dickens Den".equals(room)) {
                 if (isAllDay) {
-                    return "£150.00 + VAT"; // All day rate
+                    return "£150.00 + VAT";
                 } else {
                     double hourlyRate = 30.0;
                     double cost = fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
@@ -262,7 +248,7 @@ public class Diary extends JFrame {
                 }
             } else if ("Poe Parlor".equals(room)) {
                 if (isAllDay) {
-                    return "£170.00 + VAT"; // All day rate
+                    return "£170.00 + VAT";
                 } else {
                     double hourlyRate = 35.0;
                     double cost = fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
@@ -270,7 +256,7 @@ public class Diary extends JFrame {
                 }
             } else if ("Globe Room".equals(room)) {
                 if (isAllDay) {
-                    return "£250.00 + VAT"; // All day rate
+                    return "£250.00 + VAT";
                 } else {
                     double hourlyRate = 50.0;
                     double cost = fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
@@ -278,7 +264,7 @@ public class Diary extends JFrame {
                 }
             } else if ("Chekhov Chamber".equals(room)) {
                 if (isAllDay) {
-                    return "£180.00 + VAT"; // All day rate
+                    return "£180.00 + VAT";
                 } else {
                     double hourlyRate = 38.0;
                     double cost = fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
@@ -290,7 +276,6 @@ public class Diary extends JFrame {
                 } else if (isEvening) {
                     return isFridayOrSaturday ? "£2,200.00 + VAT" : "£1,850.00 + VAT";
                 } else {
-                    // Minimum 3 hours at £325 per hour
                     double hourlyRate = 325.0;
                     int effectiveHours = Math.max(3, fullHours);
                     double cost = effectiveHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
@@ -302,22 +287,18 @@ public class Diary extends JFrame {
                 } else if (isEvening) {
                     return isFridayOrSaturday ? "£1,300.00 + VAT" : "£950.00 + VAT";
                 } else {
-                    // Minimum 3 hours at £225 per hour
                     double hourlyRate = 225.0;
                     int effectiveHours = Math.max(3, fullHours);
                     double cost = effectiveHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
                     return String.format("£%.2f + VAT", cost);
                 }
             } else if ("Rehearsal Space".equals(room)) {
-                // Check if it's a short day (10:00-17:00)
                 if (startTime.getHours() == 10 && endTime.getHours() == 17) {
                     return isWeekend ? "£340.00 + VAT" : "£240.00 + VAT";
                 }
-                // Check if it's a long day (10:00-23:00)
                 else if (startTime.getHours() == 10 && endTime.getHours() == 23) {
                     return isWeekend ? "£500.00 + VAT" : "£450.00 + VAT";
                 } else {
-                    // Minimum 3 hours at £60 per hour
                     double hourlyRate = 60.0;
                     int effectiveHours = Math.max(3, fullHours);
                     double cost = effectiveHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
@@ -339,12 +320,6 @@ public class Diary extends JFrame {
         }
     }
 
-    private boolean isWeekend(Date date) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        int day = cal.get(Calendar.DAY_OF_WEEK);
-        return day == Calendar.SATURDAY || day == Calendar.SUNDAY;
-    }
 
     private void updateSummary() {
         int unpaidCount = 0;
@@ -358,8 +333,10 @@ public class Diary extends JFrame {
             String status = (String) model.getValueAt(i, 7);
             Date contractDue = null;
             try {
-                contractDue = (Date) new SimpleDateFormat("yyyy-MM-dd").parse(model.getValueAt(i, 9).toString());
-            } catch (Exception e) {}
+                contractDue = new SimpleDateFormat("yyyy-MM-dd").parse(model.getValueAt(i, 9).toString());
+            } catch (Exception e) {
+                System.out.println(e);
+            }
 
             if ("Unpaid".equals(status)) {
                 unpaidCount++;
@@ -459,12 +436,12 @@ public class Diary extends JFrame {
         headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
         headerContainer.setBackground(background);
 
-        // Top bar: Home and Settings buttons
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(background);
         topBar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        // ← Home button
+
+
         JButton homeBtn = new JButton("← Home");
         homeBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         homeBtn.setBackground(background);
@@ -478,7 +455,7 @@ public class Diary extends JFrame {
         addHoverEffect(homeBtn);
         topBar.add(homeBtn, BorderLayout.WEST);
 
-        //Settings button
+
         JButton settingsBtn = new JButton("⚙ Settings");
         settingsBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         settingsBtn.setBackground(background);
@@ -493,7 +470,6 @@ public class Diary extends JFrame {
         rightPanel.add(settingsBtn);
         topBar.add(rightPanel, BorderLayout.EAST);
 
-        // Title Panel
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         titlePanel.setBackground(background);
         JLabel titleLabel = new JLabel("Diary");
@@ -501,39 +477,11 @@ public class Diary extends JFrame {
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 36));
         titlePanel.add(titleLabel);
 
-        // Stack both into the header container
         headerContainer.add(topBar);
         headerContainer.add(titlePanel);
 
         return headerContainer;
     }
-
-
-    private void styleButton(JButton button) {
-        button.setFont(new Font("TimesRoman", Font.PLAIN, 16));
-        button.setBackground(new Color(50, 70, 75));
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                button.setBackground(new Color(70, 90, 95));
-            }
-            @Override
-            public void mouseExited(MouseEvent e) {
-                button.setBackground(new Color(50, 70, 75));
-            }
-        });
-    }
-
-    // Method to create styled buttons with tooltip descriptions
-    private JButton createButtonWithDescription(String text, String description) {
-        JButton button = createStyledButton(text);
-        button.setToolTipText(description);
-        return button;
-    }
-
 
 
     private void addHoverEffect(JButton button) {
