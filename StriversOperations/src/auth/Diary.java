@@ -143,7 +143,7 @@ public class Diary extends JFrame {
                     }
                 };
 
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
                 while (rs.next()) {
                     Date bookingDate = rs.getDate("BookingDate");
                     Date contractDue = rs.getDate("ContractDueDate");
@@ -181,43 +181,135 @@ public class Diary extends JFrame {
     }
 
     private String calculateCost(String room, Date bookingDate, Time startTime, Time endTime) {
-        // Simplified cost calculation based on rate card
+        // Add null checks at the start
+        if (room == null || bookingDate == null || startTime == null || endTime == null) {
+            return "N/A";
+        }
+
         try {
-            boolean isWeekend = isWeekend(bookingDate);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(bookingDate);
+            int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+            boolean isWeekend = dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY;
+            boolean isFridayOrSaturday = dayOfWeek == Calendar.FRIDAY || dayOfWeek == Calendar.SATURDAY;
+
+            // Calculate duration in hours and minutes
+            long durationMillis = endTime.getTime() - startTime.getTime();
+            if (durationMillis < 0) { // Handle midnight crossing
+                durationMillis += 24 * 60 * 60 * 1000;
+            }
+            int totalMinutes = (int) (durationMillis / (60 * 1000));
+            int fullHours = totalMinutes / 60;
+            int remainingMinutes = totalMinutes % 60;
+            boolean hasHalfHour = remainingMinutes == 30;
+
+            // Check if it's an evening booking (starts at or after 17:00)
             boolean isEvening = startTime.getHours() >= 17;
 
-            switch (room) {
-                case "Main Hall":
-                    if (isEvening) {
-                        return isWeekend ? "£2,200 + VAT" : "£1,850 + VAT";
-                    } else {
-                        long hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-                        hours = Math.max(hours, 3); // Minimum 3 hours
-                        return String.format("£%.2f + VAT", hours * 325.0);
-                    }
-                case "Small Hall":
-                    if (isEvening) {
-                        return isWeekend ? "£1,300 + VAT" : "£950 + VAT";
-                    } else {
-                        long hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-                        hours = Math.max(hours, 3); // Minimum 3 hours
-                        return String.format("£%.2f + VAT", hours * 225.0);
-                    }
-                case "Rehearsal Space":
-                    long hours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-                    hours = Math.max(hours, 3); // Minimum 3 hours
-                    return String.format("£%.2f + VAT", hours * 60.0);
-                default: // Meeting rooms
-                    if (room.equals("The Green Room")) return "£25 + VAT/hr";
-                    if (room.equals("Brontë Boardroom")) return "£40 + VAT/hr";
-                    if (room.equals("Dickens Den")) return "£30 + VAT/hr";
-                    if (room.equals("Poe Parlor")) return "£35 + VAT/hr";
-                    if (room.equals("Globe Room")) return "£50 + VAT/hr";
-                    if (room.equals("Chekhov Chamber")) return "£38 + VAT/hr";
-                    return "Rate not available";
+            // Check if it's an all-day booking (spans most of the day)
+            boolean isAllDay = fullHours >= 7;
+
+            // Use String.equals for comparison instead of switch to avoid NPE
+            if ("The Green Room".equals(room)) {
+                if (isAllDay) {
+                    return "£130.00 + VAT"; // All day rate
+                } else {
+                    double hourlyRate = 25.0;
+                    double cost = fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
+                    return String.format("£%.2f + VAT", cost);
+                }
+            } else if ("Bronte Boardroom".equals(room)) {
+                if (isAllDay) {
+                    return "£200.00 + VAT"; // All day rate
+                } else {
+                    double hourlyRate = 40.0;
+                    double cost = fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
+                    return String.format("£%.2f + VAT", cost);
+                }
+            } else if ("Dickens Den".equals(room)) {
+                if (isAllDay) {
+                    return "£150.00 + VAT"; // All day rate
+                } else {
+                    double hourlyRate = 30.0;
+                    double cost = fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
+                    return String.format("£%.2f + VAT", cost);
+                }
+            } else if ("Poe Parlor".equals(room)) {
+                if (isAllDay) {
+                    return "£170.00 + VAT"; // All day rate
+                } else {
+                    double hourlyRate = 35.0;
+                    double cost = fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
+                    return String.format("£%.2f + VAT", cost);
+                }
+            } else if ("Globe Room".equals(room)) {
+                if (isAllDay) {
+                    return "£250.00 + VAT"; // All day rate
+                } else {
+                    double hourlyRate = 50.0;
+                    double cost = fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
+                    return String.format("£%.2f + VAT", cost);
+                }
+            } else if ("Chekhov Chamber".equals(room)) {
+                if (isAllDay) {
+                    return "£180.00 + VAT"; // All day rate
+                } else {
+                    double hourlyRate = 38.0;
+                    double cost = fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
+                    return String.format("£%.2f + VAT", cost);
+                }
+            } else if ("Main Hall".equals(room)) {
+                if (isAllDay) {
+                    return isFridayOrSaturday ? "£4,200.00 + VAT" : "£3,800.00 + VAT";
+                } else if (isEvening) {
+                    return isFridayOrSaturday ? "£2,200.00 + VAT" : "£1,850.00 + VAT";
+                } else {
+                    // Minimum 3 hours at £325 per hour
+                    double hourlyRate = 325.0;
+                    int effectiveHours = Math.max(3, fullHours);
+                    double cost = effectiveHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
+                    return String.format("£%.2f + VAT", cost);
+                }
+            } else if ("Small Hall".equals(room)) {
+                if (isAllDay) {
+                    return isFridayOrSaturday ? "£2,500.00 + VAT" : "£2,200.00 + VAT";
+                } else if (isEvening) {
+                    return isFridayOrSaturday ? "£1,300.00 + VAT" : "£950.00 + VAT";
+                } else {
+                    // Minimum 3 hours at £225 per hour
+                    double hourlyRate = 225.0;
+                    int effectiveHours = Math.max(3, fullHours);
+                    double cost = effectiveHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
+                    return String.format("£%.2f + VAT", cost);
+                }
+            } else if ("Rehearsal Space".equals(room)) {
+                // Check if it's a short day (10:00-17:00)
+                if (startTime.getHours() == 10 && endTime.getHours() == 17) {
+                    return isWeekend ? "£340.00 + VAT" : "£240.00 + VAT";
+                }
+                // Check if it's a long day (10:00-23:00)
+                else if (startTime.getHours() == 10 && endTime.getHours() == 23) {
+                    return isWeekend ? "£500.00 + VAT" : "£450.00 + VAT";
+                } else {
+                    // Minimum 3 hours at £60 per hour
+                    double hourlyRate = 60.0;
+                    int effectiveHours = Math.max(3, fullHours);
+                    double cost = effectiveHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
+                    return String.format("£%.2f + VAT", cost);
+                }
+            } else if ("Entire Venue".equals(room)) {
+                if (isAllDay) {
+                    return isFridayOrSaturday ? "£8,000.00 + VAT" : "£7,000.00 + VAT";
+                } else if (isEvening) {
+                    return isFridayOrSaturday ? "£4,500.00 + VAT" : "£3,500.00 + VAT";
+                }
+                return "Custom quote required";
             }
+
+            return "Rate not available";
         } catch (Exception e) {
-            return "Error calculating";
+            e.printStackTrace();
+            return "N/A";
         }
     }
 
@@ -407,9 +499,6 @@ public class Diary extends JFrame {
             }
         });
     }
-
-
-
 
     private void addHoverEffect(JButton button) {
         button.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 2));
