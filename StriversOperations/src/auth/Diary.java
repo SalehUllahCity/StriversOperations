@@ -452,6 +452,8 @@ public class Diary extends JFrame {
         }
     }
 
+
+
     private JPanel createHeaderPanel() {
         JPanel headerContainer = new JPanel();
         headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
@@ -506,6 +508,7 @@ public class Diary extends JFrame {
         return headerContainer;
     }
 
+
     private void styleButton(JButton button) {
         button.setFont(new Font("TimesRoman", Font.PLAIN, 16));
         button.setBackground(new Color(50, 70, 75));
@@ -524,6 +527,15 @@ public class Diary extends JFrame {
         });
     }
 
+    // Method to create styled buttons with tooltip descriptions
+    private JButton createButtonWithDescription(String text, String description) {
+        JButton button = createStyledButton(text);
+        button.setToolTipText(description);
+        return button;
+    }
+
+
+
     private void addHoverEffect(JButton button) {
         button.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 2));
         button.addMouseListener(new MouseAdapter() {
@@ -537,4 +549,6 @@ public class Diary extends JFrame {
             }
         });
     }
+
+
 }

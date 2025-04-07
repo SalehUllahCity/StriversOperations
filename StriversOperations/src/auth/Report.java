@@ -1641,6 +1641,8 @@ class RoomColorRenderer extends DefaultTableCellRenderer {
             popupPanel.add(detailLabels[i]);
         }
 
+
+
         // Create popup window
         JWindow popup = new JWindow();
         popup.setContentPane(popupPanel);
@@ -1713,5 +1715,23 @@ class RoomColorRenderer extends DefaultTableCellRenderer {
         });
 
         return popup;
+    }
+
+    // Method to create styled buttons
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setBackground(Color.black);
+        button.setForeground(Color.white);
+        return button;
+    }
+
+    // Method to create styled buttons with tooltip descriptions
+    private JButton createButtonWithDescription(String text, String description) {
+        JButton button = createStyledButton(text);
+        button.setToolTipText(description);
+        return button;
     }
 }

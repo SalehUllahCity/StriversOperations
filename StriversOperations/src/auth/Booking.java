@@ -11,8 +11,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Time;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
@@ -462,8 +460,7 @@ public class Booking extends JFrame {
         TimeSlotCellRenderer renderer = new TimeSlotCellRenderer();
         setupTimeSlotTable(renderer);
 
-        JScrollPane scrollPane = new JScrollPane(timeSlotTable);
-        return scrollPane;
+        return new JScrollPane(timeSlotTable);
     }
 
     private void setupTimeSlotTable(TimeSlotCellRenderer renderer) {
@@ -1011,8 +1008,6 @@ public class Booking extends JFrame {
 
         int row = timeSlotTable.getSelectedRow();
         if (row >= 0) {
-            String timeStr = (String) timeSlotTable.getValueAt(row, 0);
-            LocalTime time = LocalTime.parse(timeStr);
             String currentStatus = (String) timeSlotTable.getValueAt(row, 1);
 
             if (currentStatus.equals("Selected")) {
@@ -1054,19 +1049,6 @@ public class Booking extends JFrame {
         panel.add(buttonsPanel, BorderLayout.CENTER);
 
         return panel;
-    }
-
-    private JLabel createLabel(String text) {
-        JLabel label = new JLabel(text);
-        label.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
-        label.setForeground(Color.WHITE);
-        return label;
-    }
-
-    private JTextField createTextField() {
-        JTextField field = new JTextField();
-        field.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
-        return field;
     }
 
     private JPanel createTopBar(JFrame parentFrame) {
@@ -2227,5 +2209,12 @@ public class Booking extends JFrame {
         checkbox.setFont(new Font("TimesRoman", Font.PLAIN, 12));
         checkbox.setForeground(Color.WHITE);
         checkbox.setBackground(panelColor);
+    }
+
+    // Method to create styled buttons with tooltip descriptions
+    private JButton createButtonWithDescription(String text, String description) {
+        JButton button = createStyledButton(text);
+        button.setToolTipText(description);
+        return button;
     }
 }
