@@ -27,19 +27,26 @@ public class Calendar extends JFrame {
     private JTable calendarTable;
     private JLabel weekLabel;
     private LocalDate currentWeekStart;
-    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+    public final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
     private final Color darkColour = new Color(18, 32, 35);
     private final int fontSize = 18;
     private LocalDate selectedMonthDate = LocalDate.now();
     private JPanel calendarGrid;
     private JLabel monthYearLabel;
     private JTextArea bookingDetails;
+    private String currentFilterRoom = null; // Track currently filtered room
+    private JLabel filterStatusLabel; // Display current filter status
+
+    // For visuals on the calendar top left
+    private final Color NO_BOOKINGS_COLOR = new Color(100, 100, 100); // Grey
+    private final Color PARTIAL_BOOKINGS_COLOR = new Color(255, 152, 0); // Orange
+    private final Color FULLY_BOOKED_COLOR = new Color(76, 175, 80); // Green
 
     // Space categories and their colors
     private final Map<String, Color> spaceColors = new HashMap<>() {{
         // Meeting Rooms
         put("The Green Room", new Color(76, 175, 80));    // Green
-        put("Bronte Boardroom", new Color(121, 85, 72));  // Brown
+        put("Brontë Boardroom", new Color(121, 85, 72));  // Brown
         put("Dickens Den", new Color(255, 152, 0));       // Orange
         put("Poe Parlor", new Color(156, 39, 176));       // Purple
         put("Globe Room", new Color(3, 169, 244));        // Light Blue
@@ -100,15 +107,20 @@ public class Calendar extends JFrame {
 
                         String[] bookings = value.toString().split("\\|");
                         for (String booking : bookings) {
-                            details.append("\n• ").append(booking.trim());
+                            // Extract the time range from the booking string
+                            String[] parts = booking.trim().split(" ");
+                            String timeRange = parts[parts.length-1]; // Get the last part which is the time range
+                            String bookingWithoutTime = booking.substring(0, booking.lastIndexOf(" ")).trim();
+
+                            details.append("\n• ").append(bookingWithoutTime)
+                                    .append("\n  ").append(timeRange);
                         }
                         bookingDetails.setText(details.toString());
                     } else {
                         bookingDetails.setText("No bookings for this slot");
                     }
                 }
-            }
-        });
+            }});
     }
 
     private void createHeaderPanel() {
@@ -127,12 +139,22 @@ public class Calendar extends JFrame {
         styleTopButton(settingsBtn);
         settingsBtn.addActionListener(e -> new SettingScreen.SettingsDialog(this).setVisible(true));
 
+        // Add Reset Filter button
+        JButton resetFilterBtn = new JButton("Reset Filter");
+        styleTopButton(resetFilterBtn);
+        resetFilterBtn.addActionListener(e -> {
+            currentFilterRoom = null;
+            updateFilterStatus();
+            refreshCalendar();
+        });
+
         JPanel navButtons = new JPanel(new FlowLayout(FlowLayout.LEFT));
         navButtons.setOpaque(false);
         navButtons.add(homeBtn);
 
         JPanel controlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         controlButtons.setOpaque(false);
+        controlButtons.add(resetFilterBtn);
         controlButtons.add(settingsBtn);
 
         JPanel weekControl = new JPanel(new BorderLayout());
@@ -160,11 +182,30 @@ public class Calendar extends JFrame {
         weekControl.add(weekLabel, BorderLayout.CENTER);
         weekControl.add(nextWeek, BorderLayout.EAST);
 
+        // Create filter status label
+        filterStatusLabel = new JLabel("Showing all rooms", JLabel.CENTER);
+        filterStatusLabel.setForeground(Color.LIGHT_GRAY);
+        filterStatusLabel.setFont(new Font("TimesRoman", Font.ITALIC, 14));
+
+        // Create a panel for week control and filter status
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setOpaque(false);
+        centerPanel.add(weekControl, BorderLayout.CENTER);
+        centerPanel.add(filterStatusLabel, BorderLayout.SOUTH);
+
         header.add(navButtons, BorderLayout.WEST);
-        header.add(weekControl, BorderLayout.CENTER);
+        header.add(centerPanel, BorderLayout.CENTER);
         header.add(controlButtons, BorderLayout.EAST);
 
         add(header, BorderLayout.NORTH);
+    }
+
+    private void updateFilterStatus() {
+        if (currentFilterRoom == null) {
+            filterStatusLabel.setText("Showing all rooms");
+        } else {
+            filterStatusLabel.setText("Filtered by: " + currentFilterRoom);
+        }
     }
 
     private void createSideMonthView() {
@@ -240,7 +281,7 @@ public class Calendar extends JFrame {
         colorKeyPanel.setBackground(darkColour);
         colorKeyPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JLabel keyTitle = new JLabel("Room Colors");
+        JLabel keyTitle = new JLabel("Room Colors (Click to Filter)");
         keyTitle.setForeground(Color.WHITE);
         keyTitle.setFont(new Font("SansSerif", Font.BOLD, 14));
 
@@ -252,18 +293,52 @@ public class Calendar extends JFrame {
 
         // Add color keys for each room
         for (Map.Entry<String, Color> entry : spaceColors.entrySet()) {
+            String roomName = entry.getKey();
+            Color roomColor = entry.getValue();
+
             JPanel keyItem = new JPanel(new BorderLayout());
             keyItem.setMaximumSize(new Dimension(230, 25));
             keyItem.setBackground(darkColour);
 
             JPanel colorBox = new JPanel();
             colorBox.setPreferredSize(new Dimension(20, 20));
-            colorBox.setBackground(entry.getValue());
+            colorBox.setBackground(roomColor);
             colorBox.setBorder(BorderFactory.createLineBorder(Color.WHITE));
 
-            JLabel roomLabel = new JLabel(" " + entry.getKey());
+            JLabel roomLabel = new JLabel(" " + roomName);
             roomLabel.setForeground(Color.WHITE);
             roomLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
+
+            // Add mouse listeners for filter by room functionality
+            roomLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            colorBox.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+            MouseAdapter roomFilterAdapter = new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (currentFilterRoom != null && currentFilterRoom.equals(roomName)) {
+                        // If clicking the already filtered room, reset the filter
+                        currentFilterRoom = null;
+                    } else {
+                        currentFilterRoom = roomName;
+                    }
+                    updateFilterStatus();
+                    refreshCalendar();
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    roomLabel.setForeground(Color.LIGHT_GRAY);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    roomLabel.setForeground(Color.WHITE);
+                }
+            };
+
+            roomLabel.addMouseListener(roomFilterAdapter);
+            colorBox.addMouseListener(roomFilterAdapter);
 
             keyItem.add(colorBox, BorderLayout.WEST);
             keyItem.add(roomLabel, BorderLayout.CENTER);
@@ -473,9 +548,13 @@ public class Calendar extends JFrame {
         DefaultTableModel model = (DefaultTableModel) calendarTable.getModel();
         model.setRowCount(0);
 
-        for (int hour = 8; hour <= 20; hour++) {
+        // Start from 10:00 and go until 00:00 (midnight)
+        for (int hour = 10; hour <= 24; hour++) {
             for (int min = 0; min < 60; min += 30) {
-                LocalTime time = LocalTime.of(hour, min);
+                // Skip the last iteration at midnight (24:30)
+                if (hour == 24 && min > 0) continue;
+
+                LocalTime time = LocalTime.of(hour == 24 ? 0 : hour, min);
                 Vector<String> row = new Vector<>();
                 row.add(time.format(timeFormatter));
                 for (int i = 0; i < 7; i++) {
@@ -491,21 +570,34 @@ public class Calendar extends JFrame {
     }
 
     private void loadBookingsForDate(LocalDate date, DefaultTableModel model, int dayColumnIndex) {
-        // UNCOMMENT THIS SECTION TO USE TEST DATA INSTEAD OF DATABASE
-        if (useTestData(date, model, dayColumnIndex)) {
-            return;
-        }
-
-
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
-        String user = "in2033t26_a"; // change to team username
-        String password = "jLxOPuQ69Mg"; // default password is local password -> change to team password when it works
-        String query = "SELECT BookingName, Client, Room, StartTime, EndTime FROM booking WHERE BookingDate = ? ORDER BY StartTime";
+        String user = "in2033t26_a";
+        String password = "jLxOPuQ69Mg";
+
+        // Modify query based on filter
+        String query;
+        if (currentFilterRoom == null) {
+            query = "SELECT BookingName, Client, " +
+                    "REPLACE(Room, 'ë', 'e') as Room, " +
+                    "StartTime, EndTime " +
+                    "FROM booking WHERE BookingDate = ? ORDER BY StartTime";
+        } else {
+            query = "SELECT BookingName, Client, " +
+                    "REPLACE(Room, 'ë', 'e') as Room, " +
+                    "StartTime, EndTime " +
+                    "FROM booking WHERE BookingDate = ? AND REPLACE(Room, 'ë', 'e') = ? ORDER BY StartTime";
+        }
 
         try (Connection conn = DriverManager.getConnection(url, user, password);
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setDate(1, java.sql.Date.valueOf(date));
+
+            // Add room parameter if filtering
+            if (currentFilterRoom != null) {
+                stmt.setString(2, currentFilterRoom);
+            }
+
             ResultSet rs = stmt.executeQuery();
 
             // Create a map to store bookings for each time slot
@@ -518,8 +610,9 @@ public class Calendar extends JFrame {
                 LocalTime start = rs.getTime("StartTime").toLocalTime();
                 LocalTime end = rs.getTime("EndTime").toLocalTime();
 
-                // Format the booking text
-                String bookingText = room + ": " + bookingName + " (" + client + ")";
+                // Format the booking text with start and end time
+                String bookingText = room + ": " + bookingName + " (" + client + ") " +
+                        start.format(timeFormatter) + "-" + end.format(timeFormatter);
 
                 // Add booking to each affected time slot
                 LocalTime currentTime = start;
@@ -545,47 +638,6 @@ public class Calendar extends JFrame {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error fetching bookings: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    // Test method to add sample bookings - can be commented out when not needed
-    private boolean useTestData(LocalDate date, DefaultTableModel model, int dayColumnIndex) {
-        // Check if it's the test date (April 5th, 2025)
-        if (date.equals(LocalDate.of(2025, 4, 5))) {
-            Map<String, List<String>> timeSlotBookings = new HashMap<>();
-
-            // Create list of test bookings for 14:00
-            List<String> bookings = new ArrayList<>();
-            bookings.add("Bronte Boardroom: Team Meeting (John Smith)");
-            bookings.add("Main Hall: Performance Setup (Theatre Group)");
-            bookings.add("The Green Room: Client Meeting (Tech Corp)");
-
-
-            // Add all bookings to the 14:00 time slot
-            LocalTime startTime = LocalTime.of(14, 0);
-            LocalTime endTime = LocalTime.of(15, 0);
-
-            // Add bookings to affected time slots
-            LocalTime currentTime = startTime;
-            while (!currentTime.isAfter(endTime.minusMinutes(30))) {
-                String timeKey = currentTime.format(timeFormatter);
-                timeSlotBookings.put(timeKey, bookings);
-                currentTime = currentTime.plusMinutes(30);
-            }
-
-            // Update the table with test bookings
-            for (int row = 0; row < model.getRowCount(); row++) {
-                String timeSlot = (String) model.getValueAt(row, 0);
-                List<String> slotBookings = timeSlotBookings.get(timeSlot);
-                if (slotBookings != null && !slotBookings.isEmpty()) {
-                    String combinedBookings = String.join(" | ", slotBookings);
-                    model.setValueAt(combinedBookings, row, dayColumnIndex);
-                }
-            }
-
-            return true; // Indicates we used test data
-        }
-
-        return false; // Indicates we should use database data
     }
 
     // Custom popup for booking details
@@ -653,6 +705,12 @@ public class Calendar extends JFrame {
     class RoomColorRenderer extends DefaultTableCellRenderer {
         private final BookingPopup popup = new BookingPopup();
 
+        private String normalizeRoomName(String room) {
+            return room.replace("ë", "e")  // Replace ë with e
+                    .replace("\n", " ")  // Replace newlines with spaces
+                    .trim();            // Remove extra spaces
+        }
+
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
@@ -672,19 +730,20 @@ public class Calendar extends JFrame {
                 if (!trimmedBooking.isEmpty()) {
                     // Extract room name and other details
                     String[] parts = trimmedBooking.split(":");
-                    String room = parts[0].trim();
+                    String originalRoom = parts[0].trim();
+                    String normalizedRoom = normalizeRoomName(originalRoom);
                     String details = parts[1].trim();
 
                     // Create a label for each booking with normal text alignment
                     JLabel bookingLabel = new JLabel("<html><div style='margin: 3px;'>" +
-                            "<b>" + room + "</b><br>" +
+                            "<b>" + originalRoom + "</b><br>" +  // Use original room name for display
                             details + "</div></html>");
                     bookingLabel.setOpaque(true);
                     bookingLabel.setHorizontalAlignment(SwingConstants.LEFT);
                     bookingLabel.setVerticalAlignment(SwingConstants.TOP);
 
-                    // Set the background color based on the room
-                    Color bgColor = spaceColors.getOrDefault(room, Color.GRAY);
+                    // Set the background color based on the normalized room name
+                    Color bgColor = spaceColors.getOrDefault(normalizedRoom, Color.GRAY);
                     bookingLabel.setBackground(bgColor);
 
                     // Set text color based on background brightness

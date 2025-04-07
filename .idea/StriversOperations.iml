@@ -14,7 +14,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" exported="" name="mkApp" level="application" />
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>

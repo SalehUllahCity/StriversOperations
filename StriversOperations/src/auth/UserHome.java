@@ -56,13 +56,36 @@ public class UserHome extends JFrame {
         titlePanel.setOpaque(false);
         titlePanel.add(titleLabel);
 
-        JButton reportButton = createStyledButton("Reports");
-        JButton reviewsButton = createStyledButton("Reviews");
-        JButton calendarButton = createStyledButton("Calendar");
-        JButton bookingButton = createStyledButton("Bookings");
+        // Create buttons with descriptions
+        JButton reportButton = createButtonWithDescription("Reports",
+                "<html>Reports:<br>Venue Usage<br>Daily Sheets<br>Financial Summary<br>Ticket Sales<br>Data by the Day<br>Monthly Revenue</html>");
+
+        JButton reviewsButton = createButtonWithDescription("Reviews",
+                "<html>Reviews:<br>Store, copy and confirm Reviews</html>");
+
+        JButton calendarButton = createButtonWithDescription("Calendar",
+                "<html>Calendar:<br>Bookings & Availability</html>");
+
+        JButton bookingButton = createButtonWithDescription("Bookings",
+                "<html>Bookings:<br>Create multiple Bookings</html>");
+
         JButton logoutButton = createStyledButton("Logout");
-        JButton diaryButton = createStyledButton("Diary");
-        JButton helpButton = createStyledButton("Help");
+
+        JButton diaryButton = createButtonWithDescription("Diary",
+                "<html>Diary:<br>Log of all unconfirmed/unpaid bookings</html>");
+
+        JButton clientButton = createButtonWithDescription("Clients",
+                "<html>Clients:<br>Review and Store Client Data</html>");
+
+        JButton roomButton = createButtonWithDescription("Rooms",
+                "<html>Rooms:<br>See Room Capacity, Layouts & Availability</html>");
+
+        JButton eventsButton = createButtonWithDescription("Events",
+                "<html>Events:<br>Event Information & Discounts</html>");
+
+        JButton invoicesButton = createButtonWithDescription("Invoices",
+                "<html>Invoices:<br>Costs of each Booking</html>");
+        // JButton helpButton = createStyledButton("Help");
 
         // Add buttons to the frame directly at the bottom
         JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 10, 10));
@@ -73,12 +96,17 @@ public class UserHome extends JFrame {
         buttonPanel.add(bookingButton);
         buttonPanel.add(reviewsButton);
         buttonPanel.add(diaryButton);
-        buttonPanel.add(helpButton);
+        // buttonPanel.add(helpButton);
+        buttonPanel.add(clientButton);
+        buttonPanel.add(roomButton);
+        buttonPanel.add(eventsButton);
+        buttonPanel.add(invoicesButton);
         buttonPanel.add(logoutButton);
 
 
         // Load logo
-        ImageIcon characterIcon = new ImageIcon("data/logo/logo.png");
+        ImageIcon characterIcon = new ImageIcon(getClass().getResource("/data/logo/logo.png"));
+
         JLabel characterLabel = new JLabel(characterIcon);
 
         // Add components to the frame using GridBagLayout
@@ -138,16 +166,40 @@ public class UserHome extends JFrame {
             new UserLogin().setVisible(true);
 
         });
-
+        /*
         helpButton.addActionListener(e -> {
             setVisible(false);
             new Help().setVisible(true);
         });
 
+         */
+
         reviewsButton.addActionListener(e -> {
             setVisible(false);
             new Reviews().setVisible(true);
         });
+
+        clientButton.addActionListener(e -> {
+            setVisible(false);
+            new Clients().setVisible(true);
+        });
+
+        roomButton.addActionListener(e -> {
+            setVisible(false);
+            new Rooms().setVisible(true);
+        });
+
+        eventsButton.addActionListener(e -> {
+            setVisible(false);
+            new Events().setVisible(true);
+        });
+
+        invoicesButton.addActionListener(e -> {
+            setVisible(false);
+            new Invoices().setVisible(true);
+        });
+
+
 
         // Add mouse listeners to the buttons for hover effect
         addHoverEffect(calendarButton);
@@ -156,6 +208,11 @@ public class UserHome extends JFrame {
         addHoverEffect(diaryButton);
         addHoverEffect(logoutButton);
         addHoverEffect(reviewsButton);
+        addHoverEffect(diaryButton);
+        addHoverEffect(clientButton);
+        addHoverEffect(eventsButton);
+        addHoverEffect(roomButton);
+        addHoverEffect(invoicesButton);
     }
 
     // Method to create styled buttons
@@ -169,11 +226,22 @@ public class UserHome extends JFrame {
         return button;
     }
 
+    // Method to create styled buttons with tooltip descriptions
+    private JButton createButtonWithDescription(String text, String description) {
+        JButton button = createStyledButton(text);
+        button.setToolTipText(description);
+        return button;
+    }
+
     private void addHoverEffect(JButton button) {
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 button.setForeground(Color.WHITE);
+                // Show tooltip when hovering
+                if (button.getToolTipText() != null) {
+                    ToolTipManager.sharedInstance().setInitialDelay(0);
+                }
             }
 
             @Override
