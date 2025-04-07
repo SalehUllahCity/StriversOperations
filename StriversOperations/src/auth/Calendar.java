@@ -27,13 +27,15 @@ public class Calendar extends JFrame {
     private JTable calendarTable;
     private JLabel weekLabel;
     private LocalDate currentWeekStart;
-    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+    public final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
     private final Color darkColour = new Color(18, 32, 35);
     private final int fontSize = 18;
     private LocalDate selectedMonthDate = LocalDate.now();
     private JPanel calendarGrid;
     private JLabel monthYearLabel;
     private JTextArea bookingDetails;
+    private String currentFilterRoom = null; // Track currently filtered room
+    private JLabel filterStatusLabel; // Display current filter status
 
     // For visuals on the calendar top left
     private final Color NO_BOOKINGS_COLOR = new Color(100, 100, 100); // Grey
@@ -137,12 +139,22 @@ public class Calendar extends JFrame {
         styleTopButton(settingsBtn);
         settingsBtn.addActionListener(e -> new SettingScreen.SettingsDialog(this).setVisible(true));
 
+        // Add Reset Filter button
+        JButton resetFilterBtn = new JButton("Reset Filter");
+        styleTopButton(resetFilterBtn);
+        resetFilterBtn.addActionListener(e -> {
+            currentFilterRoom = null;
+            updateFilterStatus();
+            refreshCalendar();
+        });
+
         JPanel navButtons = new JPanel(new FlowLayout(FlowLayout.LEFT));
         navButtons.setOpaque(false);
         navButtons.add(homeBtn);
 
         JPanel controlButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         controlButtons.setOpaque(false);
+        controlButtons.add(resetFilterBtn);
         controlButtons.add(settingsBtn);
 
         JPanel weekControl = new JPanel(new BorderLayout());
@@ -170,11 +182,30 @@ public class Calendar extends JFrame {
         weekControl.add(weekLabel, BorderLayout.CENTER);
         weekControl.add(nextWeek, BorderLayout.EAST);
 
+        // Create filter status label
+        filterStatusLabel = new JLabel("Showing all rooms", JLabel.CENTER);
+        filterStatusLabel.setForeground(Color.LIGHT_GRAY);
+        filterStatusLabel.setFont(new Font("TimesRoman", Font.ITALIC, 14));
+
+        // Create a panel for week control and filter status
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setOpaque(false);
+        centerPanel.add(weekControl, BorderLayout.CENTER);
+        centerPanel.add(filterStatusLabel, BorderLayout.SOUTH);
+
         header.add(navButtons, BorderLayout.WEST);
-        header.add(weekControl, BorderLayout.CENTER);
+        header.add(centerPanel, BorderLayout.CENTER);
         header.add(controlButtons, BorderLayout.EAST);
 
         add(header, BorderLayout.NORTH);
+    }
+
+    private void updateFilterStatus() {
+        if (currentFilterRoom == null) {
+            filterStatusLabel.setText("Showing all rooms");
+        } else {
+            filterStatusLabel.setText("Filtered by: " + currentFilterRoom);
+        }
     }
 
     private void createSideMonthView() {
@@ -250,7 +281,7 @@ public class Calendar extends JFrame {
         colorKeyPanel.setBackground(darkColour);
         colorKeyPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JLabel keyTitle = new JLabel("Room Colors");
+        JLabel keyTitle = new JLabel("Room Colors (Click to Filter)");
         keyTitle.setForeground(Color.WHITE);
         keyTitle.setFont(new Font("SansSerif", Font.BOLD, 14));
 
@@ -262,18 +293,52 @@ public class Calendar extends JFrame {
 
         // Add color keys for each room
         for (Map.Entry<String, Color> entry : spaceColors.entrySet()) {
+            String roomName = entry.getKey();
+            Color roomColor = entry.getValue();
+
             JPanel keyItem = new JPanel(new BorderLayout());
             keyItem.setMaximumSize(new Dimension(230, 25));
             keyItem.setBackground(darkColour);
 
             JPanel colorBox = new JPanel();
             colorBox.setPreferredSize(new Dimension(20, 20));
-            colorBox.setBackground(entry.getValue());
+            colorBox.setBackground(roomColor);
             colorBox.setBorder(BorderFactory.createLineBorder(Color.WHITE));
 
-            JLabel roomLabel = new JLabel(" " + entry.getKey());
+            JLabel roomLabel = new JLabel(" " + roomName);
             roomLabel.setForeground(Color.WHITE);
             roomLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
+
+            // Add mouse listeners for filter by room functionality
+            roomLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            colorBox.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+            MouseAdapter roomFilterAdapter = new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (currentFilterRoom != null && currentFilterRoom.equals(roomName)) {
+                        // If clicking the already filtered room, reset the filter
+                        currentFilterRoom = null;
+                    } else {
+                        currentFilterRoom = roomName;
+                    }
+                    updateFilterStatus();
+                    refreshCalendar();
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    roomLabel.setForeground(Color.LIGHT_GRAY);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    roomLabel.setForeground(Color.WHITE);
+                }
+            };
+
+            roomLabel.addMouseListener(roomFilterAdapter);
+            colorBox.addMouseListener(roomFilterAdapter);
 
             keyItem.add(colorBox, BorderLayout.WEST);
             keyItem.add(roomLabel, BorderLayout.CENTER);
@@ -488,7 +553,7 @@ public class Calendar extends JFrame {
             for (int min = 0; min < 60; min += 30) {
                 // Skip the last iteration at midnight (24:30)
                 if (hour == 24 && min > 0) continue;
-                
+
                 LocalTime time = LocalTime.of(hour == 24 ? 0 : hour, min);
                 Vector<String> row = new Vector<>();
                 row.add(time.format(timeFormatter));
@@ -508,15 +573,31 @@ public class Calendar extends JFrame {
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
         String user = "in2033t26_a";
         String password = "jLxOPuQ69Mg";
-        String query = "SELECT BookingName, Client, " +
-                      "REPLACE(Room, 'ë', 'e') as Room, " +  // Replace ë with e in room names
-                      "StartTime, EndTime " +
-                      "FROM booking WHERE BookingDate = ? ORDER BY StartTime";
+
+        // Modify query based on filter
+        String query;
+        if (currentFilterRoom == null) {
+            query = "SELECT BookingName, Client, " +
+                    "REPLACE(Room, 'ë', 'e') as Room, " +
+                    "StartTime, EndTime " +
+                    "FROM booking WHERE BookingDate = ? ORDER BY StartTime";
+        } else {
+            query = "SELECT BookingName, Client, " +
+                    "REPLACE(Room, 'ë', 'e') as Room, " +
+                    "StartTime, EndTime " +
+                    "FROM booking WHERE BookingDate = ? AND REPLACE(Room, 'ë', 'e') = ? ORDER BY StartTime";
+        }
 
         try (Connection conn = DriverManager.getConnection(url, user, password);
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setDate(1, java.sql.Date.valueOf(date));
+
+            // Add room parameter if filtering
+            if (currentFilterRoom != null) {
+                stmt.setString(2, currentFilterRoom);
+            }
+
             ResultSet rs = stmt.executeQuery();
 
             // Create a map to store bookings for each time slot
@@ -626,8 +707,8 @@ public class Calendar extends JFrame {
 
         private String normalizeRoomName(String room) {
             return room.replace("ë", "e")  // Replace ë with e
-                      .replace("\n", " ")  // Replace newlines with spaces
-                      .trim();            // Remove extra spaces
+                    .replace("\n", " ")  // Replace newlines with spaces
+                    .trim();            // Remove extra spaces
         }
 
         @Override
