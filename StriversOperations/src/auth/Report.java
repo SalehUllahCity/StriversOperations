@@ -90,6 +90,7 @@ public class Report extends JFrame {
         tabbedPane.addTab("Daily Sheets", createDailySheetsTab());
         tabbedPane.addTab("Financial Summary", createFinanceTab());
         tabbedPane.addTab("Monthly Revenue", createMonthRevTab());
+        tabbedPane.addTab("Ticket Sales", createTicketSalesTab());
 
         contentPane.add(tabbedPane, BorderLayout.CENTER);
     }
@@ -364,6 +365,8 @@ public class Report extends JFrame {
         return panel;
     }
 
+
+
     private JPanel createSummaryCard(String title, String value) {
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
@@ -530,6 +533,151 @@ public class Report extends JFrame {
             }
             g.drawString(legendText, legendX + 15, legendY + (i * legendSpacing) + 9);
             i++;
+        }
+    }
+
+    private JPanel createTicketSalesTab() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBackground(background);
+        panel.setBorder(new EmptyBorder(15, 15, 15, 15));
+
+        // Create top panel for search controls
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        searchPanel.setBackground(background);
+
+        // Add search label
+        JLabel searchLabel = new JLabel("Search by Performance ID:");
+        searchLabel.setForeground(Color.WHITE);
+        searchLabel.setFont(new Font("TimesRoman", Font.BOLD, 13));
+        searchPanel.add(searchLabel);
+
+        // Add search field
+        JTextField searchField = new JTextField();
+        searchField.setPreferredSize(new Dimension(200, 25));
+        searchField.setFont(new Font("TimesRoman", Font.PLAIN, 13));
+        searchField.setBackground(new Color(30, 50, 55));
+        searchField.setForeground(Color.WHITE);
+        searchField.setCaretColor(Color.WHITE);
+        searchField.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
+        searchPanel.add(searchField);
+
+        // Add search button
+        JButton searchButton = new JButton("Search");
+        searchButton.setFont(new Font("TimesRoman", Font.BOLD, 13));
+        searchButton.setBackground(new Color(30, 50, 55));
+        searchButton.setForeground(Color.WHITE);
+        searchButton.setFocusPainted(false);
+        searchPanel.add(searchButton);
+
+        // Add clear button
+        JButton clearButton = new JButton("Clear");
+        clearButton.setFont(new Font("TimesRoman", Font.BOLD, 13));
+        clearButton.setBackground(new Color(30, 50, 55));
+        clearButton.setForeground(Color.WHITE);
+        clearButton.setFocusPainted(false);
+        searchPanel.add(clearButton);
+
+        panel.add(searchPanel, BorderLayout.NORTH);
+
+        // Create table with columns
+        String[] columns = {
+                "Ticket ID", "Price", "Customer ID", "Performance ID",
+                "Seat ID", "Discount ID", "Group ID", "Staff ID"
+        };
+
+        DefaultTableModel model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        JTable table = new JTable(model);
+
+        // Style the table to match other tabs
+        table.setFont(new Font("TimesRoman", Font.PLAIN, 13));
+        table.setRowHeight(28);
+        table.setGridColor(new Color(45, 45, 45));
+        table.setBackground(new Color(25, 40, 45));
+        table.setForeground(Color.WHITE);
+        table.setSelectionBackground(new Color(45, 66, 75));
+        table.setSelectionForeground(Color.WHITE);
+        table.setShowGrid(true);
+        table.setIntercellSpacing(new Dimension(1, 1));
+
+        // Style the table header
+        table.getTableHeader().setBackground(new Color(30, 50, 55));
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.getTableHeader().setFont(new Font("TimesRoman", Font.BOLD, 13));
+        table.getTableHeader().setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
+
+        // Create scroll pane with dark styling
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
+        scrollPane.getViewport().setBackground(table.getBackground());
+
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        // Add action listeners
+        searchButton.addActionListener(e -> {
+            String performanceId = searchField.getText().trim();
+            if (!performanceId.isEmpty()) {
+                loadTicketSalesData(model, performanceId);
+            } else {
+                JOptionPane.showMessageDialog(panel,
+                        "Please enter a Performance ID to search",
+                        "Search Error",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+        });
+
+        clearButton.addActionListener(e -> {
+            searchField.setText("");
+            model.setRowCount(0); // Clear the table
+        });
+
+        // Add popup functionality
+        createDetailPopup(columns, table);
+
+        return panel;
+    }
+
+    private void loadTicketSalesData(DefaultTableModel model, String performanceId) {
+        try {
+            JDBC jdbc = new JDBC();
+            List<TicketSale> ticketSales = jdbc.getTicketSalesBasedOnEvent("Great Man Show");
+
+            // Clear existing data
+            model.setRowCount(0);
+
+            if (ticketSales.isEmpty()) {
+                JOptionPane.showMessageDialog(null,
+                        "No ticket sales found for Performance ID: " + performanceId,
+                        "No Results",
+                        JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            // Add ticket sales data to the table
+            for (TicketSale sale : ticketSales) {
+                Object[] row = {
+                        sale.getTicketSaleId(),
+                        String.format("£%.2f", sale.getPrice()),
+                        sale.getCustomerID(),
+                        sale.getPerformanceID(),
+                        sale.getSeatID(),
+                        sale.getDiscountID() != 0 ? sale.getDiscountID() : "N/A",
+                        sale.getGroupBookingID() != 0 ? sale.getGroupBookingID() : "N/A",
+                        sale.getStaffID()
+                };
+                model.addRow(row);
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                    "Error retrieving ticket sales data: " + e.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
