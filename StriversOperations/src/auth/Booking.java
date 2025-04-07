@@ -46,11 +46,11 @@ public class Booking extends JFrame {
     {
         // Initialize space colors
         spaceColors.put("The Green Room", new Color(76, 175, 80));    // Green
-        spaceColors.put("Bronte Boardroom", new Color(33, 150, 243)); // Blue
+        spaceColors.put("Bronte\nBoardroom", new Color(33, 150, 243)); // Blue
         spaceColors.put("Dickens Den", new Color(156, 39, 176));      // Purple
         spaceColors.put("Poe Parlor", new Color(255, 152, 0));        // Orange
         spaceColors.put("Globe Room", new Color(0, 188, 212));        // Cyan
-        spaceColors.put("Chekhov Chamber", new Color(233, 30, 99));   // Pink
+        spaceColors.put("Chekhov\nChamber", new Color(233, 30, 99));   // Pink
         spaceColors.put("Main Hall", new Color(244, 67, 54));         // Red
         spaceColors.put("Small Hall", new Color(255, 235, 59));       // Yellow
         spaceColors.put("Rehearsal Space", new Color(63, 81, 181));   // Indigo
