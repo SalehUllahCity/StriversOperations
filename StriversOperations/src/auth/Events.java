@@ -3,6 +3,7 @@ package auth;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -14,6 +15,9 @@ public class Events extends JFrame {
 
     private final Color background = new Color(18, 32, 35, 255);
     private final int fontSize = 22;
+    private JTable eventsTable;
+    private DefaultTableModel tableModel;
+    private List<Booking> allBookings;
 
     public Events() {
         setTitle("Lancaster's Music Hall Software: Events");
@@ -27,29 +31,135 @@ public class Events extends JFrame {
         contentPane.setBackground(background);
         setContentPane(contentPane);
         contentPane.add(createHeaderPanel(), BorderLayout.NORTH);
-        contentPane.add(createMainPanel(), BorderLayout.CENTER);
+
+        // Create main content with proper layout
+        JPanel centralContent = new JPanel(new BorderLayout(0, 10));
+        centralContent.setBackground(background);
+        centralContent.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Add components to central content
+        centralContent.add(createDiscountKeyPanel(), BorderLayout.NORTH);
+
+        // Panel that contains search and table
+        JPanel contentPanel = new JPanel(new BorderLayout(0, 10));
+        contentPanel.setBackground(background);
+        contentPanel.add(createSearchPanel(), BorderLayout.NORTH);
+        contentPanel.add(createEventsTable(), BorderLayout.CENTER);
+
+        centralContent.add(contentPanel, BorderLayout.CENTER);
+        contentPane.add(centralContent, BorderLayout.CENTER);
     }
 
-    private JPanel createMainPanel() {
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(background);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    private JPanel createSearchPanel() {
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        searchPanel.setBackground(background);
+        searchPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        // Create discount key panel
-        JPanel discountPanel = createDiscountKeyPanel();
-        mainPanel.add(discountPanel, BorderLayout.NORTH);
+        JLabel searchLabel = new JLabel("Search Events:");
+        searchLabel.setForeground(Color.WHITE);
+        searchLabel.setFont(new Font("TimesRoman", Font.PLAIN, 16));
 
-        // Create events table
-        JScrollPane tableScrollPane = createEventsTable();
-        mainPanel.add(tableScrollPane, BorderLayout.CENTER);
+        JTextField searchField = new JTextField(30);
+        searchField.setFont(new Font("TimesRoman", Font.PLAIN, 16));
 
-        return mainPanel;
+        JButton searchButton = new JButton("Search");
+        searchButton.setFont(new Font("TimesRoman", Font.PLAIN, 16));
+        searchButton.setBackground(new Color(50, 80, 80));
+        searchButton.setForeground(Color.WHITE);
+        searchButton.setFocusPainted(false);
+        addHoverEffect(searchButton);
+
+        JButton resetButton = new JButton("Reset");
+        resetButton.setFont(new Font("TimesRoman", Font.PLAIN, 16));
+        resetButton.setBackground(new Color(70, 50, 50));
+        resetButton.setForeground(Color.WHITE);
+        resetButton.setFocusPainted(false);
+        addHoverEffect(resetButton);
+
+        // Add action listeners for search and reset
+        searchButton.addActionListener(e -> {
+            String searchText = searchField.getText().toLowerCase().trim();
+            filterEvents(searchText);
+        });
+
+        resetButton.addActionListener(e -> {
+            searchField.setText("");
+            resetTableData();
+        });
+
+        // Add components to panel
+        searchPanel.add(searchLabel);
+        searchPanel.add(searchField);
+        searchPanel.add(searchButton);
+        searchPanel.add(resetButton);
+
+        return searchPanel;
+    }
+
+    private void filterEvents(String searchText) {
+        if (searchText.isEmpty()) {
+            resetTableData();
+            return;
+        }
+
+        // Clear the table
+        tableModel.setRowCount(0);
+
+        // Filter bookings and add matching ones to the table
+        for (Booking booking : allBookings) {
+            if (matchesSearch(booking, searchText)) {
+                tableModel.addRow(new Object[]{
+                        booking.getClientName(),
+                        booking.getBookingName(),
+                        booking.getBookingDate(),
+                        booking.getBookingEndDate(),
+                        booking.getStartTime(),
+                        booking.getEndTime(),
+                        booking.getRoom(),
+                        booking.getMaxDiscount() + "%",
+                        booking.getDescription()
+                });
+            }
+        }
+    }
+
+    private boolean matchesSearch(Booking booking, String searchText) {
+        // Check if any field contains the search text
+        return booking.getBookingName().toLowerCase().contains(searchText)
+                || booking.getRoom().toLowerCase().contains(searchText)
+                || booking.getDescription().toLowerCase().contains(searchText)
+                || booking.getClientName().toLowerCase().contains(searchText)
+                || (booking.getBookingDate() != null && booking.getBookingDate().toString().contains(searchText))
+                || (booking.getBookingEndDate() != null && booking.getBookingEndDate().toString().contains(searchText))
+                || booking.getStartTime().toLowerCase().contains(searchText)
+                || booking.getEndTime().toLowerCase().contains(searchText)
+                || String.valueOf(booking.getMaxDiscount()).contains(searchText);
+    }
+
+    private void resetTableData() {
+        // Clear the table
+        tableModel.setRowCount(0);
+
+        // Add all bookings back to the table
+        for (Booking booking : allBookings) {
+            tableModel.addRow(new Object[]{
+                    booking.getBookingName(),
+                    booking.getBookingDate(),
+                    booking.getBookingEndDate(),
+                    booking.getStartTime(),
+                    booking.getEndTime(),
+                    booking.getRoom(),
+                    booking.getClientName(),
+                    booking.getMaxDiscount() + "%",
+                    booking.getDescription()
+            });
+        }
     }
 
     private JPanel createDiscountKeyPanel() {
         JPanel panel = new JPanel(new GridLayout(4, 1));
         panel.setBackground(background);
-        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
         // Title
         JLabel title = new JLabel("Maximum Discounts Per Hall (Discounts do not stack)");
@@ -77,49 +187,97 @@ public class Events extends JFrame {
 
     private JScrollPane createEventsTable() {
         // Table model with columns
-        DefaultTableModel model = new DefaultTableModel() {
+        tableModel = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false; // Make table non-editable
             }
         };
-        model.addColumn("Event Name");
-        model.addColumn("Start Date");
-        model.addColumn("End Date");
-        model.addColumn("Room");
-        model.addColumn("Notes");
+
+        // Add columns with appropriate widths
+        tableModel.addColumn("Client");
+        tableModel.addColumn("Booking Name");
+        tableModel.addColumn("Start Date");
+        tableModel.addColumn("End Date");
+        tableModel.addColumn("Start Time");
+        tableModel.addColumn("End Time");
+        tableModel.addColumn("Room");
+        tableModel.addColumn("Max Discount");
+        tableModel.addColumn("Description");
 
         // Get data from database
-        List<Booking> bookings = fetchBookingsFromDatabase();
-        for (Booking booking : bookings) {
-            model.addRow(new Object[]{
+        allBookings = fetchBookingsFromDatabase();
+        for (Booking booking : allBookings) {
+            tableModel.addRow(new Object[]{
                     booking.getBookingName(),
                     booking.getBookingDate(),
                     booking.getBookingEndDate(),
+                    booking.getStartTime(),
+                    booking.getEndTime(),
                     booking.getRoom(),
-                    booking.getNotes()
+                    booking.getClientName(),
+                    booking.getMaxDiscount() + "%",
+                    booking.getDescription()
             });
         }
 
         // Create table
-        JTable table = new JTable(model);
-        table.setFont(new Font("TimesRoman", Font.PLAIN, 16));
-        table.setRowHeight(30);
-        table.setForeground(Color.WHITE);
-        table.setBackground(background);
-        table.setGridColor(Color.DARK_GRAY);
-        table.setSelectionBackground(new Color(50, 70, 70));
+        eventsTable = new JTable(tableModel);
+        eventsTable.setFont(new Font("TimesRoman", Font.PLAIN, 16));
+        eventsTable.setRowHeight(30);
+        eventsTable.setForeground(Color.WHITE);
+        eventsTable.setBackground(background);
+        eventsTable.setGridColor(Color.DARK_GRAY);
+        eventsTable.setSelectionBackground(new Color(50, 70, 70));
+
+        // Set column widths to prevent Max Discount from being obscured
+        eventsTable.getColumnModel().getColumn(0).setPreferredWidth(120); // Client
+        eventsTable.getColumnModel().getColumn(1).setPreferredWidth(150); // Booking Name
+        eventsTable.getColumnModel().getColumn(2).setPreferredWidth(100); // Start Date
+        eventsTable.getColumnModel().getColumn(3).setPreferredWidth(100); // End Date
+        eventsTable.getColumnModel().getColumn(4).setPreferredWidth(80);  // Start Time
+        eventsTable.getColumnModel().getColumn(5).setPreferredWidth(80);  // End Time
+        eventsTable.getColumnModel().getColumn(6).setPreferredWidth(100); // Room
+        eventsTable.getColumnModel().getColumn(7).setPreferredWidth(100); // Max Discount
+        eventsTable.getColumnModel().getColumn(8).setPreferredWidth(200); // Description
+
+        // Add tooltip for cells to show full text on hover
+        eventsTable.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                Point p = e.getPoint();
+                int row = eventsTable.rowAtPoint(p);
+                int col = eventsTable.columnAtPoint(p);
+
+                if (row >= 0 && col >= 0) {
+                    Object value = eventsTable.getValueAt(row, col);
+                    if (value != null) {
+                        eventsTable.setToolTipText(value.toString());
+                    } else {
+                        eventsTable.setToolTipText(null);
+                    }
+                }
+            }
+        });
+
+        // Ensure the header is always visible
+        eventsTable.getTableHeader().setReorderingAllowed(false);
+        eventsTable.getTableHeader().setResizingAllowed(true);
 
         // Custom header
-        JTableHeader header = table.getTableHeader();
-        header.setFont(new Font("TimesRoman", Font.BOLD, 18));
+        JTableHeader header = eventsTable.getTableHeader();
+        header.setFont(new Font("TimesRoman", Font.BOLD, 16));
         header.setForeground(Color.WHITE);
         header.setBackground(new Color(30, 50, 50));
+        header.setPreferredSize(new Dimension(header.getWidth(), 40)); // Make header taller
 
         // Scroll pane
-        JScrollPane scrollPane = new JScrollPane(table);
+        JScrollPane scrollPane = new JScrollPane(eventsTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(background);
+
+        // Make sure the horizontal scrollbar appears if needed
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         return scrollPane;
     }
@@ -131,17 +289,26 @@ public class Events extends JFrame {
         String password = "jLxOPuQ69Mg";
 
         try (Connection conn = DriverManager.getConnection(url, userName, password)) {
-            String query = "SELECT BookingName, BookingDate, BookingEndDate, Room, Notes FROM booking";
+            // Modified query to match the new column order (client first)
+            String query = "SELECT c.CompanyName, b.BookingName, b.BookingDate, b.BookingEndDate, " +
+                    "b.StartTime, b.EndTime, b.Room, b.MaxDiscount, b.Description " +
+                    "FROM booking b " +
+                    "LEFT JOIN client c ON b.ClientID = c.ClientID";
+
             try (PreparedStatement stmt = conn.prepareStatement(query);
                  ResultSet rs = stmt.executeQuery()) {
 
                 while (rs.next()) {
                     Booking booking = new Booking(
-                            rs.getString("BookingName"),
-                            rs.getDate("BookingDate"),
-                            rs.getDate("BookingEndDate"),
-                            rs.getString("Room"),
-                            rs.getString("Notes")
+                            rs.getString("CompanyName"),    // Client (now first)
+                            rs.getString("BookingName"),     // Booking Name (now second)
+                            rs.getDate("BookingDate"),       // Start Date
+                            rs.getDate("BookingEndDate"),    // End Date
+                            rs.getString("StartTime"),       // Start Time
+                            rs.getString("EndTime"),         // End Time
+                            rs.getString("Room"),            // Room
+                            rs.getInt("MaxDiscount"),        // Max Discount
+                            rs.getString("Description")
                     );
                     bookings.add(booking);
                 }
@@ -156,26 +323,40 @@ public class Events extends JFrame {
 
     // Inner class to hold booking data
     private static class Booking {
-        private final String bookingName;
+        private final String client;          // Now first
+        private final String bookingName;     // Now second
         private final Date bookingDate;
         private final Date bookingEndDate;
+        private final String startTime;
+        private final String endTime;
         private final String room;
-        private final String notes;
+        private final int maxDiscount;
+        private final String description;
 
-        public Booking(String bookingName, Date bookingDate, Date bookingEndDate, String room, String notes) {
+        public Booking(String client, String bookingName, Date bookingDate, Date bookingEndDate,
+                       String startTime, String endTime, String room, int maxDiscount,
+                       String description) {
+            this.client = client;
             this.bookingName = bookingName;
             this.bookingDate = bookingDate;
             this.bookingEndDate = bookingEndDate;
+            this.startTime = startTime;
+            this.endTime = endTime;
             this.room = room;
-            this.notes = notes;
+            this.maxDiscount = maxDiscount;
+            this.description = description;
         }
 
         // Getters
-        public String getBookingName() { return bookingName; }
+        public String getBookingName() { return bookingName != null ? bookingName : ""; }
         public Date getBookingDate() { return bookingDate; }
         public Date getBookingEndDate() { return bookingEndDate; }
-        public String getRoom() { return room; }
-        public String getNotes() { return notes; }
+        public String getStartTime() { return startTime != null ? startTime : ""; }
+        public String getEndTime() { return endTime != null ? endTime : ""; }
+        public String getRoom() { return room != null ? room : ""; }
+        public int getMaxDiscount() { return maxDiscount; }
+        public String getDescription() { return description != null ? description : ""; }
+        public String getClientName() { return client != null ? client : ""; }
     }
 
     private JPanel createHeaderPanel() {

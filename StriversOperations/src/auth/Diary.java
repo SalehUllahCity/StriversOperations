@@ -1,16 +1,11 @@
 package auth;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.*;
-import java.text.SimpleDateFormat;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -19,16 +14,16 @@ import java.util.Date;
 // Bookings that are unconfirmed/not fully paid for within the 28 days time slot we provide
 public class Diary extends JFrame {
 
-
     private final Color background = new Color(18, 32, 35, 255);
     private final Color panelColor = new Color(30, 50, 55);
     private JTable scheduleTable;
     private JButton refreshBtn, confirmBtn, cancelBtn;
     private JLabel summaryLabel;
 
-
-
-
+    // Define colors for different payment statuses
+    private final Color unpaidColor = new Color(255, 200, 200); // Light red
+    private final Color paidColor = new Color(200, 255, 200);   // Light green
+    private final Color pendingColor = new Color(255, 230, 200); // Light orange
 
     public Diary() {
         setTitle("Lancaster's Music Hall - Diary Management");
@@ -46,7 +41,6 @@ public class Diary extends JFrame {
 
         loadScheduleData();
     }
-
 
     /**
      * Launch the application.
@@ -76,6 +70,38 @@ public class Diary extends JFrame {
         // Schedule table
         scheduleTable = new JTable();
         scheduleTable.setAutoCreateRowSorter(true);
+
+        // Add custom cell renderer for color coding
+        scheduleTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus,
+                                                           int row, int column) {
+                Component comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                // Get payment status from the Status column (index 7)
+                String paymentStatus = (String) table.getValueAt(row, 7);
+
+                // If the cell is selected, keep the selection color
+                if (isSelected) {
+                    return comp;
+                }
+
+                // Apply color based on payment status
+                if ("Unpaid".equals(paymentStatus)) {
+                    comp.setBackground(unpaidColor);
+                } else if ("Paid".equals(paymentStatus)) {
+                    comp.setBackground(paidColor);
+                } else if ("Pending".equals(paymentStatus)) {
+                    comp.setBackground(pendingColor);
+                } else {
+                    comp.setBackground(table.getBackground());
+                }
+
+                return comp;
+            }
+        });
+
         JScrollPane scrollPane = new JScrollPane(scheduleTable);
         scrollPane.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
@@ -425,8 +451,6 @@ public class Diary extends JFrame {
                     "No Selection", JOptionPane.WARNING_MESSAGE);
         }
     }
-
-
 
     private JPanel createHeaderPanel() {
         JPanel headerContainer = new JPanel();

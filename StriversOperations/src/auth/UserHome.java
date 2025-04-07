@@ -63,7 +63,9 @@ public class UserHome extends JFrame {
         JButton logoutButton = createStyledButton("Logout");
         JButton diaryButton = createStyledButton("Diary");
         JButton clientButton = createStyledButton("Clients");
-        JButton roomButton = createStyledButton("Room Information");
+        JButton roomButton = createStyledButton("Rooms");
+        JButton eventsButton = createStyledButton("Events");
+        JButton invoicesButton = createStyledButton("Invoices");
         JButton helpButton = createStyledButton("Help");
 
         // Add buttons to the frame directly at the bottom
@@ -78,6 +80,8 @@ public class UserHome extends JFrame {
         buttonPanel.add(helpButton);
         buttonPanel.add(clientButton);
         buttonPanel.add(roomButton);
+        buttonPanel.add(eventsButton);
+        buttonPanel.add(invoicesButton);
         buttonPanel.add(logoutButton);
 
 
@@ -164,6 +168,18 @@ public class UserHome extends JFrame {
             new Rooms().setVisible(true);
         });
 
+        eventsButton.addActionListener(e -> {
+            setVisible(false);
+            new Events().setVisible(true);
+        });
+
+        invoicesButton.addActionListener(e -> {
+            setVisible(false);
+            new Invoices().setVisible(true);
+        });
+
+
+
         // Add mouse listeners to the buttons for hover effect
         addHoverEffect(calendarButton);
         addHoverEffect(reportButton);
@@ -173,7 +189,9 @@ public class UserHome extends JFrame {
         addHoverEffect(reviewsButton);
         addHoverEffect(diaryButton);
         addHoverEffect(clientButton);
+        addHoverEffect(eventsButton);
         addHoverEffect(roomButton);
+        addHoverEffect(invoicesButton);
     }
 
     // Method to create styled buttons
