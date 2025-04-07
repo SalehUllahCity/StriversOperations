@@ -775,12 +775,27 @@ public class Booking extends JFrame {
             timeSlotModel.setValueAt("Available", row, 1);
         }
 
-        // Then mark booked slots
+        // Mark unavailable slots from database
+        for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
+            String timeStr = (String) timeSlotModel.getValueAt(row, 0);
+            LocalTime time = LocalTime.parse(timeStr);
+            if (!timeSlots.getOrDefault(time, true)) {
+                timeSlotModel.setValueAt("Unavailable", row, 1);
+            }
+        }
+
+        // Mark user's selected slots
         for (BookingEvent event : bookingEvents) {
             if (event.space.equals(selectedSpace) && event.date.equals(selectedDate)) {
                 LocalTime current = event.startTime;
                 while (!current.equals(event.endTime)) {
-                    markTimeSlotAsBooked(current);
+                    for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
+                        String timeStr = (String) timeSlotModel.getValueAt(row, 0);
+                        if (timeStr.equals(current.format(timeFormatter))) {
+                            timeSlotModel.setValueAt("Your Booking", row, 1);
+                            break;
+                        }
+                    }
                     current = current.plusMinutes(30);
                 }
             }
@@ -946,23 +961,22 @@ public class Booking extends JFrame {
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            if (column == 1) { // Status column
+            if (column == 1) {
                 String status = value != null ? value.toString() : "";
                 setHorizontalAlignment(JLabel.CENTER);
 
-                // Apply consistent colors regardless of space type
                 switch (status) {
                     case "Available":
-                        setBackground(availableColor);  // Green
+                        setBackground(availableColor);
                         setForeground(Color.BLACK);
                         break;
                     case "Selected":
                     case "Your Booking":
-                        setBackground(selectedColor);   // Orange
+                        setBackground(selectedColor);
                         setForeground(Color.BLACK);
                         break;
                     case "Unavailable":
-                        setBackground(unavailableColor); // Red
+                        setBackground(unavailableColor);
                         setForeground(Color.WHITE);
                         break;
                     default:
@@ -970,7 +984,6 @@ public class Booking extends JFrame {
                         setForeground(table.getForeground());
                 }
 
-                // Add hover effect
                 if (row == hoveredRow && (status.equals("Available") || status.equals("Selected"))) {
                     setBorder(createHoverBorder());
                 } else {
@@ -1210,6 +1223,19 @@ public class Booking extends JFrame {
                 }
             }
         }
+
+        // Check for conflicting bookings
+        Map<LocalTime, Boolean> timeSlots = getOrCreateTimeSlots(selectedSpace, selectedDate);
+        for (LocalTime time : selectedTimes) {
+            if (!timeSlots.getOrDefault(time, true)) {
+                JOptionPane.showMessageDialog(this,
+                        "Cannot book - some selected slots are already booked",
+                        "Booking Conflict",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        }
+
 
         createBookingEvents(selectedTimes, bookingName);
         updateUIAfterBooking();
@@ -1839,34 +1865,31 @@ public class Booking extends JFrame {
     }
 
     private void loadExistingBookings() {
-        // First ensure spaceAvailability is initialized for the selected space
-        if (!spaceAvailability.containsKey(selectedSpace)) {
-            Map<LocalDate, Map<LocalTime, Boolean>> dateMap = new HashMap<>();
-            spaceAvailability.put(selectedSpace, dateMap);
-        }
+        if (selectedSpace == null) return;
 
-        String query = "SELECT BookingName, Client, Room, StartTime, EndTime, BookingDate FROM booking WHERE BookingDate = ?";
+        // Clear existing bookings for this space and date
+        Map<LocalTime, Boolean> timeSlots = getOrCreateTimeSlots(selectedSpace, selectedDate);
+        timeSlots.replaceAll((k, v) -> true); // Reset all slots to available
 
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26", "in2033t26_a", "jLxOPuQ69Mg");
+        String query = "SELECT StartTime, EndTime FROM booking WHERE Room = ? AND BookingDate = ?";
+
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26",
+                "in2033t26_a", "jLxOPuQ69Mg");
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setDate(1, java.sql.Date.valueOf(selectedDate));
+            stmt.setString(1, selectedSpace);
+            stmt.setDate(2, java.sql.Date.valueOf(selectedDate));
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                String room = rs.getString("Room");
                 LocalTime startTime = rs.getTime("StartTime").toLocalTime();
                 LocalTime endTime = rs.getTime("EndTime").toLocalTime();
 
-                // Only process if this is for our selected space
-                if (room.equals(selectedSpace)) {
-                    // Mark these slots as unavailable in our availability map
-                    Map<LocalTime, Boolean> timeSlots = getOrCreateTimeSlots(room, selectedDate);
-                    LocalTime current = startTime;
-                    while (!current.equals(endTime)) {
-                        timeSlots.put(current, false);  // false means unavailable
-                        current = current.plusMinutes(30);
-                    }
+                // Mark all time slots between start and end as unavailable
+                LocalTime current = startTime;
+                while (!current.equals(endTime)) {
+                    timeSlots.put(current, false);
+                    current = current.plusMinutes(30);
                 }
             }
         } catch (SQLException e) {
@@ -1876,6 +1899,8 @@ public class Booking extends JFrame {
                     "Database Error",
                     JOptionPane.ERROR_MESSAGE);
         }
+
+        updateTimeSlotGrid(); // Refresh the display
     }
 
     private boolean isAllDayBookingAvailable() {
