@@ -58,6 +58,7 @@ public class Booking extends JFrame {
     }
 
     private JTextField bookingNameField;
+    private JTextField clientNameField;
     private JTable timeSlotTable;
     private DefaultTableModel timeSlotModel;
     private JLabel totalLabel;
@@ -1094,6 +1095,15 @@ public class Booking extends JFrame {
             return;
         }
 
+        String clientName = clientNameField.getText().trim();
+        if (clientName.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Please enter a client name for this booking event",
+                    "Missing Information",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         List<LocalTime> selectedTimes = collectSelectedTimes();
         if (selectedTimes.isEmpty()) {
             JOptionPane.showMessageDialog(this,
@@ -1375,6 +1385,7 @@ public class Booking extends JFrame {
         weekLongCheckBox.setSelected(false);
         
         bookingNameField.setText("");
+        clientNameField.setText("");
         updateBookingList();
         updateTotalCost();
     }
@@ -1703,6 +1714,19 @@ public class Booking extends JFrame {
         bookingNamePanel.add(bookingNameLabel);
         bookingNamePanel.add(bookingNameField);
 
+        // Create client name panel
+        JLabel clientNameLabel = new JLabel("Client Name:");
+        clientNameLabel.setForeground(Color.WHITE);
+        clientNameLabel.setFont(new Font("TimesRoman", Font.PLAIN, 14));
+
+        clientNameField = new JTextField();
+        clientNameField.setFont(new Font("TimesRoman", Font.PLAIN, 14));
+
+        JPanel clientNamePanel = new JPanel(new GridLayout(2, 1, 0, 5));
+        clientNamePanel.setBackground(panelColor);
+        clientNamePanel.add(clientNameLabel);
+        clientNamePanel.add(clientNameField);
+
         // Create space selection panel
         JPanel spacePanel = new JPanel(new GridLayout(2, 1, 0, 5));
         spacePanel.setBackground(panelColor);
@@ -1740,9 +1764,12 @@ public class Booking extends JFrame {
         bookingControlsPanel.add(bookingNamePanel, gbc);
 
         gbc.gridy = 1;
-        bookingControlsPanel.add(spacePanel, gbc);
+        bookingControlsPanel.add(clientNamePanel, gbc);
 
         gbc.gridy = 2;
+        bookingControlsPanel.add(spacePanel, gbc);
+
+        gbc.gridy = 3;
         gbc.insets = new Insets(15, 5, 5, 5);
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.CENTER;
