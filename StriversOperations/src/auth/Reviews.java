@@ -12,13 +12,11 @@ import java.awt.event.*;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
 
 public class Reviews extends JFrame {
     private final Color background = new Color(18, 32, 35, 255);
     private final Color panelColor = new Color(30, 50, 55);
     private final Color buttonColor = new Color(40, 70, 75);
-    private final int fontSize = 22;
     private JTable reviewsTable;
     private DefaultTableModel tableModel;
     Map<Integer, Boolean> sentReviews = new HashMap<>();
@@ -30,7 +28,6 @@ public class Reviews extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
 
-        // Main content pane
         JPanel contentPane = new JPanel(new BorderLayout());
         contentPane.setBackground(background);
         setContentPane(contentPane);
@@ -48,11 +45,11 @@ public class Reviews extends JFrame {
         mainPanel.setBackground(background);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Create a panel for the filter and legend
+
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(background);
 
-        // Filter panel
+
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         filterPanel.setBackground(panelColor);
         filterPanel.setBorder(BorderFactory.createTitledBorder(
@@ -63,12 +60,12 @@ public class Reviews extends JFrame {
                 new Font("TimesRoman", Font.BOLD, 18),  // Larger font for title
                 Color.WHITE));  // White text color
 
-        // "All Reviews" label - now properly styled
+
         JLabel filterLabel = new JLabel("Filter By:");
         filterLabel.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         filterLabel.setForeground(Color.WHITE);
 
-        // Add legend panel to the right of filter panel
+
         topPanel.add(createLegendPanel(), BorderLayout.EAST);
 
         mainPanel.add(topPanel, BorderLayout.NORTH);
@@ -81,7 +78,7 @@ public class Reviews extends JFrame {
         styleButton(filterButton);
         filterButton.addActionListener(e -> applyFilter(filterCombo.getSelectedIndex()));
 
-        filterPanel.add(filterLabel);  // Now using styled label instead of raw text
+        filterPanel.add(filterLabel);
         filterPanel.add(filterCombo);
         filterPanel.add(filterButton);
 
@@ -104,13 +101,13 @@ public class Reviews extends JFrame {
             reviewsTable.getColumnModel().getColumn(i).setCellRenderer(renderer);
         }
 
-        // 2. Configure comment column rendering & row height
+
         reviewsTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
                                                            boolean isSelected, boolean hasFocus, int row, int column) {
 
-                // For comment column only (index 4)
+
                 if (column == 5) {
                     JTextArea textArea = new JTextArea(value != null ? value.toString() : "");
                     textArea.setLineWrap(true);
@@ -119,7 +116,7 @@ public class Reviews extends JFrame {
                     textArea.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
                     textArea.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
-                    // Calculate preferred height
+
                     FontMetrics fm = textArea.getFontMetrics(textArea.getFont());
                     int textWidth = textArea.getPreferredSize().width;
                     int availableWidth = table.getColumnModel().getColumn(column).getWidth() - 8;
@@ -170,7 +167,7 @@ public class Reviews extends JFrame {
 
         reviewsTable.putClientProperty("terminateEditOnFocusLost", true); // Saves when clicking away
 
-// Custom editor for the Response column
+
         DefaultCellEditor responseEditor = new DefaultCellEditor(new JTextField()) {
             @Override
             public Component getTableCellEditorComponent(JTable table, Object value,
@@ -184,7 +181,7 @@ public class Reviews extends JFrame {
 
         reviewsTable.getColumnModel().getColumn(7).setCellEditor(responseEditor);
 
-// Add listener to save changes to database
+
         tableModel.addTableModelListener(e -> {
             if (e.getColumn() == 7) { // Now checking column 7 for Response
                 int row = e.getFirstRow();
@@ -210,7 +207,6 @@ public class Reviews extends JFrame {
 
                     @Override
                     protected void done() {
-                        // Optional: Show success message
                         JOptionPane.showMessageDialog(Reviews.this,
                                 "Response saved successfully",
                                 "Success",
@@ -220,7 +216,7 @@ public class Reviews extends JFrame {
             }
         });
 
-        // 3. Set comment column width
+
         reviewsTable.getColumnModel().getColumn(0).setPreferredWidth(80);  // ReviewID
         reviewsTable.getColumnModel().getColumn(1).setPreferredWidth(130); // User Email
         reviewsTable.getColumnModel().getColumn(2).setPreferredWidth(120); // Client Name
@@ -230,7 +226,7 @@ public class Reviews extends JFrame {
         reviewsTable.getColumnModel().getColumn(6).setPreferredWidth(100); // Date
         reviewsTable.getColumnModel().getColumn(7).setPreferredWidth(150); // Response
 
-        // Action buttons panel
+
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         actionPanel.setBackground(panelColor);
 
@@ -253,7 +249,6 @@ public class Reviews extends JFrame {
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBackground(background);
 
-        // Add legend just above the table
         centerPanel.add(createSimpleLegend(), BorderLayout.NORTH);
         centerPanel.add(new JScrollPane(reviewsTable), BorderLayout.CENTER);
 
@@ -379,7 +374,7 @@ public class Reviews extends JFrame {
     }
 
     private boolean validateAndSubmitReview(String email, String client, String booking, int rating, String comment) {
-        // Basic validation
+
         if (email.isEmpty() || client == null || booking == null || comment.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please fill in all fields",
                     "Validation Error", JOptionPane.WARNING_MESSAGE);
@@ -395,7 +390,6 @@ public class Reviews extends JFrame {
         try {
             JDBC jdbc = new JDBC();
 
-            // First get the UserID from email
             ResultSet rs = jdbc.executeQuery(
                     "SELECT UserID FROM user WHERE Email = ?",
                     email
@@ -409,7 +403,6 @@ public class Reviews extends JFrame {
 
             int userId = rs.getInt("UserID");
 
-            // Get BookingID from booking name (more reliable now since it's from dropdown)
             rs = jdbc.executeQuery(
                     "SELECT BookingID FROM booking WHERE BookingName = ?",
                     booking
@@ -423,7 +416,6 @@ public class Reviews extends JFrame {
 
             int bookingId = rs.getInt("BookingID");
 
-            // Insert the review
             jdbc.executeUpdate(
                     "INSERT INTO review (UserID, BookingID, Rating, Comment, ReviewDate, SentToClient) " +
                             "VALUES (?, ?, ?, ?, CURRENT_DATE, FALSE)",
@@ -620,7 +612,6 @@ public class Reviews extends JFrame {
         JButton saveButton = new JButton("Save");
         JButton cancelButton = new JButton("Cancel");
 
-        // Only show buttons for editable (response) popups
         JPanel buttonPanel = new JPanel();
         if (editable) {
             buttonPanel.add(saveButton);
@@ -668,7 +659,6 @@ public class Reviews extends JFrame {
 
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            // Get the ReviewID from column 0
             int reviewId = (Integer) tableModel.getValueAt(row, 0);
 
             if (sentReviews.containsKey(reviewId) && sentReviews.get(reviewId)) {
@@ -939,7 +929,6 @@ public class Reviews extends JFrame {
         topBar.setBackground(background);
         topBar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        // ← Home button
         JButton homeBtn = new JButton("← Home");
         homeBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         homeBtn.setBackground(background);
@@ -953,7 +942,6 @@ public class Reviews extends JFrame {
         addHoverEffect(homeBtn);
         topBar.add(homeBtn, BorderLayout.WEST);
 
-        //Settings button
         JButton settingsBtn = new JButton("⚙ Settings");
         settingsBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         settingsBtn.setBackground(background);
@@ -976,32 +964,11 @@ public class Reviews extends JFrame {
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 36));
         titlePanel.add(titleLabel);
 
-        // Stack both into the header container
         headerContainer.add(topBar);
         headerContainer.add(titlePanel);
 
         return headerContainer;
     }
-
-    // Method to create styled buttons
-    private JButton createStyledButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setBackground(Color.black);
-        button.setForeground(Color.white);
-        return button;
-    }
-
-    // Method to create styled buttons with tooltip descriptions
-    private JButton createButtonWithDescription(String text, String description) {
-        JButton button = createStyledButton(text);
-        button.setToolTipText(description);
-        return button;
-    }
-
-
 
     private void addHoverEffect(JButton button) {
         button.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 2));

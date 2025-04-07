@@ -1,17 +1,10 @@
 package auth;
 
-
-
-/*
-Duplicate of Login screen, but I think login screen is used in other code
- */
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -25,7 +18,6 @@ public class UserLogin extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JTextField textField;
-    private int fontSize = 30;
     private JPasswordField passwordField;
     private JButton btnNewButton;
     private JLabel label;
@@ -154,16 +146,6 @@ public class UserLogin extends JFrame {
 
         addHoverEffect(btnNewButton);
 
-    }
-    // Method to create styled buttons
-    private JButton createStyledButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setBackground(Color.black);
-        button.setForeground(Color.white);
-        return button;
     }
 
     private void addHoverEffect(JButton button) {

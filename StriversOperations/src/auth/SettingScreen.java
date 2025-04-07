@@ -8,7 +8,6 @@ import java.awt.event.MouseEvent;
 public class SettingScreen extends JPanel  {
 
     private final JFrame parentFrame;
-    private final Color backgroundColour = new Color(30, 40, 45);
     private final int fontSize = 18;
 
     public SettingScreen(JFrame parentFrame){

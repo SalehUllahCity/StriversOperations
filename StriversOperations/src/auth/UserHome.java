@@ -11,11 +11,7 @@ import javax.swing.*;
 public class UserHome extends JFrame {
 
     private static final long serialVersionUID = 1;
-    private JPanel contentPane;
     private int fontSize = 30;
-    private JTextField usernameField;
-    private JPasswordField passwordField;
-
 
     /**
      * Launch the application.
@@ -36,7 +32,7 @@ public class UserHome extends JFrame {
     /**
      * Create the frame.
      */
-    public UserHome() { // pass String UserName
+    public UserHome() {
 
         setTitle("Lancaster's Music Hall Software: Home");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -135,9 +131,7 @@ public class UserHome extends JFrame {
             setVisible(false);
             try {
                 new Report().setVisible(true);
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            } catch (ClassNotFoundException ex) {
+            } catch (SQLException | ClassNotFoundException ex) {
                 throw new RuntimeException(ex);
             }
 

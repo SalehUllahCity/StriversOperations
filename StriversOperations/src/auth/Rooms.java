@@ -17,7 +17,6 @@ import java.util.Map;
 
 public class Rooms extends JFrame {
     private final Color background = new Color(18, 32, 35, 255);
-    private final int fontSize = 22;
     private JTable roomsTable;
     private DefaultTableModel tableModel;
 
@@ -84,7 +83,6 @@ public class Rooms extends JFrame {
                 return null;
             }
 
-            // Override the prepareRenderer to maintain text readability when selected
             @Override
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
                 Component c = super.prepareRenderer(renderer, row, column);
@@ -92,7 +90,7 @@ public class Rooms extends JFrame {
                 if (isRowSelected(row) && column != 6) { // Don't change button column
                     c.setBackground(new Color(40, 60, 65)); // Slightly lighter than background
                     c.setForeground(Color.WHITE); // Keep text white for readability
-                } else if (column != 6) { // Don't change button column styling
+                } else if (column != 6) {
                     c.setBackground(getBackground());
                     c.setForeground(getForeground());
                 }
@@ -106,8 +104,8 @@ public class Rooms extends JFrame {
         roomsTable.setForeground(Color.WHITE);
         roomsTable.setBackground(background);
         roomsTable.setGridColor(Color.DARK_GRAY);
-        roomsTable.setSelectionBackground(new Color(40, 60, 65)); // Lighter than background but not too bright
-        roomsTable.setSelectionForeground(Color.WHITE); // Keep text white when selected
+        roomsTable.setSelectionBackground(new Color(40, 60, 65));
+        roomsTable.setSelectionForeground(Color.WHITE);
 
         // Set column widths
         roomsTable.getColumnModel().getColumn(0).setPreferredWidth(150); // Room Name
@@ -118,18 +116,19 @@ public class Rooms extends JFrame {
         roomsTable.getColumnModel().getColumn(5).setPreferredWidth(120); // Daily Rate
         roomsTable.getColumnModel().getColumn(6).setPreferredWidth(150); // View Calendar
 
-        // Add button renderer and editor for the "View Calendar" column
+
         roomsTable.getColumn("View Calendar").setCellRenderer(new ButtonRenderer());
         roomsTable.getColumn("View Calendar").setCellEditor(new ButtonEditor(new JCheckBox(), this));
 
-        // Custom header
+
         JTableHeader header = roomsTable.getTableHeader();
         header.setFont(new Font("TimesRoman", Font.BOLD, 16));
         header.setForeground(Color.WHITE);
         header.setBackground(new Color(30, 50, 50));
         header.setPreferredSize(new Dimension(header.getWidth(), 40));
 
-        // Scroll pane
+
+
         JScrollPane scrollPane = new JScrollPane(roomsTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(background);
@@ -364,12 +363,11 @@ public class Rooms extends JFrame {
         headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
         headerContainer.setBackground(background);
 
-        // Top bar: Home and Settings buttons
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(background);
         topBar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        // ← Home button
+
         JButton homeBtn = new JButton("← Home");
         homeBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         homeBtn.setBackground(background);
@@ -383,7 +381,7 @@ public class Rooms extends JFrame {
         addHoverEffect(homeBtn);
         topBar.add(homeBtn, BorderLayout.WEST);
 
-        // Settings button
+
         JButton settingsBtn = new JButton("⚙ Settings");
         settingsBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         settingsBtn.setBackground(background);
@@ -398,15 +396,13 @@ public class Rooms extends JFrame {
         rightPanel.add(settingsBtn);
         topBar.add(rightPanel, BorderLayout.EAST);
 
-        // Title Panel
+
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         titlePanel.setBackground(background);
         JLabel titleLabel = new JLabel("Room Information");
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 36));
         titlePanel.add(titleLabel);
-
-        // Stack both into the header container
         headerContainer.add(topBar);
         headerContainer.add(titlePanel);
 
@@ -425,24 +421,6 @@ public class Rooms extends JFrame {
                 button.setForeground(Color.WHITE);
             }
         });
-    }
-
-    // Method to create styled buttons
-    private JButton createStyledButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setBackground(Color.black);
-        button.setForeground(Color.white);
-        return button;
-    }
-
-    // Method to create styled buttons with tooltip descriptions
-    private JButton createButtonWithDescription(String text, String description) {
-        JButton button = createStyledButton(text);
-        button.setToolTipText(description);
-        return button;
     }
 
     public static void main(String[] args) {

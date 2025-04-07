@@ -72,15 +72,14 @@ public class Report extends JFrame {
         setResizable(false);
         setLocationRelativeTo(null);
 
-        //Main content pane
+
         JPanel contentPane = new JPanel(new BorderLayout());
         contentPane.setBackground(background);
         setContentPane(contentPane);
 
-        //Header panel: contains settings and title
+
         contentPane.add(createHeaderPanel(), BorderLayout.NORTH);
 
-        //Tabs for reports
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
 
@@ -101,12 +100,12 @@ public class Report extends JFrame {
         headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
         headerContainer.setBackground(background);
 
-        // Top bar: Home and Settings buttons
+
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(background);
         topBar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        // ← Home button
+
         JButton homeBtn = new JButton("← Home");
         homeBtn.setFont(new Font("TimesRoman", Font.PLAIN, 16));
         homeBtn.setBackground(background);
@@ -120,7 +119,7 @@ public class Report extends JFrame {
         addHoverEffect(homeBtn);
         topBar.add(homeBtn, BorderLayout.WEST);
 
-        //Settings button
+
         JButton settingsBtn = new JButton("⚙ Settings");
         settingsBtn.setFont(new Font("TimesRoman", Font.PLAIN, 16));
         settingsBtn.setBackground(background);
@@ -135,7 +134,7 @@ public class Report extends JFrame {
         rightPanel.add(settingsBtn);
         topBar.add(rightPanel, BorderLayout.EAST);
 
-        // Title Panel
+
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         titlePanel.setBackground(background);
         JLabel titleLabel = new JLabel("Reports");
@@ -143,7 +142,6 @@ public class Report extends JFrame {
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 32));
         titlePanel.add(titleLabel);
 
-        // Stack both into the header container
         headerContainer.add(topBar);
         headerContainer.add(titlePanel);
 
@@ -155,12 +153,12 @@ public class Report extends JFrame {
         panel.setBackground(background);
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // Create a top panel for summary statistics
+
         JPanel summaryPanel = new JPanel(new GridLayout(1, 5, 15, 0));
         summaryPanel.setBackground(background);
         summaryPanel.setBorder(new EmptyBorder(0, 0, 15, 0));
 
-        // Add summary cards
+
         summaryPanel.add(createSummaryCard("Total Bookings", "0"));
         summaryPanel.add(createSummaryCard("Most Popular Space", "Loading..."));
         summaryPanel.add(createSummaryCard("Average Booking Duration", "0 days"));
@@ -169,26 +167,25 @@ public class Report extends JFrame {
 
         panel.add(summaryPanel, BorderLayout.NORTH);
 
-        // Create center panel with chart and table side by side
         JPanel centerPanel = new JPanel(new GridLayout(1, 2, 15, 0));
         centerPanel.setBackground(background);
 
-        // Create a wrapper panel for the chart
+
         JPanel chartWrapper = new JPanel(new BorderLayout());
         chartWrapper.setBackground(background);
         chartWrapper.add(createSpaceUsageChart(), BorderLayout.CENTER);
         centerPanel.add(chartWrapper);
 
-        // Create table panel with filter controls
+
         JPanel tablePanel = new JPanel(new BorderLayout(0, 10));
         tablePanel.setBackground(background);
 
-        // Create main filter panel
+
         JPanel mainFilterPanel = new JPanel(new BorderLayout());
         mainFilterPanel.setBackground(background);
         mainFilterPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // Space filter panel
+
         JPanel spaceFilterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         spaceFilterPanel.setBackground(background);
         
@@ -206,11 +203,10 @@ public class Report extends JFrame {
         ((JLabel)spaceFilter.getRenderer()).setHorizontalAlignment(SwingConstants.LEFT);
         spaceFilterPanel.add(spaceFilter);
 
-        // Add date filter panel
+
         JPanel dateFilterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         dateFilterPanel.setBackground(background);
 
-        // Date range controls
         JLabel startDateLabel = new JLabel("Start Date:");
         startDateLabel.setForeground(Color.WHITE);
         startDateLabel.setFont(new Font("TimesRoman", Font.BOLD, 14));
@@ -248,7 +244,6 @@ public class Report extends JFrame {
         confirmDates.setFocusPainted(false);
         dateFilterPanel.add(confirmDates);
 
-        // Combine filter panels
         JPanel combinedFilterPanel = new JPanel(new GridLayout(2, 1, 0, 5));
         combinedFilterPanel.setBackground(background);
         combinedFilterPanel.add(spaceFilterPanel);
@@ -257,7 +252,6 @@ public class Report extends JFrame {
         mainFilterPanel.add(combinedFilterPanel, BorderLayout.NORTH);
         tablePanel.add(mainFilterPanel, BorderLayout.NORTH);
 
-        // Create and add the table first
         String[] columns = {
                 "Booking Name", "Client", "Room", "Start Date", "End Date", "Configuration"
         };
@@ -271,26 +265,22 @@ public class Report extends JFrame {
         table.setDefaultEditor(Object.class, null); // Additional protection against editing
         styleTable(table);
 
-        // Style the table header
         table.getTableHeader().setBackground(new Color(30, 50, 55));
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setFont(new Font("TimesRoman", Font.BOLD, 13));
-        
-        // Set table row height and font
+
         table.setRowHeight(28);
         table.setFont(new Font("TimesRoman", Font.PLAIN, 13));
         table.setGridColor(new Color(45, 45, 45));
         table.setBackground(new Color(25, 40, 45));
         table.setForeground(Color.WHITE);
-        
-        // Set selection colors
+
         table.setSelectionBackground(new Color(45, 66, 75));
         table.setSelectionForeground(Color.WHITE);
 
-        // Apply color renderer to Room column
         table.getColumnModel().getColumn(2).setCellRenderer(new RoomColorRenderer());
 
-        // Create a custom scroll pane
+
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.getViewport().setBackground(background);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 1));
@@ -299,27 +289,22 @@ public class Report extends JFrame {
         centerPanel.add(tablePanel);
         panel.add(centerPanel, BorderLayout.CENTER);
 
-        // Add change listener to start date spinner
         startDateSpinner.addChangeListener(e -> {
             java.util.Date startDate = (java.util.Date) startDateSpinner.getValue();
             java.util.Date endDate = (java.util.Date) endDateSpinner.getValue();
             
             if (startDate.after(endDate)) {
-                // If start date is after end date, set end date to start date
                 endDateSpinner.setValue(startDate);
             }
-            
-            // Refresh data
+
             loadVenueUsageData(model, spaceFilter, startDateSpinner, endDateSpinner, summaryPanel, false);
         });
 
-        // Add change listener to end date spinner
         endDateSpinner.addChangeListener(e -> {
             java.util.Date startDate = (java.util.Date) startDateSpinner.getValue();
             java.util.Date endDate = (java.util.Date) endDateSpinner.getValue();
             
             if (endDate.before(startDate)) {
-                // If end date is before start date, set it to start date
                 endDateSpinner.setValue(startDate);
             }
             
@@ -327,20 +312,16 @@ public class Report extends JFrame {
             loadVenueUsageData(model, spaceFilter, startDateSpinner, endDateSpinner, summaryPanel, false);
         });
 
-        // Add confirm button listener
         confirmDates.addActionListener(e -> {
             loadVenueUsageData(model, spaceFilter, startDateSpinner, endDateSpinner, summaryPanel, false);
         });
 
-        // Space filter listener
         spaceFilter.addActionListener(e -> {
             loadVenueUsageData(model, spaceFilter, startDateSpinner, endDateSpinner, summaryPanel, false);
         });
 
-        // Load initial data with current date range
         loadVenueUsageData(model, spaceFilter, startDateSpinner, endDateSpinner, summaryPanel, false);
 
-        // Add popup functionality
         createDetailPopup(columns, table);
 
         return panel;
@@ -392,7 +373,6 @@ public class Report extends JFrame {
     }
 
     private void drawPieChart(Graphics2D g, JSpinner startDateSpinner, JSpinner endDateSpinner) {
-        // Get space usage data
         Map<String, Integer> spaceUsage = new HashMap<>();
         boolean hasError = false;
         String errorMessage = "";
@@ -428,29 +408,24 @@ public class Report extends JFrame {
             e.printStackTrace();
         }
 
-        // Set up graphics
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        // Calculate dimensions
         int titleHeight = 30;
         int legendWidth = 143;
         int padding = 19;
 
-        // Available space for the pie chart
         int availableWidth = getWidth() - (padding * 2) - legendWidth;
         int availableHeight = getHeight() - (padding * 2) - titleHeight;
-        
+
         // Calculate pie chart size
         int diameter = Math.min(availableWidth, availableHeight);
         if (diameter > 380) {
             diameter = 380;
         }
-        
-        // Calculate positions
+
         int y = padding + titleHeight;
 
-        // Draw title
         g.setColor(Color.WHITE);
         g.setFont(new Font("TimesRoman", Font.BOLD, 16));
         g.drawString("Space Usage Distribution", padding, padding + 20);
@@ -470,19 +445,16 @@ public class Report extends JFrame {
         }
 
         int total = spaceUsage.values().stream().mapToInt(Integer::intValue).sum();
-        
-        // Draw the pie chart
+
         int startAngle = 0;
         for (Map.Entry<String, Integer> entry : spaceUsage.entrySet()) {
             int arcAngle = (int) Math.round(360.0 * entry.getValue() / total);
             String room = entry.getKey();
-            // Use the consistent color from ROOM_COLORS map
             g.setColor(spaceColors.getOrDefault(room, new Color(149, 165, 166))); // Default to gray if room not found
             g.fillArc(padding, y, diameter, diameter, startAngle, arcAngle);
             startAngle += arcAngle;
         }
 
-        // Draw legend
         int legendX = padding + diameter + 14;
         int legendSpacing = 21;
         int i = 0;
@@ -519,17 +491,14 @@ public class Report extends JFrame {
         panel.setBackground(background);
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // Create top panel for search controls
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         searchPanel.setBackground(background);
 
-        // Add search label
         JLabel searchLabel = new JLabel("Search by Performance Name:");
         searchLabel.setForeground(Color.WHITE);
         searchLabel.setFont(new Font("TimesRoman", Font.BOLD, 13));
         searchPanel.add(searchLabel);
 
-        // Add search field
         JTextField searchField = new JTextField();
         searchField.setPreferredSize(new Dimension(200, 25));
         searchField.setFont(new Font("TimesRoman", Font.PLAIN, 13));
@@ -539,7 +508,6 @@ public class Report extends JFrame {
         searchField.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
         searchPanel.add(searchField);
 
-        // Add search button
         JButton searchButton = new JButton("Search");
         searchButton.setFont(new Font("TimesRoman", Font.BOLD, 13));
         searchButton.setBackground(new Color(30, 50, 55));
@@ -547,7 +515,6 @@ public class Report extends JFrame {
         searchButton.setFocusPainted(false);
         searchPanel.add(searchButton);
 
-        // Add clear button
         JButton clearButton = new JButton("Clear");
         clearButton.setFont(new Font("TimesRoman", Font.BOLD, 13));
         clearButton.setBackground(new Color(30, 50, 55));
@@ -557,7 +524,6 @@ public class Report extends JFrame {
 
         panel.add(searchPanel, BorderLayout.NORTH);
 
-        // Create table with columns
         String[] columns = {
                 "Ticket ID", "Price", "Customer ID", "Performance ID",
                 "Seat ID", "Discount ID", "Group ID", "Staff ID"
@@ -572,7 +538,6 @@ public class Report extends JFrame {
 
         JTable table = new JTable(model);
 
-        // Style the table to match other tabs
         table.setFont(new Font("TimesRoman", Font.PLAIN, 13));
         table.setRowHeight(28);
         table.setGridColor(new Color(45, 45, 45));
@@ -583,20 +548,17 @@ public class Report extends JFrame {
         table.setShowGrid(true);
         table.setIntercellSpacing(new Dimension(1, 1));
 
-        // Style the table header
         table.getTableHeader().setBackground(new Color(30, 50, 55));
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setFont(new Font("TimesRoman", Font.BOLD, 13));
         table.getTableHeader().setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
 
-        // Create scroll pane with dark styling
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
         scrollPane.getViewport().setBackground(table.getBackground());
 
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        // Add action listeners
         searchButton.addActionListener(e -> {
             String performanceId = searchField.getText().trim();
             if (!performanceId.isEmpty()) {
@@ -611,10 +573,9 @@ public class Report extends JFrame {
 
         clearButton.addActionListener(e -> {
             searchField.setText("");
-            model.setRowCount(0); // Clear the table
+            model.setRowCount(0);
         });
 
-        // Add popup functionality
         createDetailPopup(columns, table);
 
         return panel;
@@ -625,7 +586,6 @@ public class Report extends JFrame {
             JDBC jdbc = new JDBC();
             List<TicketSale> ticketSales = jdbc.getTicketSalesBasedOnEvent("Great Man Show");
 
-            // Clear existing data
             model.setRowCount(0);
 
             if (ticketSales.isEmpty()) {
@@ -636,7 +596,6 @@ public class Report extends JFrame {
                 return;
             }
 
-            // Add ticket sales data to the table
             for (TicketSale sale : ticketSales) {
                 Object[] row = {
                         sale.getTicketSaleId(),
@@ -667,25 +626,20 @@ public class Report extends JFrame {
 
         String selectedSpace = (String) spaceFilter.getSelectedItem();
         
-        // Clear existing data
         model.setRowCount(0);
         
-        // Build query with date filter
         StringBuilder queryBuilder = new StringBuilder(
             "SELECT BookingName, Client, Room, BookingDate, BookingEndDate, SeatingConfig, StartTime FROM booking WHERE 1=1"
         );
         
-        // Add date filter if not all time
         if (!isAllTime) {
             queryBuilder.append(" AND BookingDate >= ? AND BookingEndDate <= ?");
         }
         
-        // Add space filter if specific space selected
         if (selectedSpace != null && !selectedSpace.equals("All Spaces")) {
             queryBuilder.append(" AND Room = ?");
         }
         
-        // Add order clause
         queryBuilder.append(" ORDER BY BookingDate, StartTime");
         
         String query = queryBuilder.toString();
@@ -695,28 +649,22 @@ public class Report extends JFrame {
 
             int paramIndex = 1;
             
-            // Set date parameters if not all time
             if (!isAllTime) {
                 java.util.Date startDate = (java.util.Date) startDateSpinner.getValue();
                 java.util.Date endDate = (java.util.Date) endDateSpinner.getValue();
                 
-                // Debug print
                 System.out.println("Filtering dates - Start: " + startDate + ", End: " + endDate);
                 
-                // Set date parameters
                 stmt.setDate(paramIndex++, new java.sql.Date(startDate.getTime()));
                 stmt.setDate(paramIndex++, new java.sql.Date(endDate.getTime()));
             }
             
-            // Set space parameter if specific space selected
             if (selectedSpace != null && !selectedSpace.equals("All Spaces")) {
                 stmt.setString(paramIndex, selectedSpace);
             }
 
-            // Debug print the final query with parameters
             System.out.println("Executing query: " + query);
 
-            // Execute query and process results
             ResultSet rs = stmt.executeQuery();
             Map<String, Integer> spaceUsage = new HashMap<>();
             Map<Integer, Integer> hourDistribution = new HashMap<>();
@@ -727,11 +675,9 @@ public class Report extends JFrame {
                 Date bookingDate = rs.getDate("BookingDate");
                 Date bookingEndDate = rs.getDate("BookingEndDate");
                 
-                // Debug print
-                System.out.println("Found booking: " + rs.getString("BookingName") + 
+                System.out.println("Found booking: " + rs.getString("BookingName") +
                                  " from " + bookingDate + " to " + bookingEndDate);
                 
-                // Add row to table
                 Object[] row = {
                         rs.getString("BookingName"),
                         rs.getString("Client"),
@@ -742,17 +688,14 @@ public class Report extends JFrame {
                 };
                 model.addRow(row);
 
-                // Update statistics
                 totalBookings++;
                 String room = rs.getString("Room");
                 spaceUsage.put(room, spaceUsage.getOrDefault(room, 0) + 1);
 
-                // Calculate duration
                 if (bookingDate != null && bookingEndDate != null) {
                     totalDuration += (bookingEndDate.getTime() - bookingDate.getTime()) / (1000 * 60 * 60 * 24);
                 }
 
-                // Track booking hour distribution
                 Time startTime = rs.getTime("StartTime");
                 if (startTime != null) {
                     int hour = startTime.toLocalTime().getHour();
@@ -787,8 +730,7 @@ public class Report extends JFrame {
                 periodUsage = totalBookings > 0 ? (double) totalBookings / 30 * 10 : 0;
             }
 
-            // Update summary cards
-            updateSummaryCards(summaryPanel, totalBookings, spaceUsage, totalDuration, peakTime, periodUsage, 
+            updateSummaryCards(summaryPanel, totalBookings, spaceUsage, totalDuration, peakTime, periodUsage,
                 isAllTime ? "All Time" : "Selected Period");
 
         } catch (SQLException e) {
@@ -798,41 +740,32 @@ public class Report extends JFrame {
 
     private void updateSummaryCards(JPanel summaryPanel, int totalBookings, Map<String, Integer> spaceUsage, 
             long totalDuration, String peakTime, double periodUsage, String period) {
-        // Update total bookings
         ((JLabel) ((JPanel) summaryPanel.getComponent(0)).getComponent(2)).setText(String.valueOf(totalBookings));
 
-        // Update most popular space
         String mostPopularSpace = spaceUsage.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElse("N/A");
         ((JLabel) ((JPanel) summaryPanel.getComponent(1)).getComponent(2)).setText(mostPopularSpace);
 
-        // Update average duration
         double avgDuration = totalBookings > 0 ? (double) totalDuration / totalBookings : 0;
         ((JLabel) ((JPanel) summaryPanel.getComponent(2)).getComponent(2))
                 .setText(String.format("%.1f days", avgDuration));
 
-        // Update peak booking time
         ((JLabel) ((JPanel) summaryPanel.getComponent(3)).getComponent(2)).setText(peakTime);
 
-        // Update period usage with period label
         ((JLabel) ((JPanel) summaryPanel.getComponent(4)).getComponent(0)).setText(period + " Usage");
         ((JLabel) ((JPanel) summaryPanel.getComponent(4)).getComponent(2))
                 .setText(String.format("%.1f%%", periodUsage));
 
-        // Trigger repaint of the parent panel to update the pie chart
         summaryPanel.getParent().repaint();
     }
 
     private void handleDatabaseError(DefaultTableModel model, JPanel summaryPanel, SQLException e) {
-        // Clear the table
         model.setRowCount(0);
         
-        // Update summary cards with default values
         updateSummaryCards(summaryPanel, 0, new HashMap<>(), 0, "N/A", 0, "Period");
         
-        // Show appropriate error message
         String errorMessage = "Error retrieving venue usage data: " + e.getMessage();
         if (e.getCause() instanceof java.net.UnknownHostException) {
             errorMessage = "Cannot connect to database. Please ensure you are connected to the City VPN.";
@@ -842,34 +775,14 @@ public class Report extends JFrame {
         e.printStackTrace();
     }
 
-    /* To be its own page
-    private JPanel createReviewsTab() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(background);
-
-        String[] columns = {
-                "Date", "Event", "Customer", "Seat", "Review", "Stars"
-        };
-
-        JTable table = new JTable(new DefaultTableModel(columns, 0));
-        styleTable(table);
-        panel.add(new JScrollPane(table), BorderLayout.CENTER);
-        return panel;
-    }
-
-     */
-
-    //Tab 2: Daily run sheet for operational setup
     private JPanel createDailySheetsTab() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(background);
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // Create top control panel
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         controlPanel.setBackground(background);
         
-        // Add date selector
         JLabel dateLabel = new JLabel("Select Date:");
         dateLabel.setForeground(Color.WHITE);
         dateLabel.setFont(new Font("TimesRoman", Font.BOLD, 13));
@@ -883,7 +796,6 @@ public class Report extends JFrame {
         dateSpinner.setPreferredSize(new Dimension(120, 25));
         controlPanel.add(dateSpinner);
 
-        // Add refresh button
         JButton refreshButton = new JButton("Refresh");
         refreshButton.setFont(new Font("TimesRoman", Font.BOLD, 13));
         refreshButton.setBackground(new Color(30, 50, 55));
@@ -943,12 +855,10 @@ public class Report extends JFrame {
             popupPanel.add(detailLabels[i]);
         }
 
-        // Create popup window
         JWindow popup = new JWindow();
         popup.setContentPane(popupPanel);
         popup.setOpacity(0.95f);
 
-        // Add mouse motion listener for hover effect
         table.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -992,18 +902,15 @@ public class Report extends JFrame {
                         }
                     }
 
-                    // Position and show popup
                     Point p = e.getPoint();
                     SwingUtilities.convertPointToScreen(p, table);
                     
-                    // Adjust position to not go off screen
                     Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment()
                         .getMaximumWindowBounds();
                     
                     int popupX = p.x + 15;
                     int popupY = p.y + 15;
                     
-                    // Ensure popup stays within screen bounds
                     if (popupX + popup.getWidth() > screen.width) {
                         popupX = screen.width - popup.getWidth();
                     }
@@ -1023,7 +930,6 @@ public class Report extends JFrame {
             }
         });
 
-        // Hide popup when mouse exits table
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseExited(MouseEvent e) {
@@ -1031,7 +937,6 @@ public class Report extends JFrame {
             }
         });
 
-        // Style the table
         table.setFont(new Font("TimesRoman", Font.PLAIN, 13));
         table.setRowHeight(28);
         table.setGridColor(new Color(45, 45, 45));
@@ -1042,16 +947,13 @@ public class Report extends JFrame {
         table.setShowGrid(true);
         table.setIntercellSpacing(new Dimension(1, 1));
 
-        // Style the table header
         table.getTableHeader().setBackground(new Color(30, 50, 55));
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setFont(new Font("TimesRoman", Font.BOLD, 13));
         table.getTableHeader().setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
 
-        // Apply room color renderer to Room column (index 1)
         table.getColumnModel().getColumn(1).setCellRenderer(new RoomColorRenderer());
 
-        // Apply date formatter to Date column (index 3)
         table.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
             
@@ -1071,7 +973,6 @@ public class Report extends JFrame {
             }
         });
 
-        // Apply default renderer to maintain consistent styling for other columns
         DefaultTableCellRenderer defaultRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -1087,24 +988,20 @@ public class Report extends JFrame {
         };
         defaultRenderer.setHorizontalAlignment(SwingConstants.LEFT);
         
-        // Apply the default renderer to all columns except Room and Date
         for (int i = 0; i < table.getColumnCount(); i++) {
             if (i != 1 && i != 3) { // Skip Room and Date columns
                 table.getColumnModel().getColumn(i).setCellRenderer(defaultRenderer);
             }
         }
 
-        // Create scroll pane with dark styling
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
         scrollPane.getViewport().setBackground(table.getBackground());
         
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        // Load initial data
         loadDailySheetsData(model, dateSpinner, availabilityPanel);
 
-        // Add refresh button listener
         refreshButton.addActionListener(e -> {
             loadDailySheetsData(model, dateSpinner, availabilityPanel);
         });
@@ -1123,7 +1020,6 @@ public class Report extends JFrame {
         try (Connection conn = DriverManager.getConnection(url, user, password)) {
             java.util.Date selectedDate = (java.util.Date) dateSpinner.getValue();
             
-            // Query to get bookings for the selected date
             String query = "SELECT Room, Client, BookingName, SeatingConfig, Notes, " +
                          "StartTime, EndTime, PaymentStatus " +
                          "FROM booking WHERE BookingDate = ? " +
@@ -1138,20 +1034,17 @@ public class Report extends JFrame {
                 int configChanges = 0;
                 Set<String> usedRooms = new HashSet<>();
 
-                // First, add all rooms with their initial availability
                 for (String room : spaceColors.keySet()) {
                     model.addRow(new Object[]{
                         "09:00", room, "Available", "", "", "Standard", "", "", ""
                     });
                 }
 
-                // Then update with actual bookings
             while (rs.next()) {
                     String room = rs.getString("Room");
                     String currentConfig = rs.getString("SeatingConfig");
                     Time startTime = rs.getTime("StartTime");
                     
-                    // Update existing row for this room
                     for (int i = 0; i < model.getRowCount(); i++) {
                         if (model.getValueAt(i, 1).equals(room)) {
                             model.setValueAt(startTime.toString(), i, 0);
@@ -1171,15 +1064,13 @@ public class Report extends JFrame {
                         usedRooms.add(room);
                     }
 
-                    // Check if configuration change is needed
                     String requiredConfig = rs.getString("SeatingConfig");
                     if (!requiredConfig.equals(currentConfig)) {
                         configChanges++;
                     }
                 }
 
-                // Update availability summary
-                updateAvailabilitySummary(availabilityPanel, spaceColors.size(), 
+                updateAvailabilitySummary(availabilityPanel, spaceColors.size(),
                     spacesInUse, configChanges);
 
             }
@@ -1194,40 +1085,32 @@ public class Report extends JFrame {
 
     private void updateAvailabilitySummary(JPanel availabilityPanel, int totalSpaces, 
             int spacesInUse, int configChanges) {
-        // Update total spaces
         ((JLabel) ((JPanel) availabilityPanel.getComponent(0)).getComponent(2))
             .setText(String.valueOf(totalSpaces));
 
-        // Update spaces in use
         ((JLabel) ((JPanel) availabilityPanel.getComponent(1)).getComponent(2))
             .setText(String.valueOf(spacesInUse));
 
-        // Update available spaces
         ((JLabel) ((JPanel) availabilityPanel.getComponent(2)).getComponent(2))
             .setText(String.valueOf(totalSpaces - spacesInUse));
 
-        // Update configuration changes
         ((JLabel) ((JPanel) availabilityPanel.getComponent(3)).getComponent(2))
             .setText(String.valueOf(configChanges));
     }
 
-    //Tab 3: Financial summary per booking
     private JPanel createFinanceTab() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(background);
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // Create main panel with vertical layout
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBackground(background);
 
-        // Create a top panel for summary statistics
         JPanel summaryPanel = new JPanel(new GridLayout(1, 4, 15, 0));
         summaryPanel.setBackground(background);
         summaryPanel.setBorder(new EmptyBorder(0, 0, 15, 0));
 
-        // Add summary cards
         summaryPanel.add(createSummaryCard("Total Revenue", "£0"));
         summaryPanel.add(createSummaryCard("Ticket Sales", "£0"));
         summaryPanel.add(createSummaryCard("Client Payouts", "£0"));
@@ -1235,12 +1118,10 @@ public class Report extends JFrame {
 
         mainPanel.add(summaryPanel);
 
-        // Add space category income panel
         JPanel categoryPanel = new JPanel(new GridLayout(1, 4, 15, 0));
         categoryPanel.setBackground(background);
         categoryPanel.setBorder(new EmptyBorder(0, 0, 15, 0));
 
-        // Add category cards
         categoryPanel.add(createSummaryCard("Meeting Rooms Income", "£0"));
         categoryPanel.add(createSummaryCard("Performance Spaces Income", "£0"));
         categoryPanel.add(createSummaryCard("Rehearsal Space Income", "£0"));
@@ -1248,17 +1129,14 @@ public class Report extends JFrame {
 
         mainPanel.add(categoryPanel);
 
-        // Create filter panel
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         filterPanel.setBackground(background);
         
-        // Add space filter
         JLabel spaceFilterLabel = new JLabel("Space:");
         spaceFilterLabel.setForeground(Color.WHITE);
         spaceFilterLabel.setFont(new Font("TimesRoman", Font.BOLD, 13));
         filterPanel.add(spaceFilterLabel);
 
-        // Create space filter dropdown with all spaces
         String[] spaces = new String[] {
             "All Spaces",
             // Meeting Rooms
@@ -1286,13 +1164,11 @@ public class Report extends JFrame {
 
         filterPanel.add(Box.createHorizontalStrut(20));
         
-        // Add date filter
         JLabel dateFilterLabel = new JLabel("Date Range:");
         dateFilterLabel.setForeground(Color.WHITE);
         dateFilterLabel.setFont(new Font("TimesRoman", Font.BOLD, 13));
         filterPanel.add(dateFilterLabel);
 
-        // Add date spinners
         SpinnerDateModel startDateModel = new SpinnerDateModel();
         JSpinner startDateSpinner = new JSpinner(startDateModel);
         JSpinner.DateEditor startDateEditor = new JSpinner.DateEditor(startDateSpinner, "dd-MM-yyyy");
@@ -1308,7 +1184,6 @@ public class Report extends JFrame {
         endDateSpinner.setEditor(endDateEditor);
         endDateSpinner.setPreferredSize(new Dimension(120, 25));
 
-        // Add change listeners for date validation
         startDateSpinner.addChangeListener(e -> {
             java.util.Date startDate = (java.util.Date) startDateSpinner.getValue();
             java.util.Date endDate = (java.util.Date) endDateSpinner.getValue();
@@ -1330,7 +1205,6 @@ public class Report extends JFrame {
 
         mainPanel.add(filterPanel);
 
-        // Create table with the same columns as before
         String[] columns = {
             "Booking Name", "Client", "Room", "Date", "Duration", 
             "Hire Fee (£)", "Ticket Revenue (£)", "Payable to Client (£)", 
@@ -1346,7 +1220,6 @@ public class Report extends JFrame {
 
         JTable table = new JTable(model);
         
-        // Style the table (keep existing styling code)
         table.setFont(new Font("TimesRoman", Font.PLAIN, 13));
         table.setRowHeight(28);
         table.setGridColor(new Color(45, 45, 45));
@@ -1357,16 +1230,13 @@ public class Report extends JFrame {
         table.setShowGrid(true);
         table.setIntercellSpacing(new Dimension(1, 1));
 
-        // Style the table header
         table.getTableHeader().setBackground(new Color(30, 50, 55));
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setFont(new Font("TimesRoman", Font.BOLD, 13));
         table.getTableHeader().setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
 
-        // Apply room color renderer to Room column (index 2)
         table.getColumnModel().getColumn(2).setCellRenderer(new RoomColorRenderer());
 
-        // Apply date formatter to Date column (index 3)
         table.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
             
@@ -1386,7 +1256,6 @@ public class Report extends JFrame {
             }
         });
 
-        // Apply default renderer to maintain consistent styling for other columns
         DefaultTableCellRenderer defaultRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -1402,14 +1271,12 @@ public class Report extends JFrame {
         };
         defaultRenderer.setHorizontalAlignment(SwingConstants.LEFT);
         
-        // Apply the default renderer to all columns except Room and Date
         for (int i = 0; i < table.getColumnCount(); i++) {
             if (i != 2 && i != 3) { // Skip Room and Date columns
                 table.getColumnModel().getColumn(i).setCellRenderer(defaultRenderer);
             }
         }
 
-        // Create scroll pane with dark styling
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
         scrollPane.getViewport().setBackground(table.getBackground());
@@ -1418,13 +1285,10 @@ public class Report extends JFrame {
 
         panel.add(mainPanel, BorderLayout.CENTER);
 
-        // Load initial data with all spaces
         loadFinancialData(model, startDateSpinner, endDateSpinner, summaryPanel, categoryPanel, spaceFilter);
 
-        // Add popup functionality
         createDetailPopup(columns, table);
 
-        // Add filter button listener
         applyFilter.addActionListener(e -> {
             loadFinancialData(model, startDateSpinner, endDateSpinner, summaryPanel, categoryPanel, spaceFilter);
         });
@@ -1438,7 +1302,6 @@ public class Report extends JFrame {
         String user = "in2033t26_a";
         String password = "jLxOPuQ69Mg";
 
-        // Clear existing data
         model.setRowCount(0);
 
         try {
@@ -1448,7 +1311,6 @@ public class Report extends JFrame {
             java.util.Date endDate = (java.util.Date) endDateSpinner.getValue();
             String selectedSpace = (String) spaceFilter.getSelectedItem();
 
-            // Build query with space filter
             StringBuilder queryBuilder = new StringBuilder(
                 "SELECT b.BookingName, b.Client, b.Room, b.BookingDate, " +
                 "b.BookingEndDate, b.PaymentStatus, " +
@@ -1457,7 +1319,6 @@ public class Report extends JFrame {
                 "WHERE b.BookingDate >= ? AND b.BookingEndDate <= ?"
             );
 
-            // Add space filter if not "All Spaces"
             if (!"All Spaces".equals(selectedSpace)) {
                 queryBuilder.append(" AND b.Room = ?");
             }
@@ -1470,7 +1331,6 @@ public class Report extends JFrame {
                 stmt.setDate(1, new java.sql.Date(startDate.getTime()));
                 stmt.setDate(2, new java.sql.Date(endDate.getTime()));
 
-                // Set space parameter if specific space selected
                 if (!"All Spaces".equals(selectedSpace)) {
                     stmt.setString(3, selectedSpace);
                 }
@@ -1540,15 +1400,15 @@ public class Report extends JFrame {
 
     private void updateCategoryTotals(String room, double hireFee, double[] categoryTotals) {
         if (room.equals("Entire Venue")) {
-            categoryTotals[3] += hireFee;  // Entire Venue
+            categoryTotals[3] += hireFee;
         } else if (room.equals("Main Hall") || room.equals("Small Hall")) {
-            categoryTotals[1] += hireFee;  // Performance Spaces
+            categoryTotals[1] += hireFee;
         } else if (room.equals("Rehearsal Space")) {
-            categoryTotals[2] += hireFee;  // Rehearsal Space
+            categoryTotals[2] += hireFee;
         } else if (room.equals("The Green Room") || room.equals("Brontë Boardroom") ||
                   room.equals("Dickens Den") || room.equals("Poe Parlor") ||
                   room.equals("Globe Room") || room.equals("Chekhov Chamber")) {
-            categoryTotals[0] += hireFee;  // Meeting Rooms
+            categoryTotals[0] += hireFee;
         }
     }
 
@@ -1786,20 +1646,20 @@ class RoomColorRenderer extends DefaultTableCellRenderer {
     }
 
     private String normalizeRoomName(String room) {
-        return room.replace("ë", "e")  // Replace ë with e
-                  .replace("\n", " ")  // Replace newlines with spaces
-                  .trim();            // Remove extra spaces
+        return room.replace("ë", "e")
+                  .replace("\n", " ")
+                  .trim();
     }
 }
 
-    // Place this method within the Report class, outside any inner classes
+
     private String normalizeRoomName(String room) {
         return room.replace("ë", "e")  // Replace ë with e
                   .replace("\n", " ")  // Replace newlines with spaces
                   .trim();            // Remove extra spaces
     }
 
-    // Add utility method to create and configure the popup window
+
     private JWindow createDetailPopup(String[] columns, JTable table) {
         JPanel popupPanel = new JPanel();
         popupPanel.setLayout(new BoxLayout(popupPanel, BoxLayout.Y_AXIS));
@@ -1809,7 +1669,7 @@ class RoomColorRenderer extends DefaultTableCellRenderer {
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
 
-        // Create labels for popup content
+
         JLabel[] detailLabels = new JLabel[columns.length];
         for (int i = 0; i < columns.length; i++) {
             detailLabels[i] = new JLabel();
@@ -1821,30 +1681,26 @@ class RoomColorRenderer extends DefaultTableCellRenderer {
 
 
 
-        // Create popup window
+
         JWindow popup = new JWindow();
         popup.setContentPane(popupPanel);
         popup.setOpacity(0.95f);
 
-        // Add mouse motion listener for hover effect
         table.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
                 int row = table.rowAtPoint(e.getPoint());
                 if (row >= 0) {
-                    // Update popup content
                     for (int i = 0; i < columns.length; i++) {
                         Object value = table.getValueAt(row, i);
                         String text = columns[i] + ": " + (value != null ? value.toString() : "");
                         detailLabels[i].setText(text);
 
-                        // Style room name if it exists
                         if (columns[i].equals("Room")) {
                             String room = value != null ? value.toString() : "";
                             Color roomColor = spaceColors.getOrDefault(room, new Color(149, 165, 166));
                             detailLabels[i].setForeground(roomColor);
                         }
-                        // Style monetary values
                         else if (value != null && text.contains("£")) {
                             detailLabels[i].setForeground(new Color(38, 166, 154));  // Teal color for money
                         }
@@ -1853,18 +1709,15 @@ class RoomColorRenderer extends DefaultTableCellRenderer {
                         }
                     }
 
-                    // Position and show popup
                     Point p = e.getPoint();
                     SwingUtilities.convertPointToScreen(p, table);
                     
-                    // Adjust position to not go off screen
                     Rectangle screen = GraphicsEnvironment.getLocalGraphicsEnvironment()
                         .getMaximumWindowBounds();
                     
                     int popupX = p.x + 15;
                     int popupY = p.y + 15;
                     
-                    // Ensure popup stays within screen bounds
                     if (popupX + popup.getWidth() > screen.width) {
                         popupX = screen.width - popup.getWidth();
                     }
@@ -1884,7 +1737,6 @@ class RoomColorRenderer extends DefaultTableCellRenderer {
             }
         });
 
-        // Hide popup when mouse exits table
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseExited(MouseEvent e) {
