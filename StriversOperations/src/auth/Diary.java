@@ -244,7 +244,7 @@ public class Diary extends JFrame {
                     double cost = fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
                     return String.format("£%.2f + VAT", cost);
                 }
-            } else if ("Bronte Boardroom".equals(room)) {
+            } else if ("Brontë Boardroom".equals(room)) {
                 if (isAllDay) {
                     return "£200.00 + VAT"; // All day rate
                 } else {

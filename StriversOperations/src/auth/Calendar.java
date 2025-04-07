@@ -17,7 +17,6 @@ import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,43 +45,23 @@ public class Calendar extends JFrame {
     // Space categories and their colors
     private final Map<String, Color> spaceColors = new HashMap<>() {{
         // Meeting Rooms
-        put(normalizeRoomName("The Green Room"), new Color(76, 175, 80));    // Green
-        put(normalizeRoomName("Brontë Boardroom"), new Color(121, 85, 72));  // Brown
-        put(normalizeRoomName("Dickens Den"), new Color(255, 152, 0));       // Orange
-        put(normalizeRoomName("Poe Parlor"), new Color(156, 39, 176));       // Purple
-        put(normalizeRoomName("Globe Room"), new Color(3, 169, 244));        // Light Blue
-        put(normalizeRoomName("Chekhov Chamber"), new Color(233, 30, 99));   // Pink
+        put("The Green Room", new Color(76, 175, 80));    // Green
+        put("Brontë Boardroom", new Color(121, 85, 72));  // Brown
+        put("Dickens Den", new Color(255, 152, 0));       // Orange
+        put("Poe Parlor", new Color(156, 39, 176));       // Purple
+        put("Globe Room", new Color(3, 169, 244));        // Light Blue
+        put("Chekhov Chamber", new Color(233, 30, 99));   // Pink
 
         // Performance Spaces
-        put(normalizeRoomName("Main Hall"), new Color(244, 67, 54));         // Red
-        put(normalizeRoomName("Small Hall"), new Color(255, 87, 34));        // Deep Orange
+        put("Main Hall", new Color(244, 67, 54));         // Red
+        put("Small Hall", new Color(255, 87, 34));        // Deep Orange
 
         // Rehearsal Space
-        put(normalizeRoomName("Rehearsal Space"), new Color(0, 150, 136));   // Teal
+        put("Rehearsal Space", new Color(0, 150, 136));   // Teal
 
         // Entire Venue
-        put(normalizeRoomName("Entire Venue"), new Color(63, 81, 181));      // Indigo
+        put("Entire Venue", new Color(63, 81, 181));      // Indigo
     }};
-
-    // Add a cache for bookings
-    private final Map<LocalDate, List<BookingInfo>> bookingCache = new HashMap<>();
-
-    // Add a BookingInfo class to store booking details
-    private static class BookingInfo {
-        final String bookingName;
-        final String client;
-        final String room;
-        final LocalTime startTime;
-        final LocalTime endTime;
-
-        BookingInfo(String bookingName, String client, String room, LocalTime startTime, LocalTime endTime) {
-            this.bookingName = bookingName;
-            this.client = client;
-            this.room = room;
-            this.startTime = startTime;
-            this.endTime = endTime;
-        }
-    }
 
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
@@ -130,7 +109,7 @@ public class Calendar extends JFrame {
                         for (String booking : bookings) {
                             // Extract the time range from the booking string
                             String[] parts = booking.trim().split(" ");
-                            String timeRange = parts[parts.length - 1]; // Get the last part which is the time range
+                            String timeRange = parts[parts.length-1]; // Get the last part which is the time range
                             String bookingWithoutTime = booking.substring(0, booking.lastIndexOf(" ")).trim();
 
                             details.append("\n• ").append(bookingWithoutTime)
@@ -141,8 +120,7 @@ public class Calendar extends JFrame {
                         bookingDetails.setText("No bookings for this slot");
                     }
                 }
-            }
-        });
+            }});
     }
 
     private void createHeaderPanel() {
@@ -523,10 +501,10 @@ public class Calendar extends JFrame {
                                     String time = (String) calendarTable.getValueAt(row, 0);
                                     LocalDate date = currentWeekStart.plusDays(col - 1);
                                     String details = String.format("""
-                                                    Date: %s
-                                                    Time: %s
-                                                                                            
-                                                    %s""",
+                                        Date: %s
+                                        Time: %s
+                                        
+                                        %s""",
                                             date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")),
                                             time,
                                             bookingDetails
@@ -564,114 +542,8 @@ public class Calendar extends JFrame {
         });
     }
 
-    private void loadBookingsForWeek(LocalDate weekStart) {
-        String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
-        String user = "in2033t26_a";
-        String password = "jLxOPuQ69Mg";
-        
-        // First, let's get all unique room names from the database
-        String roomQuery = "SELECT DISTINCT Room FROM booking ORDER BY Room";
-        try (Connection conn = DriverManager.getConnection(url, user, password);
-             PreparedStatement roomStmt = conn.prepareStatement(roomQuery)) {
-            
-            ResultSet roomRs = roomStmt.executeQuery();
-            System.out.println("\nAll room names in database:");
-            System.out.println("==========================");
-            while (roomRs.next()) {
-                String roomName = roomRs.getString("Room");
-                System.out.println("Room name: '" + roomName + "'");
-                // Check if this room has a color defined
-                Color roomColor = spaceColors.get(normalizeRoomName(roomName));
-                System.out.println("Has color defined: " + (roomColor != null ? "Yes" : "No") + "\n");
-            }
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        // Continue with the regular weekly booking query
-        String query = "SELECT BookingName, Client, Room, StartTime, EndTime, BookingDate " +
-                      "FROM booking WHERE BookingDate BETWEEN ? AND ? ORDER BY BookingDate, StartTime";
-
-        try (Connection conn = DriverManager.getConnection(url, user, password);
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
-            LocalDate weekEnd = weekStart.plusDays(6);
-            stmt.setDate(1, java.sql.Date.valueOf(weekStart));
-            stmt.setDate(2, java.sql.Date.valueOf(weekEnd));
-            ResultSet rs = stmt.executeQuery();
-
-            // Clear old cache entries
-            bookingCache.clear();
-
-            while (rs.next()) {
-                LocalDate bookingDate = rs.getDate("BookingDate").toLocalDate();
-                BookingInfo booking = new BookingInfo(
-                    rs.getString("BookingName"),
-                    rs.getString("Client"),
-                    rs.getString("Room"),
-                    rs.getTime("StartTime").toLocalTime(),
-                    rs.getTime("EndTime").toLocalTime()
-                );
-
-                bookingCache.computeIfAbsent(bookingDate, k -> new ArrayList<>()).add(booking);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error fetching bookings: " + e.getMessage(), 
-                "Database Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void loadBookingsForDate(LocalDate date, DefaultTableModel model, int dayColumnIndex) {
-        List<BookingInfo> dayBookings = bookingCache.getOrDefault(date, Collections.emptyList());
-        Map<String, List<String>> timeSlotBookings = new HashMap<>();
-
-        for (BookingInfo booking : dayBookings) {
-            // Ensure start time is not after end time
-            if (booking.startTime.isAfter(booking.endTime)) {
-                continue;
-            }
-
-            // Format the booking text
-            String bookingText = booking.room + ": " + booking.bookingName + " (" + booking.client + ")";
-
-            // Add booking to each affected time slot
-            LocalTime currentTime = booking.startTime;
-            int iterations = 0;
-            int maxIterations = 48; // Maximum 24 hours with 30-minute intervals
-
-            while (!currentTime.isAfter(booking.endTime.minusMinutes(30)) && iterations < maxIterations) {
-                // Only add bookings for times between 10:00 and 00:00
-                if (currentTime.getHour() >= 10 || currentTime.getHour() == 0) {
-                    String timeKey = currentTime.format(timeFormatter);
-                    List<String> bookingsForSlot = timeSlotBookings.computeIfAbsent(timeKey, k -> new ArrayList<>());
-                    if (bookingsForSlot.size() < 10) {
-                        bookingsForSlot.add(bookingText);
-                    }
-                }
-                currentTime = currentTime.plusMinutes(30);
-                iterations++;
-            }
-        }
-
-        // Update the table with combined bookings
-        for (int row = 0; row < model.getRowCount(); row++) {
-            String timeSlot = (String) model.getValueAt(row, 0);
-            List<String> bookings = timeSlotBookings.get(timeSlot);
-            if (bookings != null && !bookings.isEmpty()) {
-                String combinedBookings = String.join(" | ", bookings);
-                model.setValueAt(combinedBookings, row, dayColumnIndex);
-            }
-        }
-    }
-
     private void refreshCalendar() {
         weekLabel.setText("Week of " + currentWeekStart.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
-
-        // Load all bookings for the week at once
-        loadBookingsForWeek(currentWeekStart);
 
         DefaultTableModel model = (DefaultTableModel) calendarTable.getModel();
         model.setRowCount(0);
@@ -692,13 +564,11 @@ public class Calendar extends JFrame {
             }
         }
 
-        // Load bookings for each day from the cache
         for (int i = 0; i < 7; i++) {
             loadBookingsForDate(currentWeekStart.plusDays(i), model, i + 1);
         }
     }
 
-<<<<<<< Updated upstream
     private void loadBookingsForDate(LocalDate date, DefaultTableModel model, int dayColumnIndex) {
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
         String user = "in2033t26_a";
@@ -770,8 +640,6 @@ public class Calendar extends JFrame {
         }
     }
 
-=======
->>>>>>> Stashed changes
     // Custom popup for booking details
     private class BookingPopup extends JWindow {
         public BookingPopup() {
@@ -810,7 +678,7 @@ public class Calendar extends JFrame {
         }
 
         public void showPopup(String text, Point location) {
-            JTextArea textArea = (JTextArea) ((JPanel) getContentPane()).getComponent(0);
+            JTextArea textArea = (JTextArea) ((JPanel)getContentPane()).getComponent(0);
             textArea.setText(text);
             pack();
 
@@ -837,15 +705,12 @@ public class Calendar extends JFrame {
     class RoomColorRenderer extends DefaultTableCellRenderer {
         private final BookingPopup popup = new BookingPopup();
 
-<<<<<<< Updated upstream
         private String normalizeRoomName(String room) {
             return room.replace("ë", "e")  // Replace ë with e
                     .replace("\n", " ")  // Replace newlines with spaces
                     .trim();            // Remove extra spaces
         }
 
-=======
->>>>>>> Stashed changes
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
@@ -865,15 +730,13 @@ public class Calendar extends JFrame {
                 if (!trimmedBooking.isEmpty()) {
                     // Extract room name and other details
                     String[] parts = trimmedBooking.split(":");
-                    String room = parts[0].trim();
+                    String originalRoom = parts[0].trim();
+                    String normalizedRoom = normalizeRoomName(originalRoom);
                     String details = parts[1].trim();
-
-                    // Normalize the room name for color lookup
-                    String normalizedRoom = normalizeRoomName(room);
 
                     // Create a label for each booking with normal text alignment
                     JLabel bookingLabel = new JLabel("<html><div style='margin: 3px;'>" +
-                            "<b>" + room + "</b><br>" +
+                            "<b>" + originalRoom + "</b><br>" +  // Use original room name for display
                             details + "</div></html>");
                     bookingLabel.setOpaque(true);
                     bookingLabel.setHorizontalAlignment(SwingConstants.LEFT);
@@ -898,7 +761,7 @@ public class Calendar extends JFrame {
         }
     }
 
-    private void styleTopButton (JButton button){
+    private void styleTopButton(JButton button) {
         button.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         button.setBackground(darkColour);
         button.setForeground(Color.WHITE);
@@ -907,22 +770,16 @@ public class Calendar extends JFrame {
         addHoverEffect(button);
     }
 
-    private void addHoverEffect (JButton button){
+    private void addHoverEffect(JButton button) {
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 button.setForeground(Color.LIGHT_GRAY);
             }
-
             @Override
             public void mouseExited(MouseEvent e) {
                 button.setForeground(Color.WHITE);
             }
         });
-    }
-
-    // Add a helper method to normalize room names
-    private String normalizeRoomName(String room) {
-        return room.replace("\n", " ").trim();
     }
 }

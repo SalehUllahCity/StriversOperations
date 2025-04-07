@@ -36,7 +36,7 @@ public class Booking extends JFrame {
 
     private final String[] spaces = {
             "Select a space...",
-            "The Green Room", "Bronte Boardroom", "Dickens Den", "Poe Parlor",
+            "The Green Room", "Brontë Boardroom", "Dickens Den", "Poe Parlor",
             "Globe Room", "Chekhov Chamber", "Main Hall", "Small Hall",
             "Rehearsal Space", "Entire Venue"
     };
@@ -46,11 +46,11 @@ public class Booking extends JFrame {
     {
         // Initialize space colors
         spaceColors.put("The Green Room", new Color(76, 175, 80));    // Green
-        spaceColors.put("Bronte\nBoardroom", new Color(33, 150, 243)); // Blue
+        spaceColors.put("Brontë Boardroom", new Color(33, 150, 243)); // Blue
         spaceColors.put("Dickens Den", new Color(156, 39, 176));      // Purple
         spaceColors.put("Poe Parlor", new Color(255, 152, 0));        // Orange
         spaceColors.put("Globe Room", new Color(0, 188, 212));        // Cyan
-        spaceColors.put("Chekhov\nChamber", new Color(233, 30, 99));   // Pink
+        spaceColors.put("Chekhov Chamber", new Color(233, 30, 99));   // Pink
         spaceColors.put("Main Hall", new Color(244, 67, 54));         // Red
         spaceColors.put("Small Hall", new Color(255, 235, 59));       // Yellow
         spaceColors.put("Rehearsal Space", new Color(63, 81, 181));   // Indigo
@@ -178,7 +178,7 @@ public class Booking extends JFrame {
                         double hourlyRate = 25.0;
                         return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);  // £25/hour + £12.50 for half hour
                     }
-                case "Bronte Boardroom":
+                case "Brontë Boardroom":
                     if (isWeek) {
                         return 900.0;  // £900/week
                     } else if (isAllDay) {
@@ -608,7 +608,7 @@ public class Booking extends JFrame {
                 updateTimeSlotGrid();
 
                 boolean isRoomType = Arrays.asList(
-                    "The Green Room", "Bronte Boardroom", "Dickens Den",
+                    "The Green Room", "Brontë Boardroom", "Dickens Den",
                     "Poe Parlor", "Globe Room", "Chekhov Chamber"
                 ).contains(selectedSpace);
 
@@ -1016,22 +1016,21 @@ public class Booking extends JFrame {
     }
 
     private JPanel createActionsPanel() {
-        JPanel panel = new JPanel(new BorderLayout(20, 10));  // Added vertical gap
+        JPanel panel = new JPanel(new BorderLayout(20, 10));
         panel.setBackground(panelColor);
 
-        // Total cost label centered
         totalLabel = new JLabel("Total Cost: £0.00 + VAT", JLabel.CENTER);
         totalLabel.setForeground(Color.WHITE);
         totalLabel.setFont(new Font("TimesRoman", Font.PLAIN, 14));
         panel.add(totalLabel, BorderLayout.NORTH);
 
-        // Buttons panel
-        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));  // Changed to CENTER
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonsPanel.setBackground(panelColor);
 
         JButton saveBtn = createStyledButton("Save Booking");
-        JButton cancelBtn = createStyledButton("Cancel");
+        saveBtn.addActionListener(e -> saveBookingsToDatabase());
 
+        JButton cancelBtn = createStyledButton("Cancel");
         cancelBtn.addActionListener(e -> {
             dispose();
             new UserHome().setVisible(true);
@@ -1039,7 +1038,7 @@ public class Booking extends JFrame {
 
         buttonsPanel.add(saveBtn);
         buttonsPanel.add(cancelBtn);
-        panel.add(buttonsPanel, BorderLayout.CENTER);  // Changed to CENTER
+        panel.add(buttonsPanel, BorderLayout.CENTER);
 
         return panel;
     }
@@ -1249,6 +1248,67 @@ public class Booking extends JFrame {
 
         for (int i = 0; i < startTimes.size(); i++) {
             createSingleBookingEvent(startTimes.get(i), endTimes.get(i), bookingName);
+        }
+    }
+
+    private void saveBookingsToDatabase() {
+        if (bookingEvents.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "No bookings to save",
+                    "No Bookings",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String insertQuery = "INSERT INTO booking (UserID, BookingDate, StartTime, EndTime, Room, Client, BookingName, " +
+                "BookingEndDate, ClientID, HoldingStatus, TotalCost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26",
+                "in2033t26_a", "jLxOPuQ69Mg");
+             PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
+
+            int userId = 1; // Replace with actual user ID
+
+            for (BookingEvent event : bookingEvents) {
+                if (event.isDisplayOnly) continue;
+
+                stmt.setInt(1, userId);
+                stmt.setDate(2, java.sql.Date.valueOf(event.date));
+                stmt.setTime(3, java.sql.Time.valueOf(event.startTime));
+                stmt.setTime(4, java.sql.Time.valueOf(event.endTime));
+                stmt.setString(5, event.space);
+                stmt.setString(6, clientNameField.getText().trim());
+                stmt.setString(7, event.eventType);
+
+                if (event.isWeek || event.isWeekShort || event.isWeekLong) {
+                    stmt.setDate(8, java.sql.Date.valueOf(event.date.plusDays(6)));
+                } else {
+                    stmt.setDate(8, java.sql.Date.valueOf(event.date));
+                }
+
+                stmt.setInt(9, 1); // Default client ID
+                stmt.setString(10, "Tentative");
+                stmt.setBigDecimal(11, new java.math.BigDecimal(event.cost));
+
+                stmt.executeUpdate();
+            }
+
+            JOptionPane.showMessageDialog(this,
+                    "Bookings saved successfully!",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+            bookingEvents.clear();
+            updateBookingList();
+            updateTotalCost();
+            updateTimeSlotGrid();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                    "Error saving bookings: " + e.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 

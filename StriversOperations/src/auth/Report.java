@@ -29,7 +29,7 @@ public class Report extends JFrame {
     private final Map<String, Color> spaceColors = new HashMap<>() {{
         // Meeting Rooms
         put("The Green Room", new Color(76, 175, 80));    // Green
-        put("Bronte Boardroom", new Color(121, 85, 72));  // Brown
+        put("Brontë Boardroom", new Color(121, 85, 72));  // Brown
         put("Dickens Den", new Color(255, 152, 0));       // Orange
         put("Poe Parlor", new Color(156, 39, 176));       // Purple
         put("Globe Room", new Color(3, 169, 244));        // Light Blue
@@ -162,7 +162,7 @@ public class Report extends JFrame {
         
     //     // Map of display names if needed
     //     switch (normalized) {
-    //         case "Brontë Boardroom": return "Bronte Boardroom";
+    //         case "Brontë Boardroom": return "Brontë Boardroom";
     //         default: return normalized;
     //     }
     // }
@@ -215,7 +215,7 @@ public class Report extends JFrame {
         spaceFilterLabel.setFont(new Font("TimesRoman", Font.BOLD, 13));
         spaceFilterPanel.add(spaceFilterLabel);
         
-        JComboBox<String> spaceFilter = new JComboBox<>(new String[]{"All Spaces", "The Green Room", "Bronte Boardroom", 
+        JComboBox<String> spaceFilter = new JComboBox<>(new String[]{"All Spaces", "The Green Room", "Brontë Boardroom",
                 "Dickens Den", "Poe Parlor", "Globe Room", "Chekhov Chamber", "Main Hall", "Small Hall", 
                 "Rehearsal Space", "Entire Venue"});
         spaceFilter.setFont(new Font("TimesRoman", Font.PLAIN, 13));
@@ -1137,7 +1137,7 @@ public class Report extends JFrame {
             "All Spaces",
             // Meeting Rooms
             "The Green Room",
-            "Bronte Boardroom",
+            "Brontë Boardroom",
             "Dickens Den",
             "Poe Parlor",
             "Globe Room",
@@ -1427,7 +1427,7 @@ public class Report extends JFrame {
             categoryTotals[1] += hireFee;  // Performance Spaces
         } else if (room.equals("Rehearsal Space")) {
             categoryTotals[2] += hireFee;  // Rehearsal Space
-        } else if (room.equals("The Green Room") || room.equals("Bronte Boardroom") ||
+        } else if (room.equals("The Green Room") || room.equals("Brontë Boardroom") ||
                   room.equals("Dickens Den") || room.equals("Poe Parlor") ||
                   room.equals("Globe Room") || room.equals("Chekhov Chamber")) {
             categoryTotals[0] += hireFee;  // Meeting Rooms
@@ -1457,7 +1457,7 @@ public class Report extends JFrame {
         // Base weekly rates from the Booking class
         Map<String, Double> weeklyRates = new HashMap<>() {{
             put("The Green Room", 600.0);
-            put("Bronte Boardroom", 900.0);
+            put("Brontë Boardroom", 900.0);
             put("Dickens Den", 700.0);
             put("Poe Parlor", 800.0);
             put("Globe Room", 1100.0);
