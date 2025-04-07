@@ -68,7 +68,7 @@ public class Report extends JFrame {
      * Create the frame.
      */
     public Report() throws SQLException, ClassNotFoundException {
-        setTitle("Lancaster's Music Hall Software");
+        setTitle("Lancaster's Music Hall Software: Reports");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1400, 900);
         setResizable(false);
@@ -546,7 +546,7 @@ public class Report extends JFrame {
         searchPanel.setBackground(background);
 
         // Add search label
-        JLabel searchLabel = new JLabel("Search by Performance ID:");
+        JLabel searchLabel = new JLabel("Search by Performance Name:");
         searchLabel.setForeground(Color.WHITE);
         searchLabel.setFont(new Font("TimesRoman", Font.BOLD, 13));
         searchPanel.add(searchLabel);
@@ -1649,54 +1649,137 @@ public class Report extends JFrame {
     }
 
     private JPanel createMonthRevTab() throws SQLException, ClassNotFoundException {
-        JPanel panel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(background);
+        panel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
+        // Create top panel for month/year controls
+        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        controlPanel.setBackground(background);
+
+        // Add month selector
+        JLabel monthLabel = new JLabel("Month:");
+        monthLabel.setForeground(Color.WHITE);
+        monthLabel.setFont(new Font("TimesRoman", Font.BOLD, 13));
+        controlPanel.add(monthLabel);
+
+        SpinnerNumberModel monthModel = new SpinnerNumberModel(4, 1, 12, 1);
+        JSpinner monthSpinner = new JSpinner(monthModel);
+        monthSpinner.setPreferredSize(new Dimension(60, 25));
+        monthSpinner.setFont(new Font("TimesRoman", Font.PLAIN, 13));
+        controlPanel.add(monthSpinner);
+
+        // Add year selector
+        JLabel yearLabel = new JLabel("Year:");
+        yearLabel.setForeground(Color.WHITE);
+        yearLabel.setFont(new Font("TimesRoman", Font.BOLD, 13));
+        controlPanel.add(yearLabel);
+
+        SpinnerNumberModel yearModel = new SpinnerNumberModel(2025, 2000, 2100, 1);
+        JSpinner yearSpinner = new JSpinner(yearModel);
+        JSpinner.NumberEditor yearEditor = new JSpinner.NumberEditor(yearSpinner, "#");
+        yearSpinner.setEditor(yearEditor);
+        yearEditor.getTextField().setHorizontalAlignment(SwingConstants.CENTER);
+        yearSpinner.setPreferredSize(new Dimension(80, 25));
+        yearSpinner.setFont(new Font("TimesRoman", Font.PLAIN, 13));
+        controlPanel.add(yearSpinner);
+
+        // Add refresh button
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.setFont(new Font("TimesRoman", Font.BOLD, 13));
+        refreshButton.setBackground(new Color(30, 50, 55));
+        refreshButton.setForeground(Color.WHITE);
+        refreshButton.setFocusPainted(false);
+        controlPanel.add(refreshButton);
+
+        panel.add(controlPanel, BorderLayout.NORTH);
+
+        // Create table with columns
         String[] columns = {
-                "Last Sale Date", "Revenue" , "Tickets Sold", "First Sale Date"
+                "Last Sale Date", "Revenue", "Tickets Sold", "First Sale Date"
         };
 
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
-        JTable table = new JTable(model);
-        styleTable(table);
-        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        DefaultTableModel model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
 
-        loadMonthlyRevenue(model);
+        JTable table = new JTable(model);
+
+        // Style the table to match other tabs
+        table.setFont(new Font("TimesRoman", Font.PLAIN, 13));
+        table.setRowHeight(28);
+        table.setGridColor(new Color(45, 45, 45));
+        table.setBackground(new Color(25, 40, 45));
+        table.setForeground(Color.WHITE);
+        table.setSelectionBackground(new Color(45, 66, 75));
+        table.setSelectionForeground(Color.WHITE);
+        table.setShowGrid(true);
+        table.setIntercellSpacing(new Dimension(1, 1));
+
+        // Style the table header
+        table.getTableHeader().setBackground(new Color(30, 50, 55));
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.getTableHeader().setFont(new Font("TimesRoman", Font.BOLD, 13));
+        table.getTableHeader().setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
+
+        // Create scroll pane with dark styling
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45)));
+        scrollPane.getViewport().setBackground(table.getBackground());
+
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        // Add action listener for refresh button
+        refreshButton.addActionListener(e -> {
+            int year = (Integer) yearSpinner.getValue();
+            int month = (Integer) monthSpinner.getValue();
+            try {
+                loadMonthlyRevenue(model, year, month);
+            } catch (SQLException | ClassNotFoundException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(panel,
+                        "Error loading monthly revenue data: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Load initial data with current month/year
+        loadMonthlyRevenue(model, (Integer) yearSpinner.getValue(), (Integer) monthSpinner.getValue());
 
         return panel;
     }
 
-    private void loadMonthlyRevenue(DefaultTableModel model) throws SQLException, ClassNotFoundException {
+    private void loadMonthlyRevenue(DefaultTableModel model, int year, int month) throws SQLException, ClassNotFoundException {
         try {
             JDBC jdbc = new JDBC();
+            model.setRowCount(0); // Clear existing data
 
-            // change it to be an input to see previous months
-            // try and make it visual
-
-
-
-            Map<String, Object> monthlyRevenueReport = jdbc.getMonthlyRevenueReport(2025, 4);
+            Map<String, Object> monthlyRevenueReport = jdbc.getMonthlyRevenueReport(year, month);
 
             // Create a single row with all 4 values in the correct order
             Object[] row = {
                     monthlyRevenueReport.get("last_sale").toString(),
-                    monthlyRevenueReport.get("revenue"),
+                    String.format("£%.2f", monthlyRevenueReport.get("revenue")),
                     monthlyRevenueReport.get("tickets_sold"),
                     monthlyRevenueReport.get("first_sale").toString()
             };
 
-            System.out.println("Monthly Revenue: \n");
+            System.out.println("Monthly Revenue for " + month + "/" + year + ":");
             for (Map.Entry<String, Object> entry : monthlyRevenueReport.entrySet()) {
                 System.out.println(entry.getKey() + ": " + entry.getValue());
             }
 
             model.addRow(row);
 
-
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error retrieving Monthly Revenue" +
                     "Data: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+            throw e;
         }
     }
 

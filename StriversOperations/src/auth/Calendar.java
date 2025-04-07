@@ -1,15 +1,12 @@
 package auth;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -34,15 +31,9 @@ public class Calendar extends JFrame {
     private JPanel calendarGrid;
     private JLabel monthYearLabel;
     private JTextArea bookingDetails;
-    private String currentFilterRoom = null; // Track currently filtered room
-    private JLabel filterStatusLabel; // Display current filter status
+    private String currentFilterRoom = null;
+    private JLabel filterStatusLabel;
 
-    // For visuals on the calendar top left
-    private final Color NO_BOOKINGS_COLOR = new Color(100, 100, 100); // Grey
-    private final Color PARTIAL_BOOKINGS_COLOR = new Color(255, 152, 0); // Orange
-    private final Color FULLY_BOOKED_COLOR = new Color(76, 175, 80); // Green
-
-    // Space categories and their colors
     private final Map<String, Color> spaceColors = new HashMap<>() {{
         // Meeting Rooms
         put("The Green Room", new Color(76, 175, 80));    // Green
@@ -74,22 +65,20 @@ public class Calendar extends JFrame {
         });
     }
 
+
     public Calendar() {
-        setTitle("Lancaster's Music Hall Weekly Calendar");
+        setTitle("Lancaster's Music Hall Weekly: Calendar");
         setSize(1440, 900);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         getContentPane().setBackground(darkColour);
-
         currentWeekStart = LocalDate.now().with(DayOfWeek.MONDAY);
 
         createHeaderPanel();
         createSideMonthView();
         createCalendarTable();
         refreshCalendar();
-
-        // Add mouse listener to the calendar table after it's created
         calendarTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {

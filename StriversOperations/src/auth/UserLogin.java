@@ -51,7 +51,7 @@ public class UserLogin extends JFrame {
      * Create the frame.
      */
     public UserLogin() {
-        setTitle("Lancaster's Music Hall Software");
+        setTitle("Lancaster's Music Hall Software: Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 800);
         setResizable(false);

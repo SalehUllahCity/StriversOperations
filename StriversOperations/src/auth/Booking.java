@@ -25,7 +25,6 @@ public class Booking extends JFrame {
     private final Color unavailableColor = new Color(244, 67, 54);
     private final Color selectedColor = new Color(255, 152, 0);
     private final Color buttonHoverColor = Color.LIGHT_GRAY;
-    private final int fontSize = 18;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy");
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -42,7 +41,6 @@ public class Booking extends JFrame {
     private final Map<String, Color> spaceColors = new HashMap<>();
 
     {
-        // Initialize space colors
         spaceColors.put("The Green Room", new Color(76, 175, 80));    // Green
         spaceColors.put("Brontë Boardroom", new Color(33, 150, 243)); // Blue
         spaceColors.put("Dickens Den", new Color(156, 39, 176));      // Purple
@@ -71,10 +69,10 @@ public class Booking extends JFrame {
     private JCheckBox morningCheckBox;
     private JCheckBox afternoonCheckBox;
     private JCheckBox weekCheckBox;
-    private JCheckBox allDayShortCheckBox;  // 10:00-17:00
-    private JCheckBox allDayLongCheckBox;   // 10:00-23:00
-    private JCheckBox weekShortCheckBox;  // 10:00-18:00
-    private JCheckBox weekLongCheckBox;   // 10:00-23:00
+    private JCheckBox allDayShortCheckBox;
+    private JCheckBox allDayLongCheckBox;
+    private JCheckBox weekShortCheckBox;
+    private JCheckBox weekLongCheckBox;
 
     private LocalDate selectedDate = LocalDate.now();
     private String selectedSpace = null;
@@ -94,17 +92,17 @@ public class Booking extends JFrame {
         boolean isAllDayLong;   // 10:00-23:00
         boolean isWeekShort;    // 10:00-18:00
         boolean isWeekLong;     // 10:00-23:00
-        boolean isWeek;         // For standard week booking
-        boolean isMorning;      // Added for morning bookings
-        boolean isAfternoon;    // Added for afternoon bookings
-        boolean isDisplayOnly;  // Added for weekly display events
+        boolean isWeek;
+        boolean isMorning;
+        boolean isAfternoon;
+        boolean isDisplayOnly;
 
         public BookingEvent(LocalDate date, LocalTime startTime, LocalTime endTime,
                             String space, String eventType, boolean isAllDay, boolean isEvening,
                             boolean isAllDayShort, boolean isAllDayLong,
                             boolean isWeekShort, boolean isWeekLong,
                             boolean isMorning, boolean isAfternoon,
-                            boolean isDisplayOnly, boolean isWeek) {  // Added isWeek parameter
+                            boolean isDisplayOnly, boolean isWeek) {
             this.date = date;
             this.startTime = startTime;
             this.endTime = endTime;
@@ -119,165 +117,137 @@ public class Booking extends JFrame {
             this.isMorning = isMorning;
             this.isAfternoon = isAfternoon;
             this.isDisplayOnly = isDisplayOnly;
-            this.isWeek = isWeek;  // Set isWeek before calculateCost
+            this.isWeek = isWeek;
             this.cost = calculateCost();
-        }
-
-        // Constructor overload for backward compatibility
-        public BookingEvent(LocalDate date, LocalTime startTime, LocalTime endTime,
-                            String space, String eventType, boolean isAllDay, boolean isEvening,
-                            boolean isAllDayShort, boolean isAllDayLong,
-                            boolean isWeekShort, boolean isWeekLong,
-                            boolean isMorning, boolean isAfternoon,
-                            boolean isDisplayOnly) {
-            this(date, startTime, endTime, space, eventType, isAllDay, isEvening,
-                 isAllDayShort, isAllDayLong, isWeekShort, isWeekLong,
-                 isMorning, isAfternoon, isDisplayOnly, false);
-        }
-
-        // Constructor overload for backward compatibility
-        public BookingEvent(LocalDate date, LocalTime startTime, LocalTime endTime,
-                            String space, String eventType, boolean isAllDay, boolean isEvening,
-                            boolean isAllDayShort, boolean isAllDayLong,
-                            boolean isWeekShort, boolean isWeekLong,
-                            boolean isMorning, boolean isAfternoon) {
-            this(date, startTime, endTime, space, eventType, isAllDay, isEvening,
-                 isAllDayShort, isAllDayLong, isWeekShort, isWeekLong,
-                 isMorning, isAfternoon, false, false);
         }
 
         private double calculateCost() {
             if (isDisplayOnly) {
-                return 0.0;  // No cost for display-only events
+                return 0.0;
             }
 
-            // Calculate total minutes and then convert to hours and remaining minutes
             long totalMinutes = java.time.Duration.between(startTime, endTime).toMinutes();
             int fullHours = (int) (totalMinutes / 60);
             int remainingMinutes = (int) (totalMinutes % 60);
             boolean hasHalfHour = remainingMinutes == 30;
 
-            // Calculate day of week and weekend status
             int dayOfWeek = date.getDayOfWeek().getValue();
-            boolean isWeekend = dayOfWeek == 6 || dayOfWeek == 7;  // Saturday or Sunday
-            boolean isFridayOrSaturday = dayOfWeek == 5 || dayOfWeek == 6; // Fri-Sat
+            boolean isWeekend = dayOfWeek == 6 || dayOfWeek == 7;
+            boolean isFridayOrSaturday = dayOfWeek == 5 || dayOfWeek == 6;
 
             switch (space) {
                 case "The Green Room":
                     if (isWeek) {
-                        return 600.0;  // £600/week
+                        return 600.0;
                     } else if (isAllDay) {
-                        return 130.0;  // £130/all day
+                        return 130.0;
                     } else if (isMorning) {
-                        return 75.0;   // £75/morning
+                        return 75.0;
                     } else if (isAfternoon) {
-                        return 75.0;   // £75/afternoon
+                        return 75.0;
                     } else {
                         double hourlyRate = 25.0;
-                        return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);  // £25/hour + £12.50 for half hour
+                        return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
                     }
                 case "Brontë Boardroom":
                     if (isWeek) {
-                        return 900.0;  // £900/week
+                        return 900.0;
                     } else if (isAllDay) {
-                        return 200.0;  // £200/all day
+                        return 200.0;
                     } else if (isMorning) {
-                        return 120.0;  // £120/morning
+                        return 120.0;
                     } else if (isAfternoon) {
-                        return 120.0;  // £120/afternoon
+                        return 120.0;
                     } else {
                         double hourlyRate = 40.0;
-                        return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);  // £40/hour + £20 for half hour
+                        return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
                     }
                 case "Dickens Den":
                     if (isWeek) {
-                        return 700.0;  // £700/week
+                        return 700.0;
                     } else if (isAllDay) {
-                        return 150.0;  // £150/all day
+                        return 150.0;
                     } else if (isMorning) {
-                        return 90.0;   // £90/morning
+                        return 90.0;
                     } else if (isAfternoon) {
-                        return 90.0;   // £90/afternoon
+                        return 90.0;
                     } else {
                         double hourlyRate = 30.0;
-                        return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);  // £30/hour + £15 for half hour
+                        return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
                     }
                 case "Poe Parlor":
                     if (isWeek) {
-                        return 800.0;  // £800/week
+                        return 800.0;
                     } else if (isAllDay) {
-                        return 170.0;  // £170/all day
+                        return 170.0;
                     } else if (isMorning) {
-                        return 100.0;  // £100/morning
+                        return 100.0;
                     } else if (isAfternoon) {
-                        return 100.0;  // £100/afternoon
+                        return 100.0;
                     } else {
                         double hourlyRate = 35.0;
-                        return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);  // £35/hour + £17.50 for half hour
+                        return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
                     }
                 case "Globe Room":
                     if (isWeek) {
-                        return 1100.0;  // £1,100/week
+                        return 1100.0;
                     } else if (isAllDay) {
-                        return 250.0;   // £250/all day
+                        return 250.0;
                     } else if (isMorning) {
-                        return 150.0;   // £150/morning
+                        return 150.0;
                     } else if (isAfternoon) {
-                        return 150.0;   // £150/afternoon
+                        return 150.0;
                     } else {
                         double hourlyRate = 50.0;
-                        return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);  // £50/hour + £25 for half hour
+                        return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
                     }
                 case "Chekhov Chamber":
                     if (isWeek) {
-                        return 850.0;  // £850/week
+                        return 850.0;
                     } else if (isAllDay) {
-                        return 180.0;  // £180/all day
+                        return 180.0;
                     } else if (isMorning) {
-                        return 110.0;  // £110/morning
+                        return 110.0;
                     } else if (isAfternoon) {
-                        return 110.0;  // £110/afternoon
+                        return 110.0;
                     } else {
                         double hourlyRate = 38.0;
-                        return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);  // £38/hour + £19 for half hour
+                        return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
                     }
                 case "Main Hall":
                     if (isWeek) {
-                        return 2500.0;  // £2,500/week
+                        return 2500.0;
                     } else if (isAllDay) {
                         return isFridayOrSaturday ? 4200.0 : 3800.0;
                     } else if (isEvening) {
                         return isFridayOrSaturday ? 2200.0 : 1850.0;
                     } else if (fullHours >= 3) {
-                        // Minimum 3 hours at £325 per hour
                         double hourlyRate = 325.0;
                         return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
                     }
                     return 0.0;
                 case "Small Hall":
                     if (isWeek) {
-                        return 1500.0;  // £1,500/week
+                        return 1500.0;
                     } else if (isAllDay) {
                         return isFridayOrSaturday ? 2500.0 : 2200.0;
                     } else if (isEvening) {
                         return isFridayOrSaturday ? 1300.0 : 950.0;
                     } else if (fullHours >= 3) {
-                        // Minimum 3 hours at £225 per hour
                         double hourlyRate = 225.0;
                         return fullHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
                     }
                     return 0.0;
                 case "Rehearsal Space":
-                    if (isWeekShort) {  // Week (10:00-18:00)
-                        return 1000.0;  // £1,000 for week access 10:00-18:00
-                    } else if (isWeekLong) {  // Week (10:00-23:00)
-                        return 1500.0;  // £1,500 for week access 10:00-23:00
-                    } else if (isAllDayShort) {  // 10:00-17:00
-                        return isWeekend ? 340.0 : 240.0;  // £340 weekend, £240 weekday
-                    } else if (isAllDayLong) {  // 10:00-23:00
-                        return isWeekend ? 500.0 : 450.0;  // £500 weekend, £450 weekday
+                    if (isWeekShort) {
+                        return 1000.0;
+                    } else if (isWeekLong) {
+                        return 1500.0;
+                    } else if (isAllDayShort) {
+                        return isWeekend ? 340.0 : 240.0;
+                    } else if (isAllDayLong) {
+                        return isWeekend ? 500.0 : 450.0;
                     } else {
-                        // Minimum 3 hours at £60 per hour
                         double hourlyRate = 60.0;
                         int effectiveHours = Math.max(3, fullHours);
                         return effectiveHours * hourlyRate + (hasHalfHour ? hourlyRate / 2 : 0);
@@ -300,7 +270,6 @@ public class Booking extends JFrame {
     }
 
     public Booking() {
-        // Load the database driver
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
@@ -318,7 +287,7 @@ public class Booking extends JFrame {
     }
 
     private void setupFrame() {
-        setTitle("Lancaster's Music Hall Software - New Booking");
+        setTitle("Lancaster's Music Hall Software: New Booking");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 800);
         setLocationRelativeTo(null);
@@ -328,17 +297,12 @@ public class Booking extends JFrame {
     }
 
     private void initializeData() {
-        // Initialize the availability map with all slots initially available
         availabilityMap = new HashMap<>();
         timeSlots = new ArrayList<>();
-
-        // Initialize space availability map
         initializeSpaceAvailability();
 
-        // Start from 10:00 and go until 00:00
         for (int hour = 10; hour <= 24; hour++) {
             for (int min = 0; min < 60; min += 30) {
-                // Skip the last iteration at midnight (24:30)
                 if (hour == 24 && min > 0) continue;
 
                 LocalTime time = LocalTime.of(hour == 24 ? 0 : hour, min);
@@ -347,7 +311,6 @@ public class Booking extends JFrame {
                 availabilityMap.put(timeSlot, "Available");
             }
         }
-
         loadExistingBookings();
     }
 
@@ -365,10 +328,8 @@ public class Booking extends JFrame {
         Map<LocalDate, Map<LocalTime, Boolean>> dateMap = spaceAvailability.get(space);
         if (!dateMap.containsKey(date)) {
             Map<LocalTime, Boolean> timeSlots = new HashMap<>();
-            // Update time range to match new hours (10:00 to 00:00)
             for (int hour = 10; hour <= 24; hour++) {
                 for (int min = 0; min < 60; min += 30) {
-                    // Skip the last iteration at midnight (24:30)
                     if (hour == 24 && min > 0) continue;
 
                     LocalTime time = LocalTime.of(hour == 24 ? 0 : hour, min);
@@ -440,7 +401,6 @@ public class Booking extends JFrame {
             }
         };
 
-        // Add rows for each time slot from 10:00 to 00:00
         for (int hour = 10; hour <= 24; hour++) {
             if (hour == 24) {
                 timeSlotModel.addRow(new Object[]{"00:00", "Available"});
@@ -452,10 +412,8 @@ public class Booking extends JFrame {
     }
 
     private JScrollPane createTimeSlotTable() {
-        // Initialize the time slot model
         initializeTimeSlotModel();
 
-        // Create the table with the initialized model
         timeSlotTable = new JTable(timeSlotModel);
         TimeSlotCellRenderer renderer = new TimeSlotCellRenderer();
         setupTimeSlotTable(renderer);
@@ -470,7 +428,6 @@ public class Booking extends JFrame {
         timeSlotTable.setCellSelectionEnabled(true);
         timeSlotTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Set column widths
         timeSlotTable.getColumnModel().getColumn(0).setPreferredWidth(50);
         timeSlotTable.getColumnModel().getColumn(1).setPreferredWidth(150);
         timeSlotTable.getColumnModel().getColumn(0).setMaxWidth(50);
@@ -512,18 +469,15 @@ public class Booking extends JFrame {
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
 
-        // Month view panel without border
         JPanel monthViewPanel = new JPanel(new BorderLayout());
         monthViewPanel.setBackground(panelColor);
 
-        // Add title
         JLabel titleLabel = new JLabel("Select Date");
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 14));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
         monthViewPanel.add(titleLabel, BorderLayout.NORTH);
 
-        // Add the rest of the month view components
         monthViewPanel.add(createMonthViewContent(), BorderLayout.CENTER);
         leftPanel.add(monthViewPanel, BorderLayout.NORTH);
         leftPanel.add(createBookingControlsPanel(), BorderLayout.CENTER);
@@ -534,8 +488,6 @@ public class Booking extends JFrame {
     private void updateCalendarGrid() {
         calendarGrid.removeAll();
         calendarGrid.setBackground(panelColor);
-
-        // Add day labels
         String[] days = {"M", "T", "W", "T", "F", "S", "S"};
         for (String day : days) {
             JLabel label = new JLabel(day, JLabel.CENTER);
@@ -545,27 +497,20 @@ public class Booking extends JFrame {
             label.setBackground(panelColor);
             calendarGrid.add(label);
         }
-
         YearMonth yearMonth = YearMonth.from(selectedDate);
         LocalDate firstOfMonth = yearMonth.atDay(1);
         int dayOfWeek = firstOfMonth.getDayOfWeek().getValue();
-
-        // Add empty labels for days before the first of the month
         for (int i = 1; i < dayOfWeek; i++) {
             JLabel empty = new JLabel("");
             empty.setOpaque(true);
             empty.setBackground(panelColor);
             calendarGrid.add(empty);
         }
-
-        // Add day buttons
         for (int i = 1; i <= yearMonth.lengthOfMonth(); i++) {
             LocalDate date = yearMonth.atDay(i);
             calendarGrid.add(createDayButton(date, i));
         }
-
-        // Add empty labels for remaining grid cells
-        int totalCells = 42; // 6 rows × 7 columns
+        int totalCells = 42;
         int remainingCells = totalCells - (dayOfWeek - 1 + yearMonth.lengthOfMonth());
         for (int i = 0; i < remainingCells; i++) {
             JLabel empty = new JLabel("");
@@ -589,7 +534,6 @@ public class Booking extends JFrame {
                 parent.setVisible(selectedSpace != null && !selectedSpace.equals("Select a space..."));
             }
             if (selectedSpace != null && !selectedSpace.equals("Select a space...")) {
-                // Check if it's Sunday for performance spaces
                 if (isPerformanceSpace(selectedSpace) && selectedDate.getDayOfWeek().getValue() == 7) {
                     JOptionPane.showMessageDialog(this,
                         "Performance spaces are not available on Sundays.",
@@ -612,29 +556,22 @@ public class Booking extends JFrame {
                 boolean isRehearsalSpace = "Rehearsal Space".equals(selectedSpace);
                 boolean isPerformanceSpace = isPerformanceSpace(selectedSpace);
                 boolean isEntireVenue = "Entire Venue".equals(selectedSpace);
-
-                // Hide all checkboxes first
                 hideAllCheckboxes();
 
-                // Show appropriate checkboxes based on space type
                 if (isRoomType) {
-                    // Room types: Morning, Afternoon, All Day, Week
                     morningCheckBox.setVisible(true);
                     afternoonCheckBox.setVisible(true);
                     allDayCheckBox.setVisible(true);
                     weekCheckBox.setVisible(true);
                 } else if (isRehearsalSpace) {
-                    // Rehearsal Space: All Day Short/Long, Week Short/Long
                     allDayShortCheckBox.setVisible(true);
                     allDayLongCheckBox.setVisible(true);
                     weekShortCheckBox.setVisible(true);
                     weekLongCheckBox.setVisible(true);
                 } else if (isPerformanceSpace) {
-                    // Performance Spaces: All Day, Evening
                     allDayCheckBox.setVisible(true);
                     eveningCheckBox.setVisible(true);
                 } else if (isEntireVenue) {
-                    // Entire Venue: All Day, Evening
                     allDayCheckBox.setVisible(true);
                     eveningCheckBox.setVisible(true);
                 }
@@ -663,13 +600,10 @@ public class Booking extends JFrame {
     private void handleDateSelection(LocalDate date) {
         selectedDate = date;
         dateLabel.setText(selectedDate.format(dateFormatter));
-
-        // Only load existing bookings if a space is selected
         if (selectedSpace != null && !selectedSpace.equals("Select a space...")) {
             loadExistingBookings();
             updateTimeSlotGrid();
         }
-
         updateCalendarGrid();
     }
 
@@ -683,8 +617,6 @@ public class Booking extends JFrame {
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
-            // Select all available slots
             for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
                 String currentStatus = (String) timeSlotModel.getValueAt(row, 1);
                 if (currentStatus.equals("Available")) {
@@ -692,7 +624,6 @@ public class Booking extends JFrame {
                 }
             }
         } else {
-            // Revert all selected slots back to available
             for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
                 String currentStatus = (String) timeSlotModel.getValueAt(row, 1);
                 if (currentStatus.equals("Selected")) {
@@ -700,8 +631,6 @@ public class Booking extends JFrame {
                 }
             }
         }
-
-        // Update cost display for Rehearsal Space all-day booking
         if (allDayCheckBox.isSelected() && "Rehearsal Space".equals(selectedSpace)) {
             int dayOfWeek = selectedDate.getDayOfWeek().getValue();
             boolean isWeekend = dayOfWeek == 6 || dayOfWeek == 7;
@@ -714,7 +643,6 @@ public class Booking extends JFrame {
         if (eveningCheckBox.isSelected()) {
             allDayCheckBox.setSelected(false);
 
-            // Check if evening slots are available
             boolean eveningSlotsAvailable = true;
             for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
                 String timeStr = (String) timeSlotModel.getValueAt(row, 0);
@@ -736,8 +664,6 @@ public class Booking extends JFrame {
                     JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
-            // Select all evening slots
             for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
                 String timeStr = (String) timeSlotModel.getValueAt(row, 0);
                 LocalTime time = LocalTime.parse(timeStr);
@@ -750,7 +676,6 @@ public class Booking extends JFrame {
                 }
             }
         } else {
-            // Revert all evening slots back to available
             for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
                 String timeStr = (String) timeSlotModel.getValueAt(row, 0);
                 LocalTime time = LocalTime.parse(timeStr);
@@ -766,13 +691,10 @@ public class Booking extends JFrame {
         if (timeSlotTable == null || timeSlotModel == null || selectedSpace == null) return;
 
         Map<LocalTime, Boolean> timeSlots = getOrCreateTimeSlots(selectedSpace, selectedDate);
-
-        // First mark all slots as Available
         for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
             timeSlotModel.setValueAt("Available", row, 1);
         }
 
-        // Mark unavailable slots from database
         for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
             String timeStr = (String) timeSlotModel.getValueAt(row, 0);
             LocalTime time = LocalTime.parse(timeStr);
@@ -780,8 +702,6 @@ public class Booking extends JFrame {
                 timeSlotModel.setValueAt("Unavailable", row, 1);
             }
         }
-
-        // Mark user's selected slots
         for (BookingEvent event : bookingEvents) {
             if (event.space.equals(selectedSpace) && event.date.equals(selectedDate)) {
                 LocalTime current = event.startTime;
@@ -797,18 +717,7 @@ public class Booking extends JFrame {
                 }
             }
         }
-
         timeSlotTable.repaint();
-    }
-
-    private void markTimeSlotAsBooked(LocalTime time) {
-        for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
-            String timeStr = (String) timeSlotModel.getValueAt(row, 0);
-            if (timeStr.equals(time.format(timeFormatter))) {
-                timeSlotModel.setValueAt("Your Booking", row, 1);
-                break;
-            }
-        }
     }
 
     private JPanel createMiddlePanel() {
@@ -819,76 +728,56 @@ public class Booking extends JFrame {
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
 
-        // Add title
         JLabel titleLabel = new JLabel("Available Time Slots");
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 14));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
         mainPanel.add(titleLabel, BorderLayout.NORTH);
 
-        // Create content panel with reduced spacing
-        JPanel contentPanel = new JPanel(new BorderLayout(0, 0));  // Reduced spacing to 0
+        JPanel contentPanel = new JPanel(new BorderLayout(0, 0));
         contentPanel.setBackground(panelColor);
 
-        // Create checkbox panel with FlowLayout to ensure natural ordering
-        JPanel checkboxPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0)); // Reduced vertical spacing to 0
+        JPanel checkboxPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         checkboxPanel.setBackground(panelColor);
-        checkboxPanel.setPreferredSize(new Dimension(0, 80)); // Reduced from 120 to 80
-        checkboxPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5)); // Reduced top/bottom padding
+        checkboxPanel.setPreferredSize(new Dimension(0, 80));
+        checkboxPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
 
-        // Create a sub-panel for each row with exactly two checkboxes
         JPanel currentRow = new JPanel(new GridLayout(1, 2, 10, 0));
         currentRow.setBackground(panelColor);
-
-        // Morning checkbox
         morningCheckBox = new JCheckBox("Morning (10:00-12:00)");
         styleCheckBox(morningCheckBox);
         morningCheckBox.addActionListener(e -> handleMorningSelection());
 
-        // Afternoon checkbox
         afternoonCheckBox = new JCheckBox("Afternoon (12:00-17:00)");
         styleCheckBox(afternoonCheckBox);
         afternoonCheckBox.addActionListener(e -> handleAfternoonSelection());
 
-        // Evening checkbox
         eveningCheckBox = new JCheckBox("Evening (17:00-00:00)");
         styleCheckBox(eveningCheckBox);
         eveningCheckBox.addActionListener(e -> handleEveningSelection());
-
-        // All day checkbox
         allDayCheckBox = new JCheckBox("All Day");
         styleCheckBox(allDayCheckBox);
         allDayCheckBox.addActionListener(e -> handleAllDaySelection());
 
-        // All day short checkbox (10:00-17:00)
         allDayShortCheckBox = new JCheckBox("All Day (10:00-17:00)");
         styleCheckBox(allDayShortCheckBox);
         allDayShortCheckBox.addActionListener(e -> handleAllDayShortSelection());
 
-        // All day long checkbox (10:00-23:00)
         allDayLongCheckBox = new JCheckBox("All Day (10:00-23:00)");
         styleCheckBox(allDayLongCheckBox);
         allDayLongCheckBox.addActionListener(e -> handleAllDayLongSelection());
-
-        // Week checkbox
         weekCheckBox = new JCheckBox("All Week");
         styleCheckBox(weekCheckBox);
         weekCheckBox.addActionListener(e -> handleWeekSelection());
-
-        // Week short checkbox (10:00-18:00)
         weekShortCheckBox = new JCheckBox("All Week (10:00-18:00)");
         styleCheckBox(weekShortCheckBox);
         weekShortCheckBox.addActionListener(e -> handleWeekShortSelection());
 
-        // Week long checkbox (10:00-23:00)
         weekLongCheckBox = new JCheckBox("All Week (10:00-23:00)");
         styleCheckBox(weekLongCheckBox);
         weekLongCheckBox.addActionListener(e -> handleWeekLongSelection());
-
-        // Initially hide all checkboxes
         hideAllCheckboxes();
 
-        // Add all checkboxes to the panel (they will be shown/hidden as needed)
         checkboxPanel.add(morningCheckBox);
         checkboxPanel.add(afternoonCheckBox);
         checkboxPanel.add(eveningCheckBox);
@@ -899,20 +788,18 @@ public class Booking extends JFrame {
         checkboxPanel.add(weekShortCheckBox);
         checkboxPanel.add(weekLongCheckBox);
 
-        // Add time slot table with preferred size
+
         JScrollPane tableScrollPane = createTimeSlotTable();
         tableScrollPane.setPreferredSize(new Dimension(0, 650));
 
-        // Add components to content panel
         contentPanel.add(checkboxPanel, BorderLayout.NORTH);
         contentPanel.add(tableScrollPane, BorderLayout.CENTER);
 
-        // Legend panel
+
         JPanel legendPanel = createLegendPanel();
         contentPanel.add(legendPanel, BorderLayout.SOUTH);
 
         mainPanel.add(contentPanel, BorderLayout.CENTER);
-
         return mainPanel;
     }
 
@@ -932,10 +819,12 @@ public class Booking extends JFrame {
         JPanel itemPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         itemPanel.setBackground(panelColor);
 
+
         JPanel colorBox = new JPanel();
         colorBox.setPreferredSize(new Dimension(15, 15));
         colorBox.setBackground(color);
         colorBox.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+
 
         JLabel label = new JLabel(text);
         label.setForeground(Color.WHITE);
@@ -944,11 +833,11 @@ public class Booking extends JFrame {
         itemPanel.add(colorBox);
         itemPanel.add(label);
         panel.add(itemPanel);
+
     }
 
     class TimeSlotCellRenderer extends DefaultTableCellRenderer {
         private int hoveredRow = -1;
-
         public void setHoveredRow(int row) {
             hoveredRow = row;
         }
@@ -957,7 +846,6 @@ public class Booking extends JFrame {
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
             if (column == 1) {
                 String status = value != null ? value.toString() : "";
                 setHorizontalAlignment(JLabel.CENTER);
@@ -1003,11 +891,14 @@ public class Booking extends JFrame {
                     "Please select a space first",
                     "No Space Selected",
                     JOptionPane.WARNING_MESSAGE);
+
             return;
         }
 
         int row = timeSlotTable.getSelectedRow();
+
         if (row >= 0) {
+
             String currentStatus = (String) timeSlotTable.getValueAt(row, 1);
 
             if (currentStatus.equals("Selected")) {
@@ -1018,10 +909,12 @@ public class Booking extends JFrame {
         }
     }
 
+
     private void updateTotalCost() {
         double total = bookingEvents.stream().mapToDouble(event -> event.cost).sum();
         totalLabel.setText(String.format("Total Cost: £%.2f + VAT", total));
     }
+
 
     private JPanel createActionsPanel() {
         JPanel panel = new JPanel(new BorderLayout(20, 10));
@@ -1106,8 +999,6 @@ public class Booking extends JFrame {
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
-
-        // Check minimum booking duration (1 hour = 2 slots of 30 minutes)
         if (selectedTimes.size() < 2) {
             JOptionPane.showMessageDialog(this,
                 "Minimum booking duration is 1 hour for all spaces",
@@ -1115,8 +1006,6 @@ public class Booking extends JFrame {
                 JOptionPane.WARNING_MESSAGE);
             return;
         }
-
-        // Validate for Entire Venue
         if ("Entire Venue".equals(selectedSpace)) {
             boolean hasEveningSlots = selectedTimes.stream()
                 .anyMatch(time -> time.getHour() >= 17);
@@ -1130,8 +1019,6 @@ public class Booking extends JFrame {
                     JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
-            // Validate mixed day and evening bookings
             if (hasEveningSlots && hasDaySlots && !allDayCheckBox.isSelected()) {
                 JOptionPane.showMessageDialog(this,
                     "Cannot mix day and evening slots.\nPlease use all-day booking for full day reservations.",
@@ -1140,8 +1027,6 @@ public class Booking extends JFrame {
                 return;
             }
         }
-
-        // Validate minimum booking duration and time restrictions
         if (isPerformanceSpace(selectedSpace)) {
             int selectedHours = (selectedTimes.size() * 30) / 60;
             boolean hasEveningSlots = selectedTimes.stream()
@@ -1150,7 +1035,6 @@ public class Booking extends JFrame {
                 .anyMatch(time -> time.getHour() < 17);
 
             if (!eveningCheckBox.isSelected() && !allDayCheckBox.isSelected()) {
-                // Regular booking validation
                 if (selectedHours < 3) {
                     JOptionPane.showMessageDialog(this,
                         "Performance spaces require a minimum booking of 3 hours",
@@ -1158,8 +1042,6 @@ public class Booking extends JFrame {
                         JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-
-                // Check if booking is within allowed hours (10:00-17:00)
                 if (hasEveningSlots) {
                     JOptionPane.showMessageDialog(this,
                         "Regular bookings must be between 10:00 and 17:00.\nPlease use evening booking for slots after 17:00",
@@ -1167,8 +1049,6 @@ public class Booking extends JFrame {
                         JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-
-                // Check if it's Saturday without evening/all-day booking
                 if (selectedDate.getDayOfWeek().getValue() == 6) {
                     JOptionPane.showMessageDialog(this,
                         "Regular bookings are not available on Saturdays.\nPlease use evening or all-day booking.",
@@ -1177,8 +1057,6 @@ public class Booking extends JFrame {
                     return;
                 }
             }
-
-            // Validate mixed day and evening bookings
             if (hasEveningSlots && hasDaySlots && !allDayCheckBox.isSelected()) {
                 JOptionPane.showMessageDialog(this,
                     "Cannot mix day and evening slots.\nPlease use all-day booking for full day reservations.",
@@ -1187,15 +1065,10 @@ public class Booking extends JFrame {
                 return;
             }
         }
-
-        // Check minimum booking duration for Rehearsal Space
         if ("Rehearsal Space".equals(selectedSpace)) {
             int selectedHours = (selectedTimes.size() * 30) / 60;
-
-            // Only check minimum hours for regular bookings (not all-day or week bookings)
             if (!allDayShortCheckBox.isSelected() && !allDayLongCheckBox.isSelected() &&
                 !weekShortCheckBox.isSelected() && !weekLongCheckBox.isSelected()) {
-                // Check minimum hours
                 if (selectedHours < 3) {
                     JOptionPane.showMessageDialog(this,
                         "Rehearsal Space requires a minimum booking of 3 hours",
@@ -1205,8 +1078,6 @@ public class Booking extends JFrame {
                 }
             }
         }
-
-        // Check for conflicting bookings
         Map<LocalTime, Boolean> timeSlots = getOrCreateTimeSlots(selectedSpace, selectedDate);
         for (LocalTime time : selectedTimes) {
             if (!timeSlots.getOrDefault(time, true)) {
@@ -1217,9 +1088,9 @@ public class Booking extends JFrame {
                 return;
             }
         }
-
-
         createBookingEvents(selectedTimes, bookingName);
+
+
         updateUIAfterBooking();
     }
 
@@ -1253,10 +1124,10 @@ public class Booking extends JFrame {
             startTimes.add(currentStart);
             endTimes.add(previousTime.plusMinutes(30));
         }
-
         for (int i = 0; i < startTimes.size(); i++) {
             createSingleBookingEvent(startTimes.get(i), endTimes.get(i), bookingName);
         }
+
     }
 
     private void saveBookingsToDatabase() {
@@ -1267,7 +1138,6 @@ public class Booking extends JFrame {
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
-
         String insertQuery = "INSERT INTO booking (UserID, BookingDate, StartTime, EndTime, Room, Client, BookingName, " +
                 "BookingEndDate, ClientID, HoldingStatus, TotalCost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -1275,8 +1145,7 @@ public class Booking extends JFrame {
                 "in2033t26_a", "jLxOPuQ69Mg");
              PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
 
-            int userId = 1; // Replace with actual user ID
-
+            int userId = 1;
             for (BookingEvent event : bookingEvents) {
                 if (event.isDisplayOnly) continue;
 
@@ -1294,7 +1163,7 @@ public class Booking extends JFrame {
                     stmt.setDate(8, java.sql.Date.valueOf(event.date));
                 }
 
-                stmt.setInt(9, 1); // Default client ID
+                stmt.setInt(9, 1);
                 stmt.setString(10, "Tentative");
                 stmt.setBigDecimal(11, new java.math.BigDecimal(event.cost));
 
@@ -1319,38 +1188,31 @@ public class Booking extends JFrame {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
-
     private void createSingleBookingEvent(LocalTime startTime, LocalTime endTime, String bookingName) {
         boolean isAllDayShort = allDayShortCheckBox != null && allDayShortCheckBox.isSelected() && allDayShortCheckBox.isVisible();
         boolean isAllDayLong = allDayLongCheckBox != null && allDayLongCheckBox.isSelected() && allDayLongCheckBox.isVisible();
         boolean isAllDay = allDayCheckBox.isSelected() && allDayCheckBox.isVisible();
+
         boolean isWeekShort = weekShortCheckBox != null && weekShortCheckBox.isSelected() && weekShortCheckBox.isVisible();
         boolean isWeekLong = weekLongCheckBox != null && weekLongCheckBox.isSelected() && weekLongCheckBox.isVisible();
         boolean isWeek = weekCheckBox != null && weekCheckBox.isSelected() && weekCheckBox.isVisible();
         boolean isMorning = morningCheckBox != null && morningCheckBox.isSelected() && morningCheckBox.isVisible();
         boolean isAfternoon = afternoonCheckBox != null && afternoonCheckBox.isSelected() && afternoonCheckBox.isVisible();
 
-        // Create a single event for weekly bookings to ensure correct pricing
         if (isWeek || isWeekShort || isWeekLong) {
-            LocalTime bookingStart = LocalTime.of(10, 0);  // Start at 10:00
+            LocalTime bookingStart = LocalTime.of(10, 0);
             LocalTime bookingEnd;
 
-            // Set end time based on space type and booking type
             if (isWeek) {
-                // For room types weekly booking
-                bookingEnd = LocalTime.of(0, 0);  // Midnight (00:00)
+                bookingEnd = LocalTime.of(0, 0);
             } else if (isWeekShort) {
-                // For Rehearsal Space short week
                 bookingEnd = LocalTime.of(18, 0);
             } else {
-                // For Rehearsal Space long week
                 bookingEnd = LocalTime.of(23, 0);
             }
-
-            // Calculate the end date (7 days from start)
             LocalDate endDate = selectedDate.plusDays(6);
 
-            // Create main event with date range in the name
+
             BookingEvent mainEvent = new BookingEvent(
                 selectedDate, bookingStart, bookingEnd,
                 selectedSpace, String.format("%s (Weekly: %s - %s)",
@@ -1365,38 +1227,42 @@ public class Booking extends JFrame {
                 isWeekLong,
                 isMorning,
                 isAfternoon,
-                false,  // Not a display-only event
-                isWeek  // Pass isWeek to constructor
+                false,
+                isWeek
             );
             mainEvent.isWeek = isWeek;
             bookingEvents.add(mainEvent);
 
-            // Create hidden events for the remaining 6 days (for time slot blocking)
+
+
+
             LocalDate currentDate = selectedDate;
             for (int day = 1; day < 7; day++) {
                 currentDate = currentDate.plusDays(1);
                 BookingEvent hiddenEvent = new BookingEvent(
                     currentDate, bookingStart, bookingEnd,
-                    selectedSpace, bookingName,  // Simple name as it won't be displayed
-                    true,  // isAllDay
-                    false, // isEvening
-                    false, // isAllDayShort
-                    false, // isAllDayLong
-                    false, // isWeekShort
-                    false, // isWeekLong
-                    false, // isMorning
-                    false, // isAfternoon
-                    true,   // This is a display-only event
-                    isWeek  // Pass isWeek to constructor
+                    selectedSpace, bookingName,
+                    true,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    true,
+                    isWeek
                 ) {
+
                     @Override
                     public String toString() {
-                        return null; // This prevents the event from showing in the list
+                        return null;
                     }
                 };
                 bookingEvents.add(hiddenEvent);
 
-                // Mark all time slots for the day as booked
+
+
                 Map<LocalTime, Boolean> timeSlots = getOrCreateTimeSlots(selectedSpace, currentDate);
                 LocalTime current = bookingStart;
                 while (!current.equals(bookingEnd)) {
@@ -1405,7 +1271,7 @@ public class Booking extends JFrame {
                 }
             }
         } else {
-            // Regular single-day booking
+
             BookingEvent event = new BookingEvent(
                 selectedDate, startTime, endTime,
                 selectedSpace, bookingName,
@@ -1417,8 +1283,8 @@ public class Booking extends JFrame {
                 isWeekLong,
                 isMorning,
                 isAfternoon,
-                false,  // Not a display-only event
-                isWeek  // Pass isWeek to constructor
+                false,
+                isWeek
             );
             event.isWeek = isWeek;
             bookingEvents.add(event);
@@ -1431,8 +1297,10 @@ public class Booking extends JFrame {
             }
         }
 
+
         updateTotalCost();
         updateTimeSlotGrid();
+
     }
 
     private void updateUIAfterBooking() {
@@ -1441,7 +1309,6 @@ public class Booking extends JFrame {
                 timeSlotModel.setValueAt("Your Booking", row, 1);
             }
         }
-        // Reset all checkboxes
         morningCheckBox.setSelected(false);
         afternoonCheckBox.setSelected(false);
         allDayCheckBox.setSelected(false);
@@ -1461,7 +1328,7 @@ public class Booking extends JFrame {
     private void updateBookingList() {
         bookingListModel.clear();
         for (BookingEvent event : bookingEvents) {
-            if (event.toString() != null) {  // Only show non-hidden events
+            if (event.toString() != null) {
                 String timeRange = event.startTime.format(DateTimeFormatter.ofPattern("HH:mm")) +
                                  " to " +
                                  (event.endTime.equals(LocalTime.of(0, 0)) ? "00:00" : event.endTime.format(DateTimeFormatter.ofPattern("HH:mm")));
@@ -1472,6 +1339,7 @@ public class Booking extends JFrame {
                         timeRange
                     ));
                 } else {
+
                     bookingListModel.addElement(String.format("%s\n%s, %s",
                         event.eventType,
                         event.date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
@@ -1490,14 +1358,12 @@ public class Booking extends JFrame {
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
 
-        // Add title
         JLabel titleLabel = new JLabel("Your Booking Events");
         titleLabel.setFont(new Font("TimesRoman", Font.BOLD, 14));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
         panel.add(titleLabel, BorderLayout.NORTH);
 
-        // Booking list
         bookingListModel = new DefaultListModel<>();
         bookingList = new JList<>(bookingListModel);
         setupBookingList();
@@ -1508,7 +1374,6 @@ public class Booking extends JFrame {
         scrollPane.getViewport().setBackground(panelColor);
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        // Actions panel
         JPanel actionsPanel = createActionsPanel();
         panel.add(actionsPanel, BorderLayout.SOUTH);
 
@@ -1519,10 +1384,9 @@ public class Booking extends JFrame {
         bookingList.setBackground(panelColor);
         bookingList.setForeground(Color.WHITE);
         bookingList.setFont(new Font("TimesRoman", Font.PLAIN, 14));
-        bookingList.setBorder(null);  // Remove list border
+        bookingList.setBorder(null);
 
-        // Track hover state for delete button only
-        int[] hoveredButton = {-1, 0};  // Only tracking delete button now
+        int[] hoveredButton = {-1, 0};
 
         bookingList.setCellRenderer(new BookingListCellRenderer(hoveredButton));
         setupBookingListListeners(hoveredButton);
@@ -1542,10 +1406,8 @@ public class Booking extends JFrame {
             JPanel cellPanel = new JPanel(new BorderLayout(5, 0));
             cellPanel.setBackground(isSelected ? list.getSelectionBackground() : panelColor);
 
-            // Text area setup
             JTextArea textArea = createBookingTextArea(value.toString(), list, cellPanel, isSelected);
 
-            // Delete button setup
             JPanel buttonsPanel = createBookingButtonsPanel(index, isSelected, list);
 
             cellPanel.add(textArea, BorderLayout.CENTER);
@@ -1563,10 +1425,9 @@ public class Booking extends JFrame {
             textArea.setFont(list.getFont());
             textArea.setBorder(createNormalBorder());
 
-            // Set preferred width
             int width = list.getWidth();
             if (width > 0) {
-                textArea.setSize(width - 40, Short.MAX_VALUE);  // Adjusted width since we only have delete button now
+                textArea.setSize(width - 40, Short.MAX_VALUE);
                 textArea.setPreferredSize(new Dimension(width - 40, textArea.getPreferredSize().height));
             }
 
@@ -1577,13 +1438,11 @@ public class Booking extends JFrame {
             JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
             buttonsPanel.setBackground(isSelected ? list.getSelectionBackground() : panelColor);
 
-            // Delete button
             JLabel deleteButton = new JLabel("✕");
             deleteButton.setFont(new Font("TimesRoman", Font.PLAIN, 16));
             deleteButton.setForeground(isSelected ? list.getSelectionForeground() : Color.WHITE);
 
-            // Add hover effect border
-            if (hoveredButton[0] == index && hoveredButton[1] == 0) {  // Changed to 0 since it's the only button now
+            if (hoveredButton[0] == index && hoveredButton[1] == 0) {
                 deleteButton.setBorder(createHoverBorder());
                 } else {
                 deleteButton.setBorder(createNormalBorder());
@@ -1593,10 +1452,10 @@ public class Booking extends JFrame {
 
             return buttonsPanel;
         }
+
     }
 
     private void setupBookingListListeners(int[] hoveredButton) {
-        // Mouse motion listener for hover effects
         bookingList.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -1604,7 +1463,6 @@ public class Booking extends JFrame {
             }
         });
 
-        // Mouse listener for click and exit events
         bookingList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseExited(MouseEvent e) {
@@ -1626,9 +1484,9 @@ public class Booking extends JFrame {
                 int x = point.x - bounds.x;
                 int rightEdge = bounds.width;
 
-                if (x >= rightEdge - 40) {  // Adjusted since we only have delete button
+                if (x >= rightEdge - 40) {
                     hoveredButton[0] = index;
-                    hoveredButton[1] = 0;  // Only delete button now
+                    hoveredButton[1] = 0;
                     bookingList.repaint();
                 } else if (hoveredButton[0] != -1) {
                     resetHoverState(hoveredButton);
@@ -1644,6 +1502,7 @@ public class Booking extends JFrame {
     }
 
     private void handleBookingListClick(Point point) {
+
         int index = bookingList.locationToIndex(point);
         if (index >= 0) {
             Rectangle bounds = bookingList.getCellBounds(index, index);
@@ -1651,7 +1510,7 @@ public class Booking extends JFrame {
                 int x = point.x - bounds.x;
                 int rightEdge = bounds.width;
 
-                if (x >= rightEdge - 40) {  // Adjusted since we only have delete button
+                if (x >= rightEdge - 40) {
                     deleteBooking(index);
                 }
             }
@@ -1659,41 +1518,36 @@ public class Booking extends JFrame {
     }
 
     private void deleteBooking(int index) {
+
         if (index >= 0 && index < bookingEvents.size()) {
             BookingEvent event = bookingEvents.get(index);
 
-            // Check if this is a weekly booking by looking at the event type
             boolean isWeeklyBooking = event.eventType != null &&
                 (event.eventType.contains("Weekly:") || event.isWeek || event.isWeekShort || event.isWeekLong);
 
             if (isWeeklyBooking) {
-                // For weekly bookings, we need to:
-                // 1. Find and remove all associated events (main + hidden)
-                // 2. Free up time slots for all 7 days
-                LocalDate startDate = event.date;
-                String baseEventName = event.eventType.split(" \\(Weekly:")[0]; // Get the base name without the weekly tag
 
-                // Remove all associated events (both main and hidden)
+                LocalDate startDate = event.date;
+                String baseEventName = event.eventType.split(" \\(Weekly:")[0];
+
                 bookingEvents.removeIf(e ->
                     (e.date.isEqual(startDate) || (e.date.isAfter(startDate) && e.date.isBefore(startDate.plusDays(7)))) &&
                     e.space.equals(event.space) &&
                     (e.eventType.equals(baseEventName) || (e.eventType != null && e.eventType.contains("Weekly:")))
                 );
 
-                // Free up time slots for all 7 days
                 for (int day = 0; day < 7; day++) {
                     LocalDate currentDate = startDate.plusDays(day);
                     Map<LocalTime, Boolean> timeSlots = getOrCreateTimeSlots(event.space, currentDate);
 
-                    // Reset all time slots for the day to available
                     LocalTime current = event.startTime;
                     while (!current.equals(event.endTime)) {
-                        timeSlots.put(current, true); // true means available
+                        timeSlots.put(current, true);
                         current = current.plusMinutes(30);
                     }
                 }
             } else {
-                // Regular single-day booking deletion
+
                 Map<LocalTime, Boolean> timeSlots = getOrCreateTimeSlots(event.space, event.date);
                 LocalTime current = event.startTime;
                 while (!current.equals(event.endTime)) {
@@ -1712,8 +1566,6 @@ public class Booking extends JFrame {
     private JPanel createMonthViewContent() {
         JPanel monthContent = new JPanel(new BorderLayout());
         monthContent.setBackground(panelColor);
-
-        // Create month header
         JPanel monthHeader = new JPanel(new BorderLayout());
         monthHeader.setBackground(panelColor);
         monthHeader.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -1738,11 +1590,9 @@ public class Booking extends JFrame {
         monthHeader.add(monthYearLabel, BorderLayout.CENTER);
         monthHeader.add(next, BorderLayout.EAST);
 
-        // Create calendar grid
         calendarGrid = new JPanel(new GridLayout(0, 7, 5, 5));
         calendarGrid.setBackground(panelColor);
 
-        // Create date label
         dateLabel = new JLabel("", JLabel.CENTER);
         dateLabel.setForeground(Color.WHITE);
         dateLabel.setFont(new Font("TimesRoman", Font.PLAIN, 14));
@@ -1753,7 +1603,6 @@ public class Booking extends JFrame {
         monthContent.add(calendarGrid, BorderLayout.CENTER);
         monthContent.add(dateLabel, BorderLayout.SOUTH);
 
-        // Initialize calendar grid
         updateCalendarGrid();
 
         return monthContent;
@@ -1768,7 +1617,6 @@ public class Booking extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        // Create booking name panel
         JPanel bookingNamePanel = new JPanel(new GridLayout(2, 1, 0, 5));
         bookingNamePanel.setBackground(panelColor);
 
@@ -1781,8 +1629,6 @@ public class Booking extends JFrame {
 
         bookingNamePanel.add(bookingNameLabel);
         bookingNamePanel.add(bookingNameField);
-
-        // Create client name panel
         JLabel clientNameLabel = new JLabel("Client Name:");
         clientNameLabel.setForeground(Color.WHITE);
         clientNameLabel.setFont(new Font("TimesRoman", Font.PLAIN, 14));
@@ -1794,8 +1640,6 @@ public class Booking extends JFrame {
         clientNamePanel.setBackground(panelColor);
         clientNamePanel.add(clientNameLabel);
         clientNamePanel.add(clientNameField);
-
-        // Create space selection panel
         JPanel spacePanel = new JPanel(new GridLayout(2, 1, 0, 5));
         spacePanel.setBackground(panelColor);
         spacePanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
@@ -1819,13 +1663,10 @@ public class Booking extends JFrame {
 
         spacePanel.add(spaceLabel);
         spacePanel.add(spaceSelector);
-
-        // Create confirm button
         JButton confirmButton = createStyledButton("Confirm Event Booking");
         confirmButton.setPreferredSize(new Dimension(250, 35));
         confirmButton.addActionListener(e -> confirmBooking());
 
-        // Add components to booking controls panel
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 1.0;
@@ -1848,10 +1689,8 @@ public class Booking extends JFrame {
 
     private void loadExistingBookings() {
         if (selectedSpace == null) return;
-
-        // Clear existing bookings for this space and date
         Map<LocalTime, Boolean> timeSlots = getOrCreateTimeSlots(selectedSpace, selectedDate);
-        timeSlots.replaceAll((k, v) -> true); // Reset all slots to available
+        timeSlots.replaceAll((k, v) -> true);
 
         String query = "SELECT StartTime, EndTime FROM booking WHERE Room = ? AND BookingDate = ?";
 
@@ -1867,7 +1706,7 @@ public class Booking extends JFrame {
                 LocalTime startTime = rs.getTime("StartTime").toLocalTime();
                 LocalTime endTime = rs.getTime("EndTime").toLocalTime();
 
-                // Mark all time slots between start and end as unavailable
+
                 LocalTime current = startTime;
                 while (!current.equals(endTime)) {
                     timeSlots.put(current, false);
@@ -1881,8 +1720,7 @@ public class Booking extends JFrame {
                     "Database Error",
                     JOptionPane.ERROR_MESSAGE);
         }
-
-        updateTimeSlotGrid(); // Refresh the display
+        updateTimeSlotGrid();
     }
 
     private boolean isAllDayBookingAvailable() {
@@ -1933,15 +1771,12 @@ public class Booking extends JFrame {
 
     private void handleMorningSelection() {
         if (morningCheckBox.isSelected()) {
-            // Deselect other options
             afternoonCheckBox.setSelected(false);
             allDayCheckBox.setSelected(false);
             allDayShortCheckBox.setSelected(false);
             allDayLongCheckBox.setSelected(false);
             eveningCheckBox.setSelected(false);
             weekCheckBox.setSelected(false);
-
-            // Select morning slots (10:00-12:00)
             for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
                 String timeStr = (String) timeSlotModel.getValueAt(row, 0);
                 LocalTime time = LocalTime.parse(timeStr);
@@ -1954,7 +1789,6 @@ public class Booking extends JFrame {
                 }
             }
         } else {
-            // Clear morning selections
             for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
                 if (timeSlotModel.getValueAt(row, 1).equals("Selected")) {
                     timeSlotModel.setValueAt("Available", row, 1);
@@ -1965,15 +1799,12 @@ public class Booking extends JFrame {
 
     private void handleAfternoonSelection() {
         if (afternoonCheckBox.isSelected()) {
-            // Deselect other options
             morningCheckBox.setSelected(false);
             allDayCheckBox.setSelected(false);
             allDayShortCheckBox.setSelected(false);
             allDayLongCheckBox.setSelected(false);
             eveningCheckBox.setSelected(false);
             weekCheckBox.setSelected(false);
-
-            // Select afternoon slots (12:00-17:00)
             for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
                 String timeStr = (String) timeSlotModel.getValueAt(row, 0);
                 LocalTime time = LocalTime.parse(timeStr);
@@ -1986,7 +1817,6 @@ public class Booking extends JFrame {
                 }
             }
         } else {
-            // Clear afternoon selections
             for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
                 if (timeSlotModel.getValueAt(row, 1).equals("Selected")) {
                     timeSlotModel.setValueAt("Available", row, 1);
@@ -1996,20 +1826,16 @@ public class Booking extends JFrame {
     }
 
     private boolean isWeeklyBookingAvailable() {
-        // Check availability for the next 7 days
         LocalDate currentDate = selectedDate;
-        LocalTime startOfDay = LocalTime.of(10, 0);  // 10:00
-        LocalTime endOfDay = LocalTime.of(23, 0);    // 23:00
+        LocalTime startOfDay = LocalTime.of(10, 0);
+        LocalTime endOfDay = LocalTime.of(23, 0);
 
         for (int day = 0; day < 7; day++) {
-            // Get the time slots for this date
             Map<LocalTime, Boolean> timeSlots = getOrCreateTimeSlots(selectedSpace, currentDate);
-
-            // Check each time slot for the entire day
             LocalTime currentTime = startOfDay;
             while (!currentTime.equals(endOfDay)) {
                 if (!timeSlots.getOrDefault(currentTime, false)) {
-                    return false;  // Found a slot that's not available
+                    return false;
                 }
                 currentTime = currentTime.plusMinutes(30);
             }
@@ -2022,7 +1848,6 @@ public class Booking extends JFrame {
 
     private void handleWeekSelection() {
         if (weekCheckBox.isSelected()) {
-            // Check if weekly booking is available
             if (!isWeeklyBookingAvailable()) {
                 weekCheckBox.setSelected(false);
                 JOptionPane.showMessageDialog(this,
@@ -2031,8 +1856,6 @@ public class Booking extends JFrame {
                     JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
-            // Deselect other options
             morningCheckBox.setSelected(false);
             afternoonCheckBox.setSelected(false);
             allDayCheckBox.setSelected(false);
@@ -2040,17 +1863,14 @@ public class Booking extends JFrame {
             allDayLongCheckBox.setSelected(false);
             eveningCheckBox.setSelected(false);
 
-            // Select all slots for the current day
             selectAllDaySlots();
         } else {
-            // Clear all selections
             clearAllSelections();
         }
     }
 
     private void handleWeekShortSelection() {
         if (weekShortCheckBox.isSelected()) {
-            // Check if weekly booking is available (10:00-18:00)
             if (!isWeeklyBookingAvailableForHours(LocalTime.of(10, 0), LocalTime.of(18, 0))) {
                 weekShortCheckBox.setSelected(false);
                 JOptionPane.showMessageDialog(this,
@@ -2059,13 +1879,10 @@ public class Booking extends JFrame {
                     JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
-            // Deselect other options
             weekLongCheckBox.setSelected(false);
             allDayShortCheckBox.setSelected(false);
             allDayLongCheckBox.setSelected(false);
 
-            // Select slots from 10:00 to 18:00
             selectTimeRangeSlots(LocalTime.of(10, 0), LocalTime.of(18, 0));
         } else {
             clearAllSelections();
@@ -2074,7 +1891,6 @@ public class Booking extends JFrame {
 
     private void handleWeekLongSelection() {
         if (weekLongCheckBox.isSelected()) {
-            // Check if weekly booking is available (10:00-23:00)
             if (!isWeeklyBookingAvailableForHours(LocalTime.of(10, 0), LocalTime.of(23, 0))) {
                 weekLongCheckBox.setSelected(false);
                 JOptionPane.showMessageDialog(this,
@@ -2083,13 +1899,10 @@ public class Booking extends JFrame {
                     JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
-            // Deselect other options
             weekShortCheckBox.setSelected(false);
             allDayShortCheckBox.setSelected(false);
             allDayLongCheckBox.setSelected(false);
 
-            // Select slots from 10:00 to 23:00
             selectTimeRangeSlots(LocalTime.of(10, 0), LocalTime.of(23, 0));
         } else {
             clearAllSelections();
@@ -2097,7 +1910,6 @@ public class Booking extends JFrame {
     }
 
     private boolean isWeeklyBookingAvailableForHours(LocalTime startHour, LocalTime endHour) {
-        // Check availability for the next 7 days within specified hours
         LocalDate currentDate = selectedDate;
 
         for (int day = 0; day < 7; day++) {
@@ -2149,12 +1961,9 @@ public class Booking extends JFrame {
 
     private void handleAllDayShortSelection() {
         if (allDayShortCheckBox.isSelected()) {
-            // Deselect all other options for Rehearsal Space
             allDayLongCheckBox.setSelected(false);
             weekShortCheckBox.setSelected(false);
             weekLongCheckBox.setSelected(false);
-
-            // Select slots from 10:00 to 17:00
             for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
                 String timeStr = (String) timeSlotModel.getValueAt(row, 0);
                 LocalTime time = LocalTime.parse(timeStr);
@@ -2167,7 +1976,7 @@ public class Booking extends JFrame {
                 }
             }
         } else {
-            // Clear selections
+
             for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
                 if (timeSlotModel.getValueAt(row, 1).equals("Selected")) {
                     timeSlotModel.setValueAt("Available", row, 1);
@@ -2178,12 +1987,10 @@ public class Booking extends JFrame {
 
     private void handleAllDayLongSelection() {
         if (allDayLongCheckBox.isSelected()) {
-            // Deselect all other options for Rehearsal Space
             allDayShortCheckBox.setSelected(false);
             weekShortCheckBox.setSelected(false);
             weekLongCheckBox.setSelected(false);
 
-            // Select slots from 10:00 to 22:30 (last slot before 23:00)
             for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
                 String timeStr = (String) timeSlotModel.getValueAt(row, 0);
                 LocalTime time = LocalTime.parse(timeStr);
@@ -2196,7 +2003,6 @@ public class Booking extends JFrame {
                 }
             }
         } else {
-            // Clear selections
             for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
                 if (timeSlotModel.getValueAt(row, 1).equals("Selected")) {
                     timeSlotModel.setValueAt("Available", row, 1);
@@ -2209,12 +2015,5 @@ public class Booking extends JFrame {
         checkbox.setFont(new Font("TimesRoman", Font.PLAIN, 12));
         checkbox.setForeground(Color.WHITE);
         checkbox.setBackground(panelColor);
-    }
-
-    // Method to create styled buttons with tooltip descriptions
-    private JButton createButtonWithDescription(String text, String description) {
-        JButton button = createStyledButton(text);
-        button.setToolTipText(description);
-        return button;
     }
 }
