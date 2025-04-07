@@ -82,7 +82,8 @@ public class UserHome extends JFrame {
 
 
         // Load logo
-        ImageIcon characterIcon = new ImageIcon("data/logo/logo.png");
+        ImageIcon characterIcon = new ImageIcon(getClass().getResource("/data/logo/logo.png"));
+
         JLabel characterLabel = new JLabel(characterIcon);
 
         // Add components to the frame using GridBagLayout

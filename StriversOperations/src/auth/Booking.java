@@ -708,7 +708,7 @@ public class Booking extends JFrame {
             int dayOfWeek = selectedDate.getDayOfWeek().getValue();
             boolean isWeekend = dayOfWeek == 6 || dayOfWeek == 7;
             double cost = isWeekend ? 500.0 : 450.0;
-            totalLabel.setText(String.format("Total Cost: £%.2f", cost));
+            totalLabel.setText(String.format("Total Cost: £%.2f + VAT", cost));
         }
     }
 
@@ -1011,27 +1011,26 @@ public class Booking extends JFrame {
 
     private void updateTotalCost() {
         double total = bookingEvents.stream().mapToDouble(event -> event.cost).sum();
-        totalLabel.setText(String.format("Total Cost: £%.2f", total));
+        totalLabel.setText(String.format("Total Cost: £%.2f + VAT", total));
     }
 
     private JPanel createActionsPanel() {
-        JPanel panel = new JPanel(new BorderLayout(20, 0));
+        JPanel panel = new JPanel(new BorderLayout(20, 10));  // Added vertical gap
         panel.setBackground(panelColor);
 
-        // Total cost label
-        totalLabel = new JLabel("Total Cost: £0.00");
+        // Total cost label centered
+        totalLabel = new JLabel("Total Cost: £0.00 + VAT", JLabel.CENTER);
         totalLabel.setForeground(Color.WHITE);
         totalLabel.setFont(new Font("TimesRoman", Font.PLAIN, 14));
-        panel.add(totalLabel, BorderLayout.WEST);
+        panel.add(totalLabel, BorderLayout.NORTH);
 
         // Buttons panel
-        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));  // Changed to CENTER
         buttonsPanel.setBackground(panelColor);
 
         JButton saveBtn = createStyledButton("Save Booking");
         JButton cancelBtn = createStyledButton("Cancel");
 
-        // Remove saveBooking action listener, keeping button for now
         cancelBtn.addActionListener(e -> {
             dispose();
             new UserHome().setVisible(true);
@@ -1039,7 +1038,7 @@ public class Booking extends JFrame {
 
         buttonsPanel.add(saveBtn);
         buttonsPanel.add(cancelBtn);
-        panel.add(buttonsPanel, BorderLayout.EAST);
+        panel.add(buttonsPanel, BorderLayout.CENTER);  // Changed to CENTER
 
         return panel;
     }
