@@ -11,18 +11,45 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-
+/**
+ * A GUI application for managing venue schedules and holds.
+ * Provides functionality for viewing, confirming, and canceling bookings,
+ * with color-coded status indicators and cost calculations.
+ */
 public class Diary extends JFrame {
 
+    /** UI styling constants */
     private final Color background = new Color(18, 32, 35, 255);
+
+    /** UI components for data display and interaction */
     private JTable scheduleTable;
     private JButton refreshBtn, confirmBtn, cancelBtn;
     private JLabel summaryLabel;
 
+    /** Color scheme for different payment statuses */
     private final Color unpaidColor = new Color(255, 200, 200); // Light red
     private final Color paidColor = new Color(200, 255, 200);   // Light green
     private final Color pendingColor = new Color(255, 230, 200); // Light orange
 
+    /**
+     * Main method to launch the Diary application.
+     * @param args Command line arguments (not used)
+     */
+    public static void main(String[] args) {
+        EventQueue.invokeLater(() -> {
+            try {
+                Diary frame = new Diary();
+                frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    /**
+     * Constructs a new Diary frame and initializes the UI components.
+     * Sets up the schedule table and management interface.
+     */
     public Diary() {
         setTitle("Lancaster's Music Hall - Diary Management");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -40,19 +67,9 @@ public class Diary extends JFrame {
     }
 
     /**
-     * Launch the application.
+     * Creates the main panel containing the schedule table and management buttons.
+     * @return A JPanel containing the main content area
      */
-    public static void main(String[] args) {
-        EventQueue.invokeLater(() -> {
-            try {
-                Diary frame = new Diary();
-                frame.setVisible(true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
     private JPanel createMainPanel() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(background);
@@ -66,34 +83,7 @@ public class Diary extends JFrame {
         scheduleTable = new JTable();
         scheduleTable.setAutoCreateRowSorter(true);
 
-        scheduleTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value,
-                                                           boolean isSelected, boolean hasFocus,
-                                                           int row, int column) {
-                Component comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-                String paymentStatus = (String) table.getValueAt(row, 7);
-
-                if (isSelected) {
-                    return comp;
-                }
-
-
-
-                if ("Unpaid".equals(paymentStatus)) {
-                    comp.setBackground(unpaidColor);
-                } else if ("Paid".equals(paymentStatus)) {
-                    comp.setBackground(paidColor);
-                } else if ("Pending".equals(paymentStatus)) {
-                    comp.setBackground(pendingColor);
-                } else {
-                    comp.setBackground(table.getBackground());
-                }
-
-                return comp;
-            }
-        });
+        scheduleTable.setDefaultRenderer(Object.class, new ScheduleCellRenderer());
 
         JScrollPane scrollPane = new JScrollPane(scheduleTable);
         scrollPane.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
@@ -125,6 +115,11 @@ public class Diary extends JFrame {
         return mainPanel;
     }
 
+    /**
+     * Creates a styled button with consistent appearance.
+     * @param text The text to display on the button
+     * @return A styled JButton
+     */
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
         button.setFont(new Font("TimesRoman", Font.PLAIN, 16));
@@ -135,6 +130,10 @@ public class Diary extends JFrame {
         return button;
     }
 
+    /**
+     * Loads schedule data from the database into the schedule table.
+     * Includes booking details, payment status, and calculated costs.
+     */
     private void loadScheduleData() {
         try (Connection conn = DriverManager.getConnection(
                 "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26",
@@ -197,6 +196,14 @@ public class Diary extends JFrame {
         }
     }
 
+    /**
+     * Calculates the cost for a room booking based on various factors.
+     * @param room The room being booked
+     * @param bookingDate The date of the booking
+     * @param startTime The start time of the booking
+     * @param endTime The end time of the booking
+     * @return A formatted string representing the cost
+     */
     private String calculateCost(String room, Date bookingDate, Time startTime, Time endTime) {
         if (room == null || bookingDate == null || startTime == null || endTime == null) {
             return "N/A";
@@ -320,7 +327,10 @@ public class Diary extends JFrame {
         }
     }
 
-
+    /**
+     * Updates the summary label with current booking statistics.
+     * Shows counts of unpaid, pending, and overdue bookings.
+     */
     private void updateSummary() {
         int unpaidCount = 0;
         int pendingCount = 0;
@@ -353,6 +363,10 @@ public class Diary extends JFrame {
                 unpaidCount, pendingCount, overdueCount));
     }
 
+    /**
+     * Confirms the selected booking and marks it as paid.
+     * Updates the database and refreshes the display.
+     */
     private void confirmSelectedBooking() {
         int selectedRow = scheduleTable.getSelectedRow();
         if (selectedRow >= 0) {
@@ -388,6 +402,10 @@ public class Diary extends JFrame {
         }
     }
 
+    /**
+     * Cancels the selected booking hold.
+     * Prompts for confirmation before proceeding with cancellation.
+     */
     private void cancelSelectedHold() {
         int selectedRow = scheduleTable.getSelectedRow();
         if (selectedRow >= 0) {
@@ -429,8 +447,10 @@ public class Diary extends JFrame {
         }
     }
 
-
-
+    /**
+     * Creates the header panel with navigation and title.
+     * @return A JPanel containing the header components
+     */
     private JPanel createHeaderPanel() {
         JPanel headerContainer = new JPanel();
         headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
@@ -439,8 +459,6 @@ public class Diary extends JFrame {
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(background);
         topBar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-
-
 
         JButton homeBtn = new JButton("← Home");
         homeBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
@@ -454,7 +472,6 @@ public class Diary extends JFrame {
         });
         addHoverEffect(homeBtn);
         topBar.add(homeBtn, BorderLayout.WEST);
-
 
         JButton settingsBtn = new JButton("⚙ Settings");
         settingsBtn.setFont(new Font("TimesRoman", Font.PLAIN, 18));
@@ -483,7 +500,10 @@ public class Diary extends JFrame {
         return headerContainer;
     }
 
-
+    /**
+     * Adds hover effects to a button.
+     * @param button The button to add hover effects to
+     */
     private void addHoverEffect(JButton button) {
         button.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 2));
         button.addMouseListener(new MouseAdapter() {
@@ -498,5 +518,51 @@ public class Diary extends JFrame {
         });
     }
 
+    /**
+     * Custom cell renderer for the schedule table.
+     * Handles the display of booking status with appropriate colors.
+     */
+    private class ScheduleCellRenderer extends DefaultTableCellRenderer {
+        /**
+         * Constructs a new schedule cell renderer.
+         */
+        public ScheduleCellRenderer() {
+            setOpaque(true);
+        }
 
+        /**
+         * Returns the component used for drawing the cell.
+         * @param table The JTable that is asking the renderer to draw
+         * @param value The value of the cell to be rendered
+         * @param isSelected True if the cell is to be rendered with the selection highlighted
+         * @param hasFocus If true, render cell appropriately
+         * @param row The row index of the cell being drawn
+         * @param column The column index of the cell being drawn
+         * @return The component used for drawing the cell
+         */
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus,
+                                                       int row, int column) {
+            Component comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            String paymentStatus = (String) table.getValueAt(row, 7);
+
+            if (isSelected) {
+                return comp;
+            }
+
+            if ("Unpaid".equals(paymentStatus)) {
+                comp.setBackground(unpaidColor);
+            } else if ("Paid".equals(paymentStatus)) {
+                comp.setBackground(paidColor);
+            } else if ("Pending".equals(paymentStatus)) {
+                comp.setBackground(pendingColor);
+            } else {
+                comp.setBackground(table.getBackground());
+            }
+
+            return comp;
+        }
+    }
 }

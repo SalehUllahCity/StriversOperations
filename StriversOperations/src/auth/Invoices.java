@@ -15,12 +15,24 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A GUI application for managing venue invoices and ticket sales.
+ * Provides functionality for viewing, editing, and printing invoices,
+ * with support for ticket sales tracking and revenue calculations.
+ */
 public class Invoices extends JFrame {
 
+    /** UI styling constant for background color */
     private final Color background = new Color(18, 32, 35, 255);
+
+    /** UI components for data display */
     private JTable invoiceTable;
     private DefaultTableModel tableModel;
 
+    /**
+     * Constructs a new Invoices frame and initializes the UI components.
+     * Sets up the invoice table, control panel, and loads initial data.
+     */
     public Invoices() {
 
         setTitle("Lancaster's Music Hall Software: Invoices");
@@ -42,7 +54,8 @@ public class Invoices extends JFrame {
     }
 
     /**
-     * Launch the application.
+     * Main method to launch the Invoices application.
+     * @param args Command line arguments (not used)
      */
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
@@ -55,6 +68,10 @@ public class Invoices extends JFrame {
         });
     }
 
+    /**
+     * Creates the header panel with navigation and title.
+     * @return A JPanel containing the header components
+     */
     private JPanel createHeaderPanel() {
         JPanel headerContainer = new JPanel();
         headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
@@ -107,6 +124,10 @@ public class Invoices extends JFrame {
         return headerContainer;
     }
 
+    /**
+     * Creates the table panel with the invoice data display.
+     * @return A JPanel containing the styled invoice table
+     */
     private JPanel createTablePanel() {
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setBackground(background);
@@ -150,6 +171,10 @@ public class Invoices extends JFrame {
         return tablePanel;
     }
 
+    /**
+     * Creates the control panel with action buttons.
+     * @return A JPanel containing the control buttons
+     */
     private JPanel createControlPanel() {
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         controlPanel.setBackground(background);
@@ -199,6 +224,10 @@ public class Invoices extends JFrame {
         return controlPanel;
     }
 
+    /**
+     * Adds hover effects to a button.
+     * @param button The button to add hover effects to
+     */
     private void addHoverEffect(JButton button) {
         button.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 2));
         button.addMouseListener(new MouseAdapter() {
@@ -214,6 +243,10 @@ public class Invoices extends JFrame {
         });
     }
 
+    /**
+     * Loads invoice data from the database into the table.
+     * Includes booking details and initializes ticket sales data.
+     */
     private void loadInvoiceData() {
         tableModel.setRowCount(0);
 
@@ -264,6 +297,10 @@ public class Invoices extends JFrame {
         }
     }
 
+    /**
+     * Loads ticket sales data for events from predefined values.
+     * Updates the table with ticket counts and revenue information.
+     */
     private void loadTicketData() {
 
         try {
@@ -297,24 +334,44 @@ public class Invoices extends JFrame {
         }
     }
 
+    /**
+     * Inner class representing ticket information for an event.
+     */
     private static class EventTicketInfo {
         private final int ticketCount;
         private final double revenue;
 
+        /**
+         * Constructs a new EventTicketInfo with the specified details.
+         * @param ticketCount The number of tickets sold
+         * @param revenue The total revenue from ticket sales
+         */
         public EventTicketInfo(int ticketCount, double revenue) {
             this.ticketCount = ticketCount;
             this.revenue = revenue;
         }
 
+        /**
+         * Gets the number of tickets sold.
+         * @return The ticket count
+         */
         public int getTicketCount() {
             return ticketCount;
         }
 
+        /**
+         * Gets the total revenue from ticket sales.
+         * @return The revenue amount
+         */
         public double getRevenue() {
             return revenue;
         }
     }
 
+    /**
+     * Calculates the due amount for a specific invoice row.
+     * @param row The row index in the table
+     */
     private void calculateDueAmount(int row) {
         try {
             double bookingCost = Double.parseDouble(tableModel.getValueAt(row, 5).toString().replace("£", ""));
@@ -335,6 +392,10 @@ public class Invoices extends JFrame {
         }
     }
 
+    /**
+     * Saves the current invoice data to a CSV file.
+     * Includes ticket sales and revenue information.
+     */
     private void saveInvoiceData() {
         try {
             StringBuilder csvData = new StringBuilder();
@@ -377,6 +438,10 @@ public class Invoices extends JFrame {
         }
     }
 
+    /**
+     * Creates and displays a print preview dialog for the selected invoice.
+     * Shows detailed invoice information in a printable format.
+     */
     private void printInvoice() {
         int selectedRow = invoiceTable.getSelectedRow();
         if (selectedRow == -1) {
@@ -475,7 +540,20 @@ public class Invoices extends JFrame {
         }
     }
 
+    /**
+     * Custom cell renderer that adds tooltips to table cells.
+     */
     private class TooltipTableCellRenderer extends DefaultTableCellRenderer {
+        /**
+         * Returns the component used for drawing the cell with tooltip.
+         * @param table The JTable that is asking the renderer to draw
+         * @param value The value of the cell to be rendered
+         * @param isSelected True if the cell is to be rendered with the selection highlighted
+         * @param hasFocus If true, render cell appropriately
+         * @param row The row index of the cell being drawn
+         * @param column The column index of the cell being drawn
+         * @return The component used for drawing the cell
+         */
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
@@ -493,13 +571,30 @@ public class Invoices extends JFrame {
         }
     }
 
+    /**
+     * Custom header renderer that adds tooltips to table column headers.
+     */
     private class TooltipHeaderRenderer implements TableCellRenderer {
         private final TableCellRenderer defaultRenderer;
 
+        /**
+         * Constructs a new TooltipHeaderRenderer.
+         * @param defaultRenderer The default renderer to use as a base
+         */
         public TooltipHeaderRenderer(TableCellRenderer defaultRenderer) {
             this.defaultRenderer = defaultRenderer;
         }
 
+        /**
+         * Returns the component used for drawing the header cell with tooltip.
+         * @param table The JTable that is asking the renderer to draw
+         * @param value The value of the cell to be rendered
+         * @param isSelected True if the cell is to be rendered with the selection highlighted
+         * @param hasFocus If true, render cell appropriately
+         * @param row The row index of the cell being drawn
+         * @param column The column index of the cell being drawn
+         * @return The component used for drawing the cell
+         */
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {

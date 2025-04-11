@@ -7,16 +7,47 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.*;
 
-
+/**
+ * A GUI application for managing client information, including client details,
+ * booking history, and payment history. Provides functionality for adding new clients,
+ * searching existing clients, and viewing their associated records.
+ */
 public class Clients extends JFrame {
 
+    /** UI styling constants */
     private final Color background = new Color(18, 32, 35, 255);
     private final Color panelColor = new Color(30, 50, 55);
+    private final Color darkColour = new Color(18, 32, 35);
+    private final int fontSize = 18;
+
+    /** UI components for data display */
     private JTable clientTable;
     private JTable bookingHistoryTable;
     private JTable paymentHistoryTable;
     private JTabbedPane tabbedPane;
+    private JTextArea clientDetails;
+    private JTextArea bookingDetails;
+    private JTextArea paymentDetails;
 
+    /**
+     * Main method to launch the Clients application.
+     * @param args Command line arguments (not used)
+     */
+    public static void main(String[] args) {
+        EventQueue.invokeLater(() -> {
+            try {
+                Clients frame = new Clients();
+                frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    /**
+     * Constructs a new Clients frame and initializes the UI components.
+     * Sets up the tabbed interface for client management.
+     */
     public Clients() {
         setTitle("Lancaster's Music Hall Software: Clients");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -34,6 +65,10 @@ public class Clients extends JFrame {
 
     }
 
+    /**
+     * Creates the main panel containing the tabbed interface.
+     * @return JPanel containing the main content area
+     */
     private JPanel createMainPanel() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(background);
@@ -53,6 +88,9 @@ public class Clients extends JFrame {
         return mainPanel;
     }
 
+    /**
+     * Creates the client list tab with search functionality.
+     */
     private void createClientListTab() {
         JPanel clientPanel = new JPanel(new BorderLayout());
         clientPanel.setBackground(panelColor);
@@ -123,6 +161,9 @@ public class Clients extends JFrame {
         tabbedPane.addTab("Client List", clientPanel);
     }
 
+    /**
+     * Loads client data from the database into the client table.
+     */
     private void loadClientData() {
         try {
             String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
@@ -164,6 +205,10 @@ public class Clients extends JFrame {
         }
     }
 
+    /**
+     * Loads booking history for a specific client.
+     * @param clientId The ID of the client whose booking history to load
+     */
     private void loadBookingHistory(String clientId) {
         try {
             String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
@@ -221,6 +266,9 @@ public class Clients extends JFrame {
         }
     }
 
+    /**
+     * Creates the booking history tab.
+     */
     private void createBookingHistoryTab() {
         JPanel bookingPanel = new JPanel(new BorderLayout());
         bookingPanel.setBackground(panelColor);
@@ -253,6 +301,9 @@ public class Clients extends JFrame {
         tabbedPane.addTab("Booking History", bookingPanel);
     }
 
+    /**
+     * Creates the payment history tab.
+     */
     private void createPaymentHistoryTab() {
         JPanel paymentPanel = new JPanel(new BorderLayout());
         paymentPanel.setBackground(panelColor);
@@ -287,6 +338,10 @@ public class Clients extends JFrame {
         tabbedPane.addTab("Payment History", paymentPanel);
     }
 
+    /**
+     * Loads payment history for a specific client.
+     * @param clientId The ID of the client whose payment history to load
+     */
     private void loadPaymentHistory(String clientId) {
         try {
             String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
@@ -341,6 +396,9 @@ public class Clients extends JFrame {
         }
     }
 
+    /**
+     * Shows the dialog for adding a new client.
+     */
     private void showAddClientDialog() {
         JDialog dialog = new JDialog(this, "Add New Client", true);
         dialog.setSize(500, 500);
@@ -407,6 +465,10 @@ public class Clients extends JFrame {
         dialog.setVisible(true);
     }
 
+    /**
+     * Filters clients based on search text.
+     * @param searchText The text to search for in client names
+     */
     private void filterClients(String searchText) {
         try {
             String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
@@ -452,6 +514,12 @@ public class Clients extends JFrame {
 
 
 
+    /**
+     * Adds a form field to a panel with a label.
+     * @param panel The panel to add the field to
+     * @param label The label text for the field
+     * @param field The text field to add
+     */
     private void addFormField(JPanel panel, String label, JTextField field) {
         JLabel jLabel = new JLabel(label);
         jLabel.setForeground(Color.WHITE);
@@ -460,6 +528,18 @@ public class Clients extends JFrame {
 
     }
 
+    /**
+     * Saves a new client to the database.
+     * @param company The company name
+     * @param contact The contact person's name
+     * @param email The contact email
+     * @param phone The contact phone number
+     * @param address The street address
+     * @param city The city
+     * @param postcode The postal code
+     * @param billingName The billing contact name
+     * @param billingEmail The billing contact email
+     */
     private void saveNewClient(String company, String contact, String email, String phone,
                                String address, String city, String postcode,
                                String billingName, String billingEmail) {
@@ -502,6 +582,10 @@ public class Clients extends JFrame {
         }
     }
 
+    /**
+     * Styles a button with consistent appearance.
+     * @param button The button to style
+     */
     private void styleButton(JButton button) {
         button.setFont(new Font("TimesRoman", Font.PLAIN, 16));
         button.setBackground(new Color(50, 70, 75));
@@ -521,19 +605,9 @@ public class Clients extends JFrame {
     }
 
     /**
-     * Launch the application.
+     * Creates the header panel with navigation and title.
+     * @return JPanel containing the header components
      */
-    public static void main(String[] args) {
-        EventQueue.invokeLater(() -> {
-            try {
-                Clients frame = new Clients();
-                frame.setVisible(true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
     private JPanel createHeaderPanel() {
         JPanel headerContainer = new JPanel();
         headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
@@ -583,6 +657,10 @@ public class Clients extends JFrame {
         return headerContainer;
     }
 
+    /**
+     * Adds hover effects to a button.
+     * @param button The button to add hover effects to
+     */
     private void addHoverEffect(JButton button) {
         button.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 2));
         button.addMouseListener(new MouseAdapter() {

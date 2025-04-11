@@ -20,12 +20,17 @@ import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * A GUI application for generating and displaying various reports about venue operations.
+ * Includes reports for venue usage, daily sheets, financial summaries, monthly revenue, and ticket sales.
+ */
 public class Report extends JFrame {
 
+    /** UI styling constants */
     private final Color background = new Color(18, 32, 35, 255);
     private final int fontSize = 22;
 
-    // Space categories and their colors
+    /** Color mapping for different room types */
     private final Map<String, Color> spaceColors = new HashMap<>() {{
         // Meeting Rooms
         put("The Green Room", new Color(76, 175, 80));    // Green
@@ -45,11 +50,14 @@ public class Report extends JFrame {
         // Entire Venue
         put("Entire Venue", new Color(63, 81, 181));      // Indigo
     }};
+
+    /** Date selection components */
     private JSpinner startDateSpinner;
     private JSpinner endDateSpinner;
 
     /**
-     * Launch the application.
+     * Main method to launch the Report application.
+     * @param args Command line arguments (not used)
      */
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
@@ -63,7 +71,10 @@ public class Report extends JFrame {
     }
 
     /**
-     * Create the frame.
+     * Constructs a new Report frame and initializes the UI components.
+     * Sets up the tabbed interface for different report types.
+     * @throws SQLException if there is a database connection error
+     * @throws ClassNotFoundException if the database driver is not found
      */
     public Report() throws SQLException, ClassNotFoundException {
         setTitle("Lancaster's Music Hall Software: Reports");
@@ -93,7 +104,8 @@ public class Report extends JFrame {
     }
 
     /**
-     * Creates the top section with Settings and Title.
+     * Creates the header panel containing navigation and control buttons.
+     * @return JPanel containing the header components
      */
     private JPanel createHeaderPanel() {
         JPanel headerContainer = new JPanel();
@@ -148,6 +160,10 @@ public class Report extends JFrame {
         return headerContainer;
     }
 
+    /**
+     * Creates the venue usage tab with summary cards and detailed view.
+     * @return JPanel containing the venue usage report interface
+     */
     private JPanel createVenueUsageTab() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(background);
@@ -327,8 +343,12 @@ public class Report extends JFrame {
         return panel;
     }
 
-
-
+    /**
+     * Creates a summary card with title and value.
+     * @param title The title of the summary card
+     * @param value The value to display
+     * @return JPanel containing the styled summary card
+     */
     private JPanel createSummaryCard(String title, String value) {
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
@@ -355,6 +375,10 @@ public class Report extends JFrame {
         return card;
     }
 
+    /**
+     * Creates the space usage chart panel.
+     * @return JPanel containing the pie chart visualization
+     */
     private JPanel createSpaceUsageChart() {
         JPanel chartPanel = new JPanel(new BorderLayout()) {
             @Override
@@ -372,6 +396,12 @@ public class Report extends JFrame {
         return chartPanel;
     }
 
+    /**
+     * Draws a pie chart showing space usage distribution.
+     * @param g The graphics context to draw on
+     * @param startDateSpinner The start date selector
+     * @param endDateSpinner The end date selector
+     */
     private void drawPieChart(Graphics2D g, JSpinner startDateSpinner, JSpinner endDateSpinner) {
         Map<String, Integer> spaceUsage = new HashMap<>();
         boolean hasError = false;
@@ -486,6 +516,10 @@ public class Report extends JFrame {
         }
     }
 
+    /**
+     * Creates the ticket sales tab with search functionality.
+     * @return JPanel containing the ticket sales report interface
+     */
     private JPanel createTicketSalesTab() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(background);
@@ -581,6 +615,11 @@ public class Report extends JFrame {
         return panel;
     }
 
+    /**
+     * Loads ticket sales data into the table based on performance ID.
+     * @param model The table model to update
+     * @param performanceId The performance ID to search for
+     */
     private void loadTicketSalesData(DefaultTableModel model, String performanceId) {
         try {
             JDBC jdbc = new JDBC();
@@ -618,6 +657,15 @@ public class Report extends JFrame {
         }
     }
 
+    /**
+     * Loads venue usage data into the table based on filters.
+     * @param model The table model to update
+     * @param spaceFilter The space filter combo box
+     * @param startDateSpinner The start date selector
+     * @param endDateSpinner The end date selector
+     * @param summaryPanel The panel containing summary cards
+     * @param isAllTime Whether to load all-time data or filtered data
+     */
     private void loadVenueUsageData(DefaultTableModel model, JComboBox<String> spaceFilter, 
             JSpinner startDateSpinner, JSpinner endDateSpinner, JPanel summaryPanel, boolean isAllTime) {
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
@@ -738,6 +786,16 @@ public class Report extends JFrame {
         }
     }
 
+    /**
+     * Updates the summary cards with current data.
+     * @param summaryPanel The panel containing summary cards
+     * @param totalBookings Total number of bookings
+     * @param spaceUsage Map of space usage counts
+     * @param totalDuration Total duration of all bookings
+     * @param peakTime Peak booking time
+     * @param periodUsage Usage percentage for the period
+     * @param period The time period being displayed
+     */
     private void updateSummaryCards(JPanel summaryPanel, int totalBookings, Map<String, Integer> spaceUsage, 
             long totalDuration, String peakTime, double periodUsage, String period) {
         ((JLabel) ((JPanel) summaryPanel.getComponent(0)).getComponent(2)).setText(String.valueOf(totalBookings));
@@ -761,6 +819,12 @@ public class Report extends JFrame {
         summaryPanel.getParent().repaint();
     }
 
+    /**
+     * Handles database errors and updates the UI accordingly.
+     * @param model The table model to clear
+     * @param summaryPanel The panel containing summary cards
+     * @param e The SQL exception that occurred
+     */
     private void handleDatabaseError(DefaultTableModel model, JPanel summaryPanel, SQLException e) {
         model.setRowCount(0);
         
@@ -775,6 +839,10 @@ public class Report extends JFrame {
         e.printStackTrace();
     }
 
+    /**
+     * Creates the daily sheets tab with date selection.
+     * @return JPanel containing the daily sheets interface
+     */
     private JPanel createDailySheetsTab() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(background);
@@ -1009,6 +1077,12 @@ public class Report extends JFrame {
         return panel;
     }
 
+    /**
+     * Loads daily sheets data for the selected date.
+     * @param model The table model to update
+     * @param dateSpinner The date selector
+     * @param availabilityPanel The panel showing space availability
+     */
     private void loadDailySheetsData(DefaultTableModel model, JSpinner dateSpinner, JPanel availabilityPanel) {
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
         String user = "in2033t26_a";
@@ -1083,6 +1157,13 @@ public class Report extends JFrame {
         }
     }
 
+    /**
+     * Updates the availability summary panel.
+     * @param availabilityPanel The panel to update
+     * @param totalSpaces Total number of spaces
+     * @param spacesInUse Number of spaces currently in use
+     * @param configChanges Number of configuration changes
+     */
     private void updateAvailabilitySummary(JPanel availabilityPanel, int totalSpaces, 
             int spacesInUse, int configChanges) {
         ((JLabel) ((JPanel) availabilityPanel.getComponent(0)).getComponent(2))
@@ -1098,7 +1179,13 @@ public class Report extends JFrame {
             .setText(String.valueOf(configChanges));
     }
 
-    private JPanel createFinanceTab() {
+    /**
+     * Creates the financial summary tab.
+     * @return JPanel containing the financial summary interface
+     * @throws SQLException if there is a database connection error
+     * @throws ClassNotFoundException if the database driver is not found
+     */
+    private JPanel createFinanceTab() throws SQLException, ClassNotFoundException {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(background);
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
@@ -1296,6 +1383,15 @@ public class Report extends JFrame {
         return panel;
     }
 
+    /**
+     * Loads financial data based on selected filters.
+     * @param model The table model to update
+     * @param startDateSpinner The start date selector
+     * @param endDateSpinner The end date selector
+     * @param summaryPanel The panel containing financial summaries
+     * @param categoryPanel The panel containing category summaries
+     * @param spaceFilter The space filter combo box
+     */
     private void loadFinancialData(DefaultTableModel model, JSpinner startDateSpinner, 
             JSpinner endDateSpinner, JPanel summaryPanel, JPanel categoryPanel, JComboBox<String> spaceFilter) {
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
@@ -1398,6 +1494,12 @@ public class Report extends JFrame {
         }
     }
 
+    /**
+     * Updates category totals based on room type.
+     * @param room The room name
+     * @param hireFee The hire fee for the room
+     * @param categoryTotals Array of category totals to update
+     */
     private void updateCategoryTotals(String room, double hireFee, double[] categoryTotals) {
         if (room.equals("Entire Venue")) {
             categoryTotals[3] += hireFee;
@@ -1412,6 +1514,14 @@ public class Report extends JFrame {
         }
     }
 
+    /**
+     * Updates the category summary panel.
+     * @param categoryPanel The panel to update
+     * @param meetingRoomsIncome Income from meeting rooms
+     * @param performanceSpacesIncome Income from performance spaces
+     * @param rehearsalSpaceIncome Income from rehearsal space
+     * @param entireVenueIncome Income from entire venue bookings
+     */
     private void updateCategorySummary(JPanel categoryPanel, double meetingRoomsIncome,
             double performanceSpacesIncome, double rehearsalSpaceIncome, double entireVenueIncome) {
 
@@ -1430,6 +1540,12 @@ public class Report extends JFrame {
             .setText(String.format("£%.2f", entireVenueIncome));
     }
 
+    /**
+     * Calculates the hire fee for a room based on duration.
+     * @param room The room name
+     * @param duration The duration in days
+     * @return The calculated hire fee
+     */
     private double calculateHireFee(String room, int duration) {
         Map<String, Double> weeklyRates = new HashMap<>() {{
             put("The Green Room", 600.0);
@@ -1456,6 +1572,15 @@ public class Report extends JFrame {
         }
     }
 
+    /**
+     * Updates the financial summary panel.
+     * @param summaryPanel The panel to update
+     * @param totalRevenue Total revenue
+     * @param totalHireFees Total hire fees
+     * @param totalTicketSales Total ticket sales
+     * @param totalClientPayouts Total payouts to clients
+     * @param totalNetIncome Total net income
+     */
     private void updateFinancialSummary(JPanel summaryPanel, double totalRevenue,
             double totalHireFees, double totalTicketSales, double totalClientPayouts,
             double totalNetIncome) {
@@ -1472,6 +1597,12 @@ public class Report extends JFrame {
             .setText(String.format("£%.2f", totalNetIncome));
     }
 
+    /**
+     * Creates the monthly revenue tab.
+     * @return JPanel containing the monthly revenue interface
+     * @throws SQLException if there is a database connection error
+     * @throws ClassNotFoundException if the database driver is not found
+     */
     private JPanel createMonthRevTab() throws SQLException, ClassNotFoundException {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(background);
@@ -1567,6 +1698,14 @@ public class Report extends JFrame {
         return panel;
     }
 
+    /**
+     * Loads monthly revenue data for the selected month and year.
+     * @param model The table model to update
+     * @param year The selected year
+     * @param month The selected month
+     * @throws SQLException if there is a database connection error
+     * @throws ClassNotFoundException if the database driver is not found
+     */
     private void loadMonthlyRevenue(DefaultTableModel model, int year, int month) throws SQLException, ClassNotFoundException {
         try {
             JDBC jdbc = new JDBC();
@@ -1596,6 +1735,10 @@ public class Report extends JFrame {
         }
     }
 
+    /**
+     * Adds hover effects to a button.
+     * @param button The button to add hover effects to
+     */
     private void addHoverEffect(JButton button) {
         button.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 2));
         button.addMouseListener(new MouseAdapter() {
@@ -1610,6 +1753,10 @@ public class Report extends JFrame {
         });
     }
 
+    /**
+     * Styles a table with consistent appearance.
+     * @param table The table to style
+     */
     private void styleTable(JTable table) {
         table.setFont(new Font("TimesRoman", Font.PLAIN, 13));
         table.setRowHeight(28);
@@ -1618,48 +1765,59 @@ public class Report extends JFrame {
         table.getTableHeader().setResizingAllowed(false);
     }
 
+    /**
+     * Custom cell renderer for room colors in tables.
+     */
+    class RoomColorRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            if (value == null || value.toString().isEmpty()) {
+                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
 
-class RoomColorRenderer extends DefaultTableCellRenderer {
-    @Override
-    public Component getTableCellRendererComponent(JTable table, Object value,
-            boolean isSelected, boolean hasFocus, int row, int column) {
-        if (value == null || value.toString().isEmpty()) {
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            String room = value.toString();
+            Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            if (isSelected) {
+                cell.setBackground(table.getSelectionBackground());
+                cell.setForeground(table.getSelectionForeground());
+            } else {
+                String normalizedRoom = normalizeRoomName(room);
+                Color bgColor = spaceColors.getOrDefault(normalizedRoom, new Color(149, 165, 166));
+                cell.setBackground(bgColor);
+
+                double luminance = (0.299 * bgColor.getRed() + 0.587 * bgColor.getGreen() + 0.114 * bgColor.getBlue()) / 255;
+                cell.setForeground(luminance > 0.5 ? Color.BLACK : Color.WHITE);
+            }
+
+            return cell;
         }
 
-        String room = value.toString();
-        Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-        if (isSelected) {
-            cell.setBackground(table.getSelectionBackground());
-            cell.setForeground(table.getSelectionForeground());
-        } else {
-            String normalizedRoom = normalizeRoomName(room);
-            Color bgColor = spaceColors.getOrDefault(normalizedRoom, new Color(149, 165, 166));
-            cell.setBackground(bgColor);
-
-            double luminance = (0.299 * bgColor.getRed() + 0.587 * bgColor.getGreen() + 0.114 * bgColor.getBlue()) / 255;
-            cell.setForeground(luminance > 0.5 ? Color.BLACK : Color.WHITE);
+        private String normalizeRoomName(String room) {
+            return room.replace("ë", "e")
+                      .replace("\n", " ")
+                      .trim();
         }
-
-        return cell;
     }
 
-    private String normalizeRoomName(String room) {
-        return room.replace("ë", "e")
-                  .replace("\n", " ")
-                  .trim();
-    }
-}
-
-
+    /**
+     * Normalizes a room name by removing special characters and extra spaces.
+     * @param room The room name to normalize
+     * @return The normalized room name
+     */
     private String normalizeRoomName(String room) {
         return room.replace("ë", "e")  // Replace ë with e
                   .replace("\n", " ")  // Replace newlines with spaces
                   .trim();            // Remove extra spaces
     }
 
-
+    /**
+     * Creates a detail popup window for table rows.
+     * @param columns The column names
+     * @param table The table to attach the popup to
+     * @return The created popup window
+     */
     private JWindow createDetailPopup(String[] columns, JTable table) {
         JPanel popupPanel = new JPanel();
         popupPanel.setLayout(new BoxLayout(popupPanel, BoxLayout.Y_AXIS));

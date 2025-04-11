@@ -13,14 +13,26 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A GUI application for managing venue and show reviews.
+ * Provides functionality for viewing, filtering, and responding to reviews,
+ * with support for marking reviews as sent to clients and exporting review details.
+ */
 public class Reviews extends JFrame {
+    /** UI styling constants for consistent appearance */
     private final Color background = new Color(18, 32, 35, 255);
     private final Color panelColor = new Color(30, 50, 55);
     private final Color buttonColor = new Color(40, 70, 75);
+
+    /** UI components for data display and interaction */
     private JTable reviewsTable;
     private DefaultTableModel tableModel;
     Map<Integer, Boolean> sentReviews = new HashMap<>();
 
+    /**
+     * Constructs a new Reviews frame and initializes the UI components.
+     * Sets up the reviews table, filter panel, and loads initial data.
+     */
     public Reviews() {
         setTitle("Lancaster's Music Hall Software: Reviews");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -38,17 +50,17 @@ public class Reviews extends JFrame {
         loadReviews();
     }
 
-
-
+    /**
+     * Creates the main content panel containing the reviews table and filter controls.
+     * @return A JPanel containing the main content area
+     */
     private JPanel createMainPanel() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(background);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(background);
-
 
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         filterPanel.setBackground(panelColor);
@@ -60,11 +72,9 @@ public class Reviews extends JFrame {
                 new Font("TimesRoman", Font.BOLD, 18),  // Larger font for title
                 Color.WHITE));  // White text color
 
-
         JLabel filterLabel = new JLabel("Filter By:");
         filterLabel.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         filterLabel.setForeground(Color.WHITE);
-
 
         topPanel.add(createLegendPanel(), BorderLayout.EAST);
 
@@ -101,12 +111,10 @@ public class Reviews extends JFrame {
             reviewsTable.getColumnModel().getColumn(i).setCellRenderer(renderer);
         }
 
-
         reviewsTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
                                                            boolean isSelected, boolean hasFocus, int row, int column) {
-
 
                 if (column == 5) {
                     JTextArea textArea = new JTextArea(value != null ? value.toString() : "");
@@ -115,7 +123,6 @@ public class Reviews extends JFrame {
                     textArea.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
                     textArea.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
                     textArea.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-
 
                     FontMetrics fm = textArea.getFontMetrics(textArea.getFont());
                     int textWidth = textArea.getPreferredSize().width;
@@ -140,8 +147,6 @@ public class Reviews extends JFrame {
 
         });
 
-
-
         reviewsTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -161,12 +166,7 @@ public class Reviews extends JFrame {
             }
         });
 
-
-
-
-
         reviewsTable.putClientProperty("terminateEditOnFocusLost", true); // Saves when clicking away
-
 
         DefaultCellEditor responseEditor = new DefaultCellEditor(new JTextField()) {
             @Override
@@ -180,7 +180,6 @@ public class Reviews extends JFrame {
         };
 
         reviewsTable.getColumnModel().getColumn(7).setCellEditor(responseEditor);
-
 
         tableModel.addTableModelListener(e -> {
             if (e.getColumn() == 7) { // Now checking column 7 for Response
@@ -216,7 +215,6 @@ public class Reviews extends JFrame {
             }
         });
 
-
         reviewsTable.getColumnModel().getColumn(0).setPreferredWidth(80);  // ReviewID
         reviewsTable.getColumnModel().getColumn(1).setPreferredWidth(130); // User Email
         reviewsTable.getColumnModel().getColumn(2).setPreferredWidth(120); // Client Name
@@ -225,7 +223,6 @@ public class Reviews extends JFrame {
         reviewsTable.getColumnModel().getColumn(5).setPreferredWidth(200); // Comment
         reviewsTable.getColumnModel().getColumn(6).setPreferredWidth(100); // Date
         reviewsTable.getColumnModel().getColumn(7).setPreferredWidth(150); // Response
-
 
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         actionPanel.setBackground(panelColor);
@@ -252,7 +249,6 @@ public class Reviews extends JFrame {
         centerPanel.add(createSimpleLegend(), BorderLayout.NORTH);
         centerPanel.add(new JScrollPane(reviewsTable), BorderLayout.CENTER);
 
-
         mainPanel.add(filterPanel, BorderLayout.NORTH);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
         mainPanel.add(actionPanel, BorderLayout.SOUTH);
@@ -271,6 +267,10 @@ public class Reviews extends JFrame {
         return mainPanel;
     }
 
+    /**
+     * Sends the selected review to the client and updates its status.
+     * Prompts for confirmation before proceeding with the action.
+     */
     private void sendToClient() {
         int selectedRow = reviewsTable.getSelectedRow();
         if (selectedRow == -1) {
@@ -299,6 +299,10 @@ public class Reviews extends JFrame {
         }
     }
 
+    /**
+     * Creates a legend panel showing the color coding for sent reviews.
+     * @return A JPanel containing the legend display
+     */
     private JPanel createLegendPanel() {
         JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         legendPanel.setBackground(panelColor);
@@ -334,7 +338,10 @@ public class Reviews extends JFrame {
         return legendPanel;
     }
 
-
+    /**
+     * Updates the sent status of a review in the database.
+     * @param reviewId The ID of the review to update
+     */
     private void updateSentStatusInDatabase(int reviewId) {
         try {
             JDBC jdbc = new JDBC();
@@ -350,7 +357,9 @@ public class Reviews extends JFrame {
         }
     }
 
-
+    /**
+     * Saves the current response to the database for the selected review.
+     */
     private void saveResponseToDatabase() {
         int row = reviewsTable.getSelectedRow();
         if (row == -1) return;
@@ -373,8 +382,16 @@ public class Reviews extends JFrame {
         }
     }
 
+    /**
+     * Validates and submits a new review to the database.
+     * @param email The user's email address
+     * @param client The client name
+     * @param booking The booking name
+     * @param rating The review rating (1-5)
+     * @param comment The review comment
+     * @return true if the review was successfully submitted, false otherwise
+     */
     private boolean validateAndSubmitReview(String email, String client, String booking, int rating, String comment) {
-
         if (email.isEmpty() || client == null || booking == null || comment.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please fill in all fields",
                     "Validation Error", JOptionPane.WARNING_MESSAGE);
@@ -436,6 +453,10 @@ public class Reviews extends JFrame {
         }
     }
 
+    /**
+     * Applies custom styling to a text field.
+     * @param field The text field to style
+     */
     private void styleTextField(JTextField field) {
         field.setFont(new Font("TimesRoman", Font.PLAIN, 16));
         field.setBackground(new Color(60, 90, 100));
@@ -443,6 +464,10 @@ public class Reviews extends JFrame {
         field.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
     }
 
+    /**
+     * Applies custom styling to a spinner component.
+     * @param spinner The spinner to style
+     */
     private void styleSpinner(JSpinner spinner) {
         spinner.setFont(new Font("TimesRoman", Font.PLAIN, 16));
         spinner.setBackground(new Color(60, 90, 100));
@@ -456,6 +481,10 @@ public class Reviews extends JFrame {
         }
     }
 
+    /**
+     * Loads client names from the database into a combo box.
+     * @param combo The combo box to populate with client names
+     */
     private void loadClientNames(JComboBox<String> combo) {
         try {
             JDBC jdbc = new JDBC();
@@ -469,6 +498,10 @@ public class Reviews extends JFrame {
         }
     }
 
+    /**
+     * Loads booking names from the database into a combo box.
+     * @param combo The combo box to populate with booking names
+     */
     private void loadBookingNames(JComboBox<String> combo) {
         try {
             JDBC jdbc = new JDBC();
@@ -482,6 +515,10 @@ public class Reviews extends JFrame {
         }
     }
 
+    /**
+     * Shows a dialog for adding a new review.
+     * Includes fields for user email, client, booking, rating, and comment.
+     */
     private void showAddReviewDialog() {
         JDialog dialog = new JDialog(this, "Add New Review", true);
         dialog.setLayout(new BorderLayout());
@@ -596,6 +633,12 @@ public class Reviews extends JFrame {
         dialog.setVisible(true);
     }
 
+    /**
+     * Shows a popup dialog for viewing or editing text content.
+     * @param title The title of the popup
+     * @param text The text content to display
+     * @param editable Whether the text should be editable
+     */
     private void showTextPopup(String title, String text, boolean editable) {
         // Create text area with proper settings
         JTextArea textArea = new JTextArea(text);
@@ -652,11 +695,24 @@ public class Reviews extends JFrame {
         );
     }
 
+    /**
+     * Custom cell renderer for the reviews table.
+     * Handles color coding for sent reviews and text formatting.
+     */
     private class ReviewRenderer extends DefaultTableCellRenderer {
+        /**
+         * Returns the component used for drawing the cell.
+         * @param table The JTable that is asking the renderer to draw
+         * @param value The value of the cell to be rendered
+         * @param isSelected True if the cell is to be rendered with the selection highlighted
+         * @param hasFocus If true, render cell appropriately
+         * @param row The row index of the cell being drawn
+         * @param column The column index of the cell being drawn
+         * @return The component used for drawing the cell
+         */
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
-
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
             int reviewId = (Integer) tableModel.getValueAt(row, 0);
@@ -674,6 +730,10 @@ public class Reviews extends JFrame {
         }
     }
 
+    /**
+     * Loads review data from the database into the table.
+     * Includes user information, booking details, and review content.
+     */
     private void loadReviews() {
         try {
             tableModel.setRowCount(0);
@@ -720,6 +780,10 @@ public class Reviews extends JFrame {
         }
     }
 
+    /**
+     * Creates a simplified legend panel showing the color coding for sent reviews.
+     * @return A JPanel containing the legend display
+     */
     private JPanel createSimpleLegend() {
         JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         legendPanel.setBackground(panelColor);
@@ -742,6 +806,10 @@ public class Reviews extends JFrame {
         return legendPanel;
     }
 
+    /**
+     * Applies a filter to the reviews table based on the selected criteria.
+     * @param filterType The type of filter to apply (0-4)
+     */
     private void applyFilter(int filterType) {
         try {
             tableModel.setRowCount(0);
@@ -782,6 +850,10 @@ public class Reviews extends JFrame {
         }
     }
 
+    /**
+     * Submits a response to the selected review.
+     * Validates the response and updates the database.
+     */
     private void submitResponse() {
         int selectedRow = reviewsTable.getSelectedRow();
         if (selectedRow == -1) {
@@ -814,6 +886,10 @@ public class Reviews extends JFrame {
         }
     }
 
+    /**
+     * Exports the selected review to the clipboard.
+     * Includes all review details in a formatted text block.
+     */
     private void exportReview() {
         int selectedRow = reviewsTable.getSelectedRow();
         if (selectedRow == -1) {
@@ -863,7 +939,10 @@ public class Reviews extends JFrame {
         }
     }
 
-    // Styling methods
+    /**
+     * Applies custom styling to a table.
+     * @param table The table to style
+     */
     private void styleTable(JTable table) {
         table.setFont(new Font("TimesRoman", Font.PLAIN, 16));
         table.setBackground(panelColor);
@@ -877,6 +956,10 @@ public class Reviews extends JFrame {
         table.getTableHeader().setForeground(Color.WHITE);
     }
 
+    /**
+     * Applies custom styling to a button.
+     * @param button The button to style
+     */
     private void styleButton(JButton button) {
         button.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         button.setBackground(buttonColor);
@@ -893,6 +976,10 @@ public class Reviews extends JFrame {
         });
     }
 
+    /**
+     * Applies custom styling to a combo box.
+     * @param combo The combo box to style
+     */
     private void styleComboBox(JComboBox<String> combo) {
         combo.setFont(new Font("TimesRoman", Font.PLAIN, 16));
         combo.setBackground(panelColor);
@@ -900,13 +987,9 @@ public class Reviews extends JFrame {
         combo.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
     }
 
-
-
-
-
-
     /**
-     * Launch the application.
+     * Main method to launch the Reviews application.
+     * @param args Command line arguments (not used)
      */
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
@@ -919,6 +1002,10 @@ public class Reviews extends JFrame {
         });
     }
 
+    /**
+     * Creates the header panel with navigation and title.
+     * @return A JPanel containing the header components
+     */
     private JPanel createHeaderPanel() {
         JPanel headerContainer = new JPanel();
         headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
@@ -970,6 +1057,10 @@ public class Reviews extends JFrame {
         return headerContainer;
     }
 
+    /**
+     * Adds hover effects to a button.
+     * @param button The button to add hover effects to
+     */
     private void addHoverEffect(JButton button) {
         button.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 2));
         button.addMouseListener(new MouseAdapter() {

@@ -14,9 +14,17 @@ import java.sql.SQLException;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+/**
+ * A GUI application for user authentication.
+ * Provides a login interface with username and password fields,
+ * and handles database authentication to grant access to the main application.
+ */
 public class UserLogin extends JFrame {
 
+    /** Serial version UID for serialization */
     private static final long serialVersionUID = 1L;
+    
+    /** UI components for user input and interaction */
     private JTextField textField;
     private JPasswordField passwordField;
     private JButton btnNewButton;
@@ -24,7 +32,8 @@ public class UserLogin extends JFrame {
     private JPanel contentPane;
 
     /**
-     * Launch the application.
+     * Main method to launch the UserLogin application.
+     * @param args Command line arguments (not used)
      */
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
@@ -40,7 +49,9 @@ public class UserLogin extends JFrame {
     }
 
     /**
-     * Create the frame.
+     * Constructs a new UserLogin frame.
+     * Initializes the login interface with username and password fields,
+     * sets up the logo, and configures the login button with authentication logic.
      */
     public UserLogin() {
         setTitle("Lancaster's Music Hall Software: Login");
@@ -148,6 +159,11 @@ public class UserLogin extends JFrame {
 
     }
 
+    /**
+     * Adds hover effects to a button.
+     * Changes the button's foreground color when the mouse enters/exits.
+     * @param button The button to add hover effects to
+     */
     private void addHoverEffect(JButton button) {
         button.addMouseListener(new MouseAdapter() {
             @Override
@@ -162,10 +178,10 @@ public class UserLogin extends JFrame {
         });
     }
 
-
-
-
-
+    /**
+     * Terminates the application.
+     * Called when the user chooses to exit the login screen.
+     */
     private void quitGame() {
         System.exit(0);
 

@@ -5,11 +5,22 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * A panel component that provides access to application settings.
+ * Contains a settings button that opens a dialog with various options
+ * including logout and accessibility settings.
+ */
 public class SettingScreen extends JPanel  {
 
+    /** The parent frame that contains this settings panel */
     private final JFrame parentFrame;
+    /** The font size used for buttons in this panel */
     private final int fontSize = 18;
 
+    /**
+     * Constructs a new SettingScreen panel.
+     * @param parentFrame The parent frame that contains this settings panel
+     */
     public SettingScreen(JFrame parentFrame){
         this.parentFrame = parentFrame;
         setLayout(new BorderLayout());
@@ -27,6 +38,11 @@ public class SettingScreen extends JPanel  {
         add(rightPanel, BorderLayout.EAST);
     }
 
+    /**
+     * Creates a styled button with consistent appearance.
+     * @param text The text to display on the button
+     * @return A JButton with the specified text and styling
+     */
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
         button.setFont(new Font("TimesRoman", Font.PLAIN, fontSize));
@@ -37,6 +53,11 @@ public class SettingScreen extends JPanel  {
         return button;
     }
 
+    /**
+     * Adds hover effects to a button.
+     * Changes the button's foreground color when the mouse enters/exits.
+     * @param button The button to add hover effects to
+     */
     private void addHoverEffect(JButton button) {
         button.addMouseListener(new MouseAdapter() {
             @Override
@@ -52,10 +73,15 @@ public class SettingScreen extends JPanel  {
     }
 
     /**
-     * The settings popup dialog shown when the settings button is clicked.
+     * A dialog window that displays application settings options.
+     * Provides access to logout, accessibility settings, and dialog closing.
      */
     protected static class SettingsDialog extends JDialog {
 
+        /**
+         * Constructs a new SettingsDialog.
+         * @param parent The parent frame for this dialog
+         */
         public SettingsDialog(JFrame parent) {
             super(parent, "Settings", true);
             setSize(400, 250);
@@ -89,6 +115,13 @@ public class SettingScreen extends JPanel  {
             add(closeBtn);
         }
 
+        /**
+         * Creates a styled button for the settings dialog.
+         * @param text The text to display on the button
+         * @param font The font to use for the button text
+         * @param bgColor The background color for the button
+         * @return A JButton with the specified styling
+         */
         private JButton createDialogButton(String text, Font font, Color bgColor) {
             JButton button = new JButton(text);
             button.setFont(font);
@@ -100,6 +133,11 @@ public class SettingScreen extends JPanel  {
             return button;
         }
 
+        /**
+         * Adds hover effects to a button in the settings dialog.
+         * Changes the button's border color when the mouse enters/exits.
+         * @param button The button to add hover effects to
+         */
         private void addHoverEffect(JButton button) {
             button.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
             button.addMouseListener(new MouseAdapter() {

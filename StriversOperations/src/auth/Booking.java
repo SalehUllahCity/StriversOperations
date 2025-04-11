@@ -18,19 +18,29 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
+/**
+ * A GUI application for managing room bookings in a venue.
+ * Provides functionality for selecting dates, spaces, and time slots for bookings.
+ */
 public class Booking extends JFrame {
+    /** Color scheme for the application UI */
     private final Color darkColour = new Color(18, 32, 35);
     private final Color panelColor = new Color(30, 50, 55);
     private final Color availableColor = new Color(76, 175, 80);
     private final Color unavailableColor = new Color(244, 67, 54);
     private final Color selectedColor = new Color(255, 152, 0);
     private final Color buttonHoverColor = Color.LIGHT_GRAY;
+
+    /** Formatters for date and time display */
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy");
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
+    /** Data structures for managing availability and time slots */
     private Map<String, String> availabilityMap;
     private List<String> timeSlots;
+    private Map<String, Map<LocalDate, Map<LocalTime, Boolean>>> spaceAvailability;
 
+    /** Available spaces for booking */
     private final String[] spaces = {
             "Select a space...",
             "The Green Room", "Brontë Boardroom", "Dickens Den", "Poe Parlor",
@@ -38,9 +48,8 @@ public class Booking extends JFrame {
             "Rehearsal Space", "Entire Venue"
     };
 
-    private final Map<String, Color> spaceColors = new HashMap<>();
-
-    {
+    /** Color mapping for different spaces */
+    private final Map<String, Color> spaceColors = new HashMap<>(); {
         spaceColors.put("The Green Room", new Color(76, 175, 80));    // Green
         spaceColors.put("Brontë Boardroom", new Color(33, 150, 243)); // Blue
         spaceColors.put("Dickens Den", new Color(156, 39, 176));      // Purple
@@ -53,6 +62,7 @@ public class Booking extends JFrame {
         spaceColors.put("Entire Venue", new Color(96, 125, 139));     // Blue Grey
     }
 
+    /** UI components for booking information input */
     private JTextField bookingNameField;
     private JTextField clientNameField;
     private JTable timeSlotTable;
@@ -64,6 +74,8 @@ public class Booking extends JFrame {
     private JComboBox<String> spaceSelector;
     private JList<String> bookingList;
     private DefaultListModel<String> bookingListModel;
+
+    /** Booking type selection checkboxes */
     private JCheckBox allDayCheckBox;
     private JCheckBox eveningCheckBox;
     private JCheckBox morningCheckBox;
@@ -74,29 +86,66 @@ public class Booking extends JFrame {
     private JCheckBox weekShortCheckBox;
     private JCheckBox weekLongCheckBox;
 
+    /** Current booking state */
     private LocalDate selectedDate = LocalDate.now();
     private String selectedSpace = null;
     private List<BookingEvent> bookingEvents = new ArrayList<>();
-    private Map<String, Map<LocalDate, Map<LocalTime, Boolean>>> spaceAvailability = new HashMap<>();
 
+    /**
+     * Represents a single booking event with its associated details and cost calculation.
+     */
     private static class BookingEvent {
+        /** Date of the booking */
         LocalDate date;
+        /** Start time of the booking */
         LocalTime startTime;
+        /** End time of the booking */
         LocalTime endTime;
+        /** Space being booked */
         String space;
+        /** Type of event being booked */
         String eventType;
+        /** Calculated cost of the booking */
         double cost;
+        /** Whether this is an all-day booking */
         boolean isAllDay;
+        /** Whether this is an evening booking */
         boolean isEvening;
-        boolean isAllDayShort;  // 10:00-17:00
-        boolean isAllDayLong;   // 10:00-23:00
-        boolean isWeekShort;    // 10:00-18:00
-        boolean isWeekLong;     // 10:00-23:00
+        /** Whether this is a short all-day booking (10:00-17:00) */
+        boolean isAllDayShort;
+        /** Whether this is a long all-day booking (10:00-23:00) */
+        boolean isAllDayLong;
+        /** Whether this is a short week booking (10:00-18:00) */
+        boolean isWeekShort;
+        /** Whether this is a long week booking (10:00-23:00) */
+        boolean isWeekLong;
+        /** Whether this is a week booking */
         boolean isWeek;
+        /** Whether this is a morning booking */
         boolean isMorning;
+        /** Whether this is an afternoon booking */
         boolean isAfternoon;
+        /** Whether this is a display-only booking (not for actual booking) */
         boolean isDisplayOnly;
 
+        /**
+         * Constructs a new booking event with the specified parameters.
+         * @param date The date of the booking
+         * @param startTime The start time of the booking
+         * @param endTime The end time of the booking
+         * @param space The space being booked
+         * @param eventType The type of event being booked
+         * @param isAllDay Whether this is an all-day booking
+         * @param isEvening Whether this is an evening booking
+         * @param isAllDayShort Whether this is a short all-day booking
+         * @param isAllDayLong Whether this is a long all-day booking
+         * @param isWeekShort Whether this is a short week booking
+         * @param isWeekLong Whether this is a long week booking
+         * @param isMorning Whether this is a morning booking
+         * @param isAfternoon Whether this is an afternoon booking
+         * @param isDisplayOnly Whether this is a display-only booking
+         * @param isWeek Whether this is a week booking
+         */
         public BookingEvent(LocalDate date, LocalTime startTime, LocalTime endTime,
                             String space, String eventType, boolean isAllDay, boolean isEvening,
                             boolean isAllDayShort, boolean isAllDayLong,
@@ -121,6 +170,16 @@ public class Booking extends JFrame {
             this.cost = calculateCost();
         }
 
+        /**
+         * Calculates the cost for this booking event based on various factors including:
+         * - Room type and size
+         * - Booking duration
+         * - Day of week (weekend vs weekday)
+         * - Time of day (morning, afternoon, evening)
+         * - Special booking types (all-day, weekly, etc.)
+         * 
+         * @return The calculated cost for the booking event
+         */
         private double calculateCost() {
             if (isDisplayOnly) {
                 return 0.0;
@@ -258,6 +317,10 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Main method to launch the Booking application.
+     * @param args Command line arguments (not used)
+     */
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
@@ -269,6 +332,10 @@ public class Booking extends JFrame {
         });
     }
 
+    /**
+     * Constructs a new Booking frame and initializes the UI components.
+     * Sets up the database connection and loads initial data.
+     */
     public Booking() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -286,6 +353,9 @@ public class Booking extends JFrame {
         updateTimeSlotGrid();
     }
 
+    /**
+     * Sets up the main frame properties including title, size, and layout.
+     */
     private void setupFrame() {
         setTitle("Lancaster's Music Hall Software: New Booking");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -296,6 +366,10 @@ public class Booking extends JFrame {
         getContentPane().setLayout(new BorderLayout());
     }
 
+    /**
+     * Initializes the data structures for managing availability and time slots.
+     * Sets up the initial state for the booking system.
+     */
     private void initializeData() {
         availabilityMap = new HashMap<>();
         timeSlots = new ArrayList<>();
@@ -314,6 +388,9 @@ public class Booking extends JFrame {
         loadExistingBookings();
     }
 
+    /**
+     * Initializes the space availability map for tracking booking status.
+     */
     private void initializeSpaceAvailability() {
         spaceAvailability = new HashMap<>();
         for (String space : spaces) {
@@ -324,6 +401,12 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Gets or creates the time slots map for a specific space and date.
+     * @param space The space to get time slots for
+     * @param date The date to get time slots for
+     * @return Map of time slots with their availability status
+     */
     private Map<LocalTime, Boolean> getOrCreateTimeSlots(String space, LocalDate date) {
         Map<LocalDate, Map<LocalTime, Boolean>> dateMap = spaceAvailability.get(space);
         if (!dateMap.containsKey(date)) {
@@ -341,6 +424,9 @@ public class Booking extends JFrame {
         return dateMap.get(date);
     }
 
+    /**
+     * Creates the main UI components and layout.
+     */
     private void createUI() {
         JPanel mainContent = new JPanel(new BorderLayout(20, 20));
         mainContent.setBackground(darkColour);
@@ -359,6 +445,11 @@ public class Booking extends JFrame {
         add(mainContent);
     }
 
+    /**
+     * Creates a styled button with hover effects.
+     * @param text The text to display on the button
+     * @return A styled JButton instance
+     */
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
         button.setFont(new Font("TimesRoman", Font.PLAIN, 14));
@@ -381,6 +472,10 @@ public class Booking extends JFrame {
         return button;
     }
 
+    /**
+     * Creates a border for hover effects.
+     * @return A compound border for hover state
+     */
     private Border createHoverBorder() {
         return BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.WHITE, 2),
@@ -388,10 +483,17 @@ public class Booking extends JFrame {
         );
     }
 
+    /**
+     * Creates a normal border for non-hover state.
+     * @return An empty border
+     */
     private Border createNormalBorder() {
         return BorderFactory.createEmptyBorder(5, 5, 5, 5);
     }
 
+    /**
+     * Initializes the time slot table model with default values.
+     */
     private void initializeTimeSlotModel() {
         String[] columnNames = {"Time", "Status"};
         timeSlotModel = new DefaultTableModel(columnNames, 0) {
@@ -411,6 +513,10 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Creates the time slot table with appropriate styling and behavior.
+     * @return A JScrollPane containing the time slot table
+     */
     private JScrollPane createTimeSlotTable() {
         initializeTimeSlotModel();
 
@@ -421,6 +527,10 @@ public class Booking extends JFrame {
         return new JScrollPane(timeSlotTable);
     }
 
+    /**
+     * Sets up the time slot table with appropriate renderers and listeners.
+     * @param renderer The cell renderer to use for the table
+     */
     private void setupTimeSlotTable(TimeSlotCellRenderer renderer) {
         timeSlotTable.setDefaultRenderer(Object.class, renderer);
         timeSlotTable.setRowHeight(25);
@@ -436,6 +546,10 @@ public class Booking extends JFrame {
         setupTimeSlotTableListeners(renderer);
     }
 
+    /**
+     * Sets up mouse listeners for the time slot table.
+     * @param renderer The cell renderer to use for hover effects
+     */
     private void setupTimeSlotTableListeners(TimeSlotCellRenderer renderer) {
         timeSlotTable.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -460,6 +574,10 @@ public class Booking extends JFrame {
         });
     }
 
+    /**
+     * Creates the left panel containing the calendar and booking controls.
+     * @return A JPanel containing the calendar and controls
+     */
     private JPanel createLeftPanel() {
         JPanel leftPanel = new JPanel(new BorderLayout());
         leftPanel.setBackground(panelColor);
@@ -485,6 +603,9 @@ public class Booking extends JFrame {
         return leftPanel;
     }
 
+    /**
+     * Updates the calendar grid to reflect the current month and selected date.
+     */
     private void updateCalendarGrid() {
         calendarGrid.removeAll();
         calendarGrid.setBackground(panelColor);
@@ -524,6 +645,9 @@ public class Booking extends JFrame {
         calendarGrid.repaint();
     }
 
+    /**
+     * Updates the visibility of time slots based on the selected space.
+     */
     private void updateTimeSlotVisibility() {
         if (timeSlotTable != null) {
             Container parent = timeSlotTable.getParent();
@@ -581,6 +705,9 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Hides all booking type checkboxes.
+     */
     private void hideAllCheckboxes() {
         morningCheckBox.setVisible(false);
         afternoonCheckBox.setVisible(false);
@@ -593,10 +720,19 @@ public class Booking extends JFrame {
         weekLongCheckBox.setVisible(false);
     }
 
+    /**
+     * Checks if a space is a performance space.
+     * @param space The space to check
+     * @return true if the space is a performance space, false otherwise
+     */
     private boolean isPerformanceSpace(String space) {
         return "Main Hall".equals(space) || "Small Hall".equals(space);
     }
 
+    /**
+     * Handles date selection and updates the UI accordingly.
+     * @param date The selected date
+     */
     private void handleDateSelection(LocalDate date) {
         selectedDate = date;
         dateLabel.setText(selectedDate.format(dateFormatter));
@@ -607,6 +743,9 @@ public class Booking extends JFrame {
         updateCalendarGrid();
     }
 
+    /**
+     * Handles all-day booking selection and updates the time slots.
+     */
     private void handleAllDaySelection() {
         if (allDayCheckBox.isSelected()) {
             if (!isAllDayBookingAvailable()) {
@@ -639,6 +778,9 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Handles evening booking selection and updates the time slots.
+     */
     private void handleEveningSelection() {
         if (eveningCheckBox.isSelected()) {
             allDayCheckBox.setSelected(false);
@@ -687,6 +829,9 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Updates the time slot grid to reflect current availability.
+     */
     private void updateTimeSlotGrid() {
         if (timeSlotTable == null || timeSlotModel == null || selectedSpace == null) return;
 
@@ -720,6 +865,10 @@ public class Booking extends JFrame {
         timeSlotTable.repaint();
     }
 
+    /**
+     * Creates the middle panel containing time slot selection.
+     * @return A JPanel containing the time slot selection interface
+     */
     private JPanel createMiddlePanel() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(panelColor);
@@ -803,6 +952,10 @@ public class Booking extends JFrame {
         return mainPanel;
     }
 
+    /**
+     * Creates the legend panel showing availability status colors.
+     * @return A JPanel containing the legend
+     */
     private JPanel createLegendPanel() {
         JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 2));
         legendPanel.setBackground(panelColor);
@@ -815,6 +968,12 @@ public class Booking extends JFrame {
         return legendPanel;
     }
 
+    /**
+     * Adds a legend item to the legend panel.
+     * @param panel The panel to add the item to
+     * @param color The color to display
+     * @param text The text to display
+     */
     private void addLegendItem(JPanel panel, Color color, String text) {
         JPanel itemPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         itemPanel.setBackground(panelColor);
@@ -836,55 +995,9 @@ public class Booking extends JFrame {
 
     }
 
-    class TimeSlotCellRenderer extends DefaultTableCellRenderer {
-        private int hoveredRow = -1;
-        public void setHoveredRow(int row) {
-            hoveredRow = row;
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected, boolean hasFocus, int row, int column) {
-            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            if (column == 1) {
-                String status = value != null ? value.toString() : "";
-                setHorizontalAlignment(JLabel.CENTER);
-
-                switch (status) {
-                    case "Available":
-                        setBackground(availableColor);
-                        setForeground(Color.BLACK);
-                        break;
-                    case "Selected":
-                    case "Your Booking":
-                        setBackground(selectedColor);
-                        setForeground(Color.BLACK);
-                        break;
-                    case "Unavailable":
-                        setBackground(unavailableColor);
-                        setForeground(Color.WHITE);
-                        break;
-                    default:
-                        setBackground(table.getBackground());
-                        setForeground(table.getForeground());
-                }
-
-                if (row == hoveredRow && (status.equals("Available") || status.equals("Selected"))) {
-                    setBorder(createHoverBorder());
-                } else {
-                    setBorder(createNormalBorder());
-                }
-            } else {
-                setBackground(table.getBackground());
-                setForeground(table.getForeground());
-                setHorizontalAlignment(JLabel.LEFT);
-                setBorder(createNormalBorder());
-            }
-
-            return c;
-        }
-    }
-
+    /**
+     * Handles time slot selection when clicked.
+     */
     private void handleTimeSlotClick() {
         if (selectedSpace == null) {
             JOptionPane.showMessageDialog(this,
@@ -910,12 +1023,19 @@ public class Booking extends JFrame {
     }
 
 
+    /**
+     * Updates the total cost display based on current bookings.
+     */
     private void updateTotalCost() {
         double total = bookingEvents.stream().mapToDouble(event -> event.cost).sum();
         totalLabel.setText(String.format("Total Cost: £%.2f + VAT", total));
     }
 
 
+    /**
+     * Creates the actions panel with save and cancel buttons.
+     * @return A JPanel containing the action buttons
+     */
     private JPanel createActionsPanel() {
         JPanel panel = new JPanel(new BorderLayout(20, 10));
         panel.setBackground(panelColor);
@@ -944,6 +1064,11 @@ public class Booking extends JFrame {
         return panel;
     }
 
+    /**
+     * Creates the top bar with navigation buttons.
+     * @param parentFrame The parent frame
+     * @return A JPanel containing the top bar
+     */
     private JPanel createTopBar(JFrame parentFrame) {
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(darkColour);
@@ -972,6 +1097,9 @@ public class Booking extends JFrame {
         return topBar;
     }
 
+    /**
+     * Confirms the current booking and performs validation.
+     */
     private void confirmBooking() {
         String bookingName = bookingNameField.getText().trim();
         if (bookingName.isEmpty()) {
@@ -1094,6 +1222,10 @@ public class Booking extends JFrame {
         updateUIAfterBooking();
     }
 
+    /**
+     * Collects all selected time slots.
+     * @return List of selected LocalTime objects
+     */
     private List<LocalTime> collectSelectedTimes() {
         List<LocalTime> selectedTimes = new ArrayList<>();
         for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
@@ -1104,6 +1236,11 @@ public class Booking extends JFrame {
         return selectedTimes;
     }
 
+    /**
+     * Creates booking events from selected time slots.
+     * @param selectedTimes The list of selected time slots
+     * @param bookingName The name of the booking
+     */
     private void createBookingEvents(List<LocalTime> selectedTimes, String bookingName) {
         List<LocalTime> startTimes = new ArrayList<>();
         List<LocalTime> endTimes = new ArrayList<>();
@@ -1130,6 +1267,9 @@ public class Booking extends JFrame {
 
     }
 
+    /**
+     * Saves the current bookings to the database.
+     */
     private void saveBookingsToDatabase() {
         if (bookingEvents.isEmpty()) {
             JOptionPane.showMessageDialog(this,
@@ -1188,6 +1328,12 @@ public class Booking extends JFrame {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
+    /**
+     * Creates a single booking event.
+     * @param startTime The start time of the booking
+     * @param endTime The end time of the booking
+     * @param bookingName The name of the booking
+     */
     private void createSingleBookingEvent(LocalTime startTime, LocalTime endTime, String bookingName) {
         boolean isAllDayShort = allDayShortCheckBox != null && allDayShortCheckBox.isSelected() && allDayShortCheckBox.isVisible();
         boolean isAllDayLong = allDayLongCheckBox != null && allDayLongCheckBox.isSelected() && allDayLongCheckBox.isVisible();
@@ -1303,6 +1449,9 @@ public class Booking extends JFrame {
 
     }
 
+    /**
+     * Updates the UI after a booking is confirmed.
+     */
     private void updateUIAfterBooking() {
         for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
             if ("Selected".equals(timeSlotModel.getValueAt(row, 1))) {
@@ -1325,6 +1474,9 @@ public class Booking extends JFrame {
         updateTotalCost();
     }
 
+    /**
+     * Updates the booking list display.
+     */
     private void updateBookingList() {
         bookingListModel.clear();
         for (BookingEvent event : bookingEvents) {
@@ -1350,6 +1502,10 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Creates the right panel containing the booking list.
+     * @return A JPanel containing the booking list
+     */
     private JPanel createRightPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(panelColor);
@@ -1380,6 +1536,9 @@ public class Booking extends JFrame {
         return panel;
     }
 
+    /**
+     * Sets up the booking list with appropriate styling and behavior.
+     */
     private void setupBookingList() {
         bookingList.setBackground(panelColor);
         bookingList.setForeground(Color.WHITE);
@@ -1393,68 +1552,10 @@ public class Booking extends JFrame {
         bookingList.setFixedCellHeight(-1);
     }
 
-    private class BookingListCellRenderer extends DefaultListCellRenderer {
-        private final int[] hoveredButton;
-
-        public BookingListCellRenderer(int[] hoveredButton) {
-            this.hoveredButton = hoveredButton;
-        }
-
-            @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value,
-                                                      int index, boolean isSelected, boolean cellHasFocus) {
-            JPanel cellPanel = new JPanel(new BorderLayout(5, 0));
-            cellPanel.setBackground(isSelected ? list.getSelectionBackground() : panelColor);
-
-            JTextArea textArea = createBookingTextArea(value.toString(), list, cellPanel, isSelected);
-
-            JPanel buttonsPanel = createBookingButtonsPanel(index, isSelected, list);
-
-            cellPanel.add(textArea, BorderLayout.CENTER);
-            cellPanel.add(buttonsPanel, BorderLayout.EAST);
-
-            return cellPanel;
-        }
-
-        private JTextArea createBookingTextArea(String text, JList<?> list, JPanel parent, boolean isSelected) {
-            JTextArea textArea = new JTextArea(text);
-            textArea.setWrapStyleWord(true);
-            textArea.setLineWrap(true);
-            textArea.setBackground(parent.getBackground());
-            textArea.setForeground(isSelected ? list.getSelectionForeground() : Color.WHITE);
-            textArea.setFont(list.getFont());
-            textArea.setBorder(createNormalBorder());
-
-            int width = list.getWidth();
-            if (width > 0) {
-                textArea.setSize(width - 40, Short.MAX_VALUE);
-                textArea.setPreferredSize(new Dimension(width - 40, textArea.getPreferredSize().height));
-            }
-
-            return textArea;
-        }
-
-        private JPanel createBookingButtonsPanel(int index, boolean isSelected, JList<?> list) {
-            JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
-            buttonsPanel.setBackground(isSelected ? list.getSelectionBackground() : panelColor);
-
-            JLabel deleteButton = new JLabel("✕");
-            deleteButton.setFont(new Font("TimesRoman", Font.PLAIN, 16));
-            deleteButton.setForeground(isSelected ? list.getSelectionForeground() : Color.WHITE);
-
-            if (hoveredButton[0] == index && hoveredButton[1] == 0) {
-                deleteButton.setBorder(createHoverBorder());
-                } else {
-                deleteButton.setBorder(createNormalBorder());
-            }
-
-            buttonsPanel.add(deleteButton);
-
-            return buttonsPanel;
-        }
-
-    }
-
+    /**
+     * Sets up mouse listeners for the booking list.
+     * @param hoveredButton Array to track hover state
+     */
     private void setupBookingListListeners(int[] hoveredButton) {
         bookingList.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
@@ -1476,6 +1577,11 @@ public class Booking extends JFrame {
         });
     }
 
+    /**
+     * Updates the hover state of buttons in the booking list.
+     * @param point The current mouse point
+     * @param hoveredButton Array to track hover state
+     */
     private void updateButtonHoverState(Point point, int[] hoveredButton) {
         int index = bookingList.locationToIndex(point);
         if (index >= 0) {
@@ -1495,12 +1601,20 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Resets the hover state of buttons in the booking list.
+     * @param hoveredButton Array to track hover state
+     */
     private void resetHoverState(int[] hoveredButton) {
         hoveredButton[0] = -1;
         hoveredButton[1] = -1;
         bookingList.repaint();
     }
 
+    /**
+     * Handles clicks on the booking list.
+     * @param point The click location
+     */
     private void handleBookingListClick(Point point) {
 
         int index = bookingList.locationToIndex(point);
@@ -1517,6 +1631,10 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Deletes a booking from the list.
+     * @param index The index of the booking to delete
+     */
     private void deleteBooking(int index) {
 
         if (index >= 0 && index < bookingEvents.size()) {
@@ -1563,6 +1681,10 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Creates the month view content panel.
+     * @return A JPanel containing the month view
+     */
     private JPanel createMonthViewContent() {
         JPanel monthContent = new JPanel(new BorderLayout());
         monthContent.setBackground(panelColor);
@@ -1608,6 +1730,10 @@ public class Booking extends JFrame {
         return monthContent;
     }
 
+    /**
+     * Creates the booking controls panel.
+     * @return A JPanel containing booking controls
+     */
     private JPanel createBookingControlsPanel() {
         JPanel bookingControlsPanel = new JPanel(new GridBagLayout());
         bookingControlsPanel.setBackground(panelColor);
@@ -1687,6 +1813,9 @@ public class Booking extends JFrame {
         return bookingControlsPanel;
     }
 
+    /**
+     * Loads existing bookings from the database.
+     */
     private void loadExistingBookings() {
         if (selectedSpace == null) return;
         Map<LocalTime, Boolean> timeSlots = getOrCreateTimeSlots(selectedSpace, selectedDate);
@@ -1723,6 +1852,10 @@ public class Booking extends JFrame {
         updateTimeSlotGrid();
     }
 
+    /**
+     * Checks if an all-day booking is available.
+     * @return true if all-day booking is available, false otherwise
+     */
     private boolean isAllDayBookingAvailable() {
         for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
             String status = (String) timeSlotModel.getValueAt(row, 1);
@@ -1733,6 +1866,12 @@ public class Booking extends JFrame {
         return true;
     }
 
+    /**
+     * Creates a day button for the calendar.
+     * @param date The date for the button
+     * @param day The day number
+     * @return A JButton for the specified day
+     */
     private JButton createDayButton(LocalDate date, int day) {
         JButton dayButton = new JButton(String.valueOf(day));
         dayButton.setFont(new Font("SansSerif", Font.PLAIN, 11));
@@ -1769,6 +1908,9 @@ public class Booking extends JFrame {
         return dayButton;
     }
 
+    /**
+     * Handles morning booking selection.
+     */
     private void handleMorningSelection() {
         if (morningCheckBox.isSelected()) {
             afternoonCheckBox.setSelected(false);
@@ -1797,6 +1939,9 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Handles afternoon booking selection.
+     */
     private void handleAfternoonSelection() {
         if (afternoonCheckBox.isSelected()) {
             morningCheckBox.setSelected(false);
@@ -1825,6 +1970,10 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Checks if a weekly booking is available.
+     * @return true if weekly booking is available, false otherwise
+     */
     private boolean isWeeklyBookingAvailable() {
         LocalDate currentDate = selectedDate;
         LocalTime startOfDay = LocalTime.of(10, 0);
@@ -1846,6 +1995,9 @@ public class Booking extends JFrame {
         return true;
     }
 
+    /**
+     * Handles week booking selection.
+     */
     private void handleWeekSelection() {
         if (weekCheckBox.isSelected()) {
             if (!isWeeklyBookingAvailable()) {
@@ -1869,6 +2021,9 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Handles week short booking selection.
+     */
     private void handleWeekShortSelection() {
         if (weekShortCheckBox.isSelected()) {
             if (!isWeeklyBookingAvailableForHours(LocalTime.of(10, 0), LocalTime.of(18, 0))) {
@@ -1889,6 +2044,9 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Handles week long booking selection.
+     */
     private void handleWeekLongSelection() {
         if (weekLongCheckBox.isSelected()) {
             if (!isWeeklyBookingAvailableForHours(LocalTime.of(10, 0), LocalTime.of(23, 0))) {
@@ -1909,6 +2067,12 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Checks if a weekly booking is available for specific hours.
+     * @param startHour The start hour
+     * @param endHour The end hour
+     * @return true if booking is available, false otherwise
+     */
     private boolean isWeeklyBookingAvailableForHours(LocalTime startHour, LocalTime endHour) {
         LocalDate currentDate = selectedDate;
 
@@ -1929,6 +2093,11 @@ public class Booking extends JFrame {
         return true;
     }
 
+    /**
+     * Selects time slots within a specific range.
+     * @param startTime The start time
+     * @param endTime The end time
+     */
     private void selectTimeRangeSlots(LocalTime startTime, LocalTime endTime) {
         for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
             String timeStr = (String) timeSlotModel.getValueAt(row, 0);
@@ -1943,6 +2112,9 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Selects all day time slots.
+     */
     private void selectAllDaySlots() {
         for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
             if (timeSlotModel.getValueAt(row, 1).equals("Available")) {
@@ -1951,6 +2123,9 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Clears all selected time slots.
+     */
     private void clearAllSelections() {
         for (int row = 0; row < timeSlotModel.getRowCount(); row++) {
             if (timeSlotModel.getValueAt(row, 1).equals("Selected")) {
@@ -1959,6 +2134,9 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Handles all-day short booking selection.
+     */
     private void handleAllDayShortSelection() {
         if (allDayShortCheckBox.isSelected()) {
             allDayLongCheckBox.setSelected(false);
@@ -1985,6 +2163,9 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Handles all-day long booking selection.
+     */
     private void handleAllDayLongSelection() {
         if (allDayLongCheckBox.isSelected()) {
             allDayShortCheckBox.setSelected(false);
@@ -2011,9 +2192,155 @@ public class Booking extends JFrame {
         }
     }
 
+    /**
+     * Styles a checkbox with consistent appearance.
+     * @param checkbox The checkbox to style
+     */
     private void styleCheckBox(JCheckBox checkbox) {
         checkbox.setFont(new Font("TimesRoman", Font.PLAIN, 12));
         checkbox.setForeground(Color.WHITE);
         checkbox.setBackground(panelColor);
+    }
+
+    /**
+     * Custom cell renderer for the time slot table.
+     * Handles the display of different booking statuses with appropriate colors and hover effects.
+     */
+    class TimeSlotCellRenderer extends DefaultTableCellRenderer {
+        private int hoveredRow = -1;
+
+        /**
+         * Sets the currently hovered row for hover effect display.
+         * @param row The row index being hovered over
+         */
+        public void setHoveredRow(int row) {
+            hoveredRow = row;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (column == 1) {
+                String status = value != null ? value.toString() : "";
+                setHorizontalAlignment(JLabel.CENTER);
+
+                switch (status) {
+                    case "Available":
+                        setBackground(availableColor);
+                        setForeground(Color.BLACK);
+                        break;
+                    case "Selected":
+                    case "Your Booking":
+                        setBackground(selectedColor);
+                        setForeground(Color.BLACK);
+                        break;
+                    case "Unavailable":
+                        setBackground(unavailableColor);
+                        setForeground(Color.WHITE);
+                        break;
+                    default:
+                        setBackground(table.getBackground());
+                        setForeground(table.getForeground());
+                }
+
+                if (row == hoveredRow && (status.equals("Available") || status.equals("Selected"))) {
+                    setBorder(createHoverBorder());
+                } else {
+                    setBorder(createNormalBorder());
+                }
+            } else {
+                setBackground(table.getBackground());
+                setForeground(table.getForeground());
+                setHorizontalAlignment(JLabel.LEFT);
+                setBorder(createNormalBorder());
+            }
+
+            return c;
+        }
+    }
+
+    /**
+     * Custom cell renderer for the booking list.
+     * Handles the display of booking items with appropriate styling and hover effects.
+     */
+    private class BookingListCellRenderer extends DefaultListCellRenderer {
+        private final int[] hoveredButton;
+
+        /**
+         * Creates a new booking list cell renderer.
+         * @param hoveredButton Array to track hover state
+         */
+        public BookingListCellRenderer(int[] hoveredButton) {
+            this.hoveredButton = hoveredButton;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value,
+                                                      int index, boolean isSelected, boolean cellHasFocus) {
+            JPanel cellPanel = new JPanel(new BorderLayout(5, 0));
+            cellPanel.setBackground(isSelected ? list.getSelectionBackground() : panelColor);
+
+            JTextArea textArea = createBookingTextArea(value.toString(), list, cellPanel, isSelected);
+
+            JPanel buttonsPanel = createBookingButtonsPanel(index, isSelected, list);
+
+            cellPanel.add(textArea, BorderLayout.CENTER);
+            cellPanel.add(buttonsPanel, BorderLayout.EAST);
+
+            return cellPanel;
+        }
+
+        /**
+         * Creates a text area for displaying booking information.
+         * @param text The text to display
+         * @param list The parent list component
+         * @param parent The parent panel
+         * @param isSelected Whether the item is selected
+         * @return A configured JTextArea
+         */
+        private JTextArea createBookingTextArea(String text, JList<?> list, JPanel parent, boolean isSelected) {
+            JTextArea textArea = new JTextArea(text);
+            textArea.setWrapStyleWord(true);
+            textArea.setLineWrap(true);
+            textArea.setBackground(parent.getBackground());
+            textArea.setForeground(isSelected ? list.getSelectionForeground() : Color.WHITE);
+            textArea.setFont(list.getFont());
+            textArea.setBorder(createNormalBorder());
+
+            int width = list.getWidth();
+            if (width > 0) {
+                textArea.setSize(width - 40, Short.MAX_VALUE);
+                textArea.setPreferredSize(new Dimension(width - 40, textArea.getPreferredSize().height));
+            }
+
+            return textArea;
+        }
+
+        /**
+         * Creates a panel containing action buttons for a booking item.
+         * @param index The index of the booking item
+         * @param isSelected Whether the item is selected
+         * @param list The parent list component
+         * @return A panel containing the action buttons
+         */
+        private JPanel createBookingButtonsPanel(int index, boolean isSelected, JList<?> list) {
+            JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+            buttonsPanel.setBackground(isSelected ? list.getSelectionBackground() : panelColor);
+
+            JLabel deleteButton = new JLabel("✕");
+            deleteButton.setFont(new Font("TimesRoman", Font.PLAIN, 16));
+            deleteButton.setForeground(isSelected ? list.getSelectionForeground() : Color.WHITE);
+
+            if (hoveredButton[0] == index && hoveredButton[1] == 0) {
+                deleteButton.setBorder(createHoverBorder());
+            } else {
+                deleteButton.setBorder(createNormalBorder());
+            }
+
+            buttonsPanel.add(deleteButton);
+
+            return buttonsPanel;
+        }
     }
 }

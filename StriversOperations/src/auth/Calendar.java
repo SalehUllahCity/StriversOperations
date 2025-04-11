@@ -19,8 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-
+/**
+ * A GUI application for displaying and managing a weekly calendar view of room bookings.
+ * Provides functionality for viewing, filtering, and navigating through bookings.
+ */
 public class Calendar extends JFrame {
+    /** UI components for calendar display and interaction */
     private JTable calendarTable;
     private JLabel weekLabel;
     private LocalDate currentWeekStart;
@@ -34,6 +38,7 @@ public class Calendar extends JFrame {
     private String currentFilterRoom = null;
     private JLabel filterStatusLabel;
 
+    /** Color mapping for different room types */
     private final Map<String, Color> spaceColors = new HashMap<>() {{
         // Meeting Rooms
         put("The Green Room", new Color(76, 175, 80));    // Green
@@ -54,6 +59,10 @@ public class Calendar extends JFrame {
         put("Entire Venue", new Color(63, 81, 181));      // Indigo
     }};
 
+    /**
+     * Main method to launch the Calendar application.
+     * @param args Command line arguments (not used)
+     */
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
@@ -65,7 +74,10 @@ public class Calendar extends JFrame {
         });
     }
 
-
+    /**
+     * Constructs a new Calendar frame and initializes the UI components.
+     * Sets up the calendar view and loads initial data.
+     */
     public Calendar() {
         setTitle("Lancaster's Music Hall Weekly: Calendar");
         setSize(1440, 900);
@@ -112,6 +124,9 @@ public class Calendar extends JFrame {
             }});
     }
 
+    /**
+     * Creates the header panel containing navigation and control buttons.
+     */
     private void createHeaderPanel() {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(darkColour);
@@ -189,6 +204,9 @@ public class Calendar extends JFrame {
         add(header, BorderLayout.NORTH);
     }
 
+    /**
+     * Updates the filter status label based on current room filter.
+     */
     private void updateFilterStatus() {
         if (currentFilterRoom == null) {
             filterStatusLabel.setText("Showing all rooms");
@@ -197,6 +215,9 @@ public class Calendar extends JFrame {
         }
     }
 
+    /**
+     * Creates the side panel containing month view and booking details.
+     */
     private void createSideMonthView() {
         JPanel leftPanel = new JPanel(new BorderLayout());
         leftPanel.setPreferredSize(new Dimension(250, 0));
@@ -358,6 +379,9 @@ public class Calendar extends JFrame {
         add(leftPanel, BorderLayout.WEST);
     }
 
+    /**
+     * Updates the calendar grid to reflect the current month and selected date.
+     */
     private void updateCalendarGrid() {
         calendarGrid.removeAll();
 
@@ -427,6 +451,9 @@ public class Calendar extends JFrame {
         calendarGrid.repaint();
     }
 
+    /**
+     * Creates the main calendar table for displaying weekly bookings.
+     */
     private void createCalendarTable() {
         String[] columnNames = {"Time", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
@@ -531,6 +558,9 @@ public class Calendar extends JFrame {
         });
     }
 
+    /**
+     * Refreshes the calendar display with current week's bookings.
+     */
     private void refreshCalendar() {
         weekLabel.setText("Week of " + currentWeekStart.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
 
@@ -558,6 +588,12 @@ public class Calendar extends JFrame {
         }
     }
 
+    /**
+     * Loads bookings for a specific date into the calendar table.
+     * @param date The date to load bookings for
+     * @param model The table model to update
+     * @param dayColumnIndex The column index for the day
+     */
     private void loadBookingsForDate(LocalDate date, DefaultTableModel model, int dayColumnIndex) {
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
         String user = "in2033t26_a";
@@ -629,8 +665,14 @@ public class Calendar extends JFrame {
         }
     }
 
-    // Custom popup for booking details
+    /**
+     * Custom popup window for displaying booking details.
+     * Provides a floating window that shows detailed information about a booking when clicked.
+     */
     private class BookingPopup extends JWindow {
+        /**
+         * Constructs a new booking popup window with transparent background.
+         */
         public BookingPopup() {
             setBackground(new Color(0, 0, 0, 0));
 
@@ -666,6 +708,11 @@ public class Calendar extends JFrame {
             }, AWTEvent.MOUSE_EVENT_MASK);
         }
 
+        /**
+         * Displays the popup window with the specified text at the given location.
+         * @param text The text to display in the popup
+         * @param location The screen location where the popup should appear
+         */
         public void showPopup(String text, Point location) {
             JTextArea textArea = (JTextArea) getContentPane().getComponent(0);
             textArea.setText(text);
@@ -690,14 +737,24 @@ public class Calendar extends JFrame {
         }
     }
 
-    // Custom Renderer to handle multiple bookings in the same time slot
-    class RoomColorRenderer extends DefaultTableCellRenderer {
+    /**
+     * Custom cell renderer for the calendar table.
+     * Handles the display of multiple bookings in a single cell with appropriate colors.
+     * Each booking is displayed with its room-specific color and includes hover effects.
+     */
+    private class RoomColorRenderer extends DefaultTableCellRenderer {
         private final BookingPopup popup = new BookingPopup();
+        private int hoveredRow = -1;
+        private int hoveredCol = -1;
 
-        private String normalizeRoomName(String room) {
-            return room.replace("ë", "e")  // Replace ë with e
-                    .replace("\n", " ")  // Replace newlines with spaces
-                    .trim();            // Remove extra spaces
+        /**
+         * Sets the currently hovered cell for hover effect display.
+         * @param row The row index being hovered over
+         * @param col The column index being hovered over
+         */
+        public void setHoveredCell(int row, int col) {
+            hoveredRow = row;
+            hoveredCol = col;
         }
 
         @Override
@@ -748,8 +805,18 @@ public class Calendar extends JFrame {
 
             return panel;
         }
+
+        private String normalizeRoomName(String room) {
+            return room.replace("ë", "e")  // Replace ë with e
+                    .replace("\n", " ")  // Replace newlines with spaces
+                    .trim();            // Remove extra spaces
+        }
     }
 
+    /**
+     * Styles a top-level button with consistent appearance.
+     * @param button The button to style
+     */
     private void styleTopButton(JButton button) {
         button.setFont(new Font("TimesRoman", Font.PLAIN, 18));
         button.setBackground(darkColour);
@@ -759,6 +826,10 @@ public class Calendar extends JFrame {
         addHoverEffect(button);
     }
 
+    /**
+     * Adds hover effects to a button.
+     * @param button The button to add hover effects to
+     */
     private void addHoverEffect(JButton button) {
         button.addMouseListener(new MouseAdapter() {
             @Override

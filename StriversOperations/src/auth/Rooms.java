@@ -15,11 +15,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A GUI application for managing and displaying room information.
+ * Provides functionality for viewing room details, capacities, layouts, and rates,
+ * with the ability to view individual room calendars.
+ */
 public class Rooms extends JFrame {
+    /** UI styling constant for background color */
     private final Color background = new Color(18, 32, 35, 255);
+    
+    /** UI components for data display */
     private JTable roomsTable;
     private DefaultTableModel tableModel;
 
+    /**
+     * Constructs a new Rooms frame and initializes the UI components.
+     * Sets up the room information table and loads room data.
+     */
     public Rooms() {
         setTitle("Lancaster's Music Hall Software: Room Information");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -47,6 +59,10 @@ public class Rooms extends JFrame {
         contentPane.add(centralContent, BorderLayout.CENTER);
     }
 
+    /**
+     * Creates a scrollable table displaying room information.
+     * @return A JScrollPane containing the rooms table
+     */
     private JScrollPane createRoomsTable() {
         // Table model with columns
         tableModel = new DefaultTableModel() {
@@ -136,6 +152,10 @@ public class Rooms extends JFrame {
         return scrollPane;
     }
 
+    /**
+     * Creates a panel displaying accessibility information for the venue's rooms.
+     * @return A JPanel containing accessibility details
+     */
     private JPanel createAccessibilityNote() {
         JPanel accessibilityPanel = new JPanel();
         accessibilityPanel.setLayout(new BoxLayout(accessibilityPanel, BoxLayout.Y_AXIS));
@@ -166,6 +186,10 @@ public class Rooms extends JFrame {
         return accessibilityPanel;
     }
 
+    /**
+     * Adds room data to the table model.
+     * Includes information about performance spaces, rehearsal spaces, and meeting rooms.
+     */
     private void addRoomData() {
         // Performance Spaces
         addRoom("Main Hall",
@@ -234,11 +258,23 @@ public class Rooms extends JFrame {
                 "£180 + VAT");
     }
 
+    /**
+     * Adds a single room's information to the table model.
+     * @param name The name of the room
+     * @param capacity The room's capacity
+     * @param layouts Available room layouts
+     * @param hourlyRate Hourly rate information
+     * @param eveningRate Evening rate information
+     * @param dailyRate Daily rate information
+     */
     private void addRoom(String name, String capacity, String layouts, String hourlyRate, String eveningRate, String dailyRate) {
         tableModel.addRow(new Object[]{name, capacity, layouts, hourlyRate, eveningRate, dailyRate, "View Calendar"});
     }
 
-    // Method to open calendar for a specific room
+    /**
+     * Opens a calendar view for a specific room.
+     * @param roomName The name of the room to view
+     */
     public void openRoomCalendar(String roomName) {
         // Create a filtered calendar view for the selected room
         Calendar roomCalendar = new Calendar() {
@@ -300,8 +336,14 @@ public class Rooms extends JFrame {
         roomCalendar.setVisible(true);
     }
 
-    // Button renderer for the View Calendar column
+    /**
+     * Custom cell renderer for the View Calendar button column.
+     * Handles the appearance of buttons in the table.
+     */
     class ButtonRenderer extends JButton implements TableCellRenderer {
+        /**
+         * Constructs a new ButtonRenderer with default styling.
+         */
         public ButtonRenderer() {
             setOpaque(true);
             setForeground(Color.WHITE);
@@ -309,6 +351,16 @@ public class Rooms extends JFrame {
             setFont(new Font("TimesRoman", Font.PLAIN, 14));
         }
 
+        /**
+         * Returns the component used for drawing the cell.
+         * @param table The JTable that is asking the renderer to draw
+         * @param value The value of the cell to be rendered
+         * @param isSelected True if the cell is to be rendered with the selection highlighted
+         * @param hasFocus If true, render cell appropriately
+         * @param row The row index of the cell being drawn
+         * @param column The column index of the cell being drawn
+         * @return The component used for drawing the cell
+         */
         public Component getTableCellRendererComponent(JTable table, Object value,
                                                        boolean isSelected, boolean hasFocus, int row, int column) {
             setText((value == null) ? "" : value.toString());
@@ -316,13 +368,21 @@ public class Rooms extends JFrame {
         }
     }
 
-    // Button editor for the View Calendar column
+    /**
+     * Custom cell editor for the View Calendar button column.
+     * Handles button clicks and opens the room calendar.
+     */
     class ButtonEditor extends DefaultCellEditor {
         private JButton button;
         private String label;
         private boolean isPushed;
         private Rooms parentFrame;
 
+        /**
+         * Constructs a new ButtonEditor with the specified checkbox and parent frame.
+         * @param checkBox The checkbox component
+         * @param parent The parent Rooms frame
+         */
         public ButtonEditor(JCheckBox checkBox, Rooms parent) {
             super(checkBox);
             this.parentFrame = parent;
@@ -334,6 +394,15 @@ public class Rooms extends JFrame {
             button.addActionListener(e -> fireEditingStopped());
         }
 
+        /**
+         * Returns the component used for editing the cell.
+         * @param table The JTable that is asking the editor to edit
+         * @param value The value of the cell to be edited
+         * @param isSelected True if the cell is to be rendered with the selection highlighted
+         * @param row The row index of the cell being edited
+         * @param column The column index of the cell being edited
+         * @return The component for editing
+         */
         public Component getTableCellEditorComponent(JTable table, Object value,
                                                      boolean isSelected, int row, int column) {
             label = (value == null) ? "" : value.toString();
@@ -342,6 +411,10 @@ public class Rooms extends JFrame {
             return button;
         }
 
+        /**
+         * Returns the value contained in the editor.
+         * @return The value contained in the editor
+         */
         public Object getCellEditorValue() {
             if (isPushed) {
                 // Get the room name from the first column of the selected row
@@ -352,12 +425,20 @@ public class Rooms extends JFrame {
             return label;
         }
 
+        /**
+         * Tells the editor to stop editing and accept any partially edited value as the value of the editor.
+         * @return True if editing was stopped, false otherwise
+         */
         public boolean stopCellEditing() {
             isPushed = false;
             return super.stopCellEditing();
         }
     }
 
+    /**
+     * Creates the header panel with navigation and title.
+     * @return A JPanel containing the header components
+     */
     private JPanel createHeaderPanel() {
         JPanel headerContainer = new JPanel();
         headerContainer.setLayout(new BoxLayout(headerContainer, BoxLayout.Y_AXIS));
@@ -409,6 +490,10 @@ public class Rooms extends JFrame {
         return headerContainer;
     }
 
+    /**
+     * Adds hover effects to a button.
+     * @param button The button to add hover effects to
+     */
     private void addHoverEffect(JButton button) {
         button.setBorder(BorderFactory.createLineBorder(new Color(45, 45, 45), 2));
         button.addMouseListener(new MouseAdapter() {
@@ -423,6 +508,10 @@ public class Rooms extends JFrame {
         });
     }
 
+    /**
+     * Main method to launch the Rooms application.
+     * @param args Command line arguments (not used)
+     */
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {

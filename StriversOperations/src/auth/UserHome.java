@@ -1,6 +1,5 @@
 package auth;
 
-
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -8,13 +7,21 @@ import java.sql.SQLException;
 
 import javax.swing.*;
 
+/**
+ * The main home screen of the application.
+ * Provides navigation to various features including reports, calendar, bookings,
+ * reviews, diary, client management, room information, events, and invoices.
+ */
 public class UserHome extends JFrame {
 
+    /** Serial version UID for serialization */
     private static final long serialVersionUID = 1;
+    /** Font size used for buttons in the home screen */
     private int fontSize = 30;
 
     /**
-     * Launch the application.
+     * Main method to launch the UserHome application.
+     * @param args Command line arguments (not used)
      */
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
@@ -27,19 +34,16 @@ public class UserHome extends JFrame {
         });
     }
 
-
-
     /**
-     * Create the frame.
+     * Constructs a new UserHome frame.
+     * Initializes the UI components including navigation buttons and logo.
+     * Sets up action listeners for all navigation buttons.
      */
     public UserHome() {
-
         setTitle("Lancaster's Music Hall Software: Home");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 800);
         setLocationRelativeTo(null);
-
-
 
         getContentPane().setBackground(new Color(18,32,35,255));
 
@@ -99,7 +103,6 @@ public class UserHome extends JFrame {
         buttonPanel.add(invoicesButton);
         buttonPanel.add(logoutButton);
 
-
         // Load logo
         ImageIcon characterIcon = new ImageIcon(getClass().getResource("/data/logo/logo.png"));
 
@@ -134,7 +137,6 @@ public class UserHome extends JFrame {
             } catch (SQLException | ClassNotFoundException ex) {
                 throw new RuntimeException(ex);
             }
-
         });
 
         diaryButton.addActionListener(e -> {
@@ -145,20 +147,16 @@ public class UserHome extends JFrame {
         calendarButton.addActionListener(e -> {
             setVisible(false);
             new Calendar().setVisible(true);
-
         });
 
         bookingButton.addActionListener(e -> {
             setVisible(false);
             new Booking().setVisible(true);
-
         });
-
 
         logoutButton.addActionListener(e -> {
             setVisible(false);
             new UserLogin().setVisible(true);
-
         });
         /*
         helpButton.addActionListener(e -> {
@@ -193,8 +191,6 @@ public class UserHome extends JFrame {
             new Invoices().setVisible(true);
         });
 
-
-
         // Add mouse listeners to the buttons for hover effect
         addHoverEffect(calendarButton);
         addHoverEffect(reportButton);
@@ -209,7 +205,11 @@ public class UserHome extends JFrame {
         addHoverEffect(invoicesButton);
     }
 
-    // Method to create styled buttons
+    /**
+     * Creates a styled button with consistent appearance.
+     * @param text The text to display on the button
+     * @return A JButton with the specified text and styling
+     */
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
         button.setFont(new Font("TimesRoman", Font.BOLD, fontSize));
@@ -220,13 +220,23 @@ public class UserHome extends JFrame {
         return button;
     }
 
-    // Method to create styled buttons with tooltip descriptions
+    /**
+     * Creates a styled button with a tooltip description.
+     * @param text The text to display on the button
+     * @param description The HTML-formatted tooltip description
+     * @return A JButton with the specified text, styling, and tooltip
+     */
     private JButton createButtonWithDescription(String text, String description) {
         JButton button = createStyledButton(text);
         button.setToolTipText(description);
         return button;
     }
 
+    /**
+     * Adds hover effects to a button.
+     * Changes the button's foreground color and shows tooltip when hovering.
+     * @param button The button to add hover effects to
+     */
     private void addHoverEffect(JButton button) {
         button.addMouseListener(new MouseAdapter() {
             @Override
