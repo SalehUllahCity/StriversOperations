@@ -26,8 +26,11 @@ public class SeatingConfiguration {
     // casting it to String type.
 
     /**
-     * toString() method returns the string itself
-     * @return string value of these variables
+     * Returns a string representation of the seat configuration.
+     * The format includes the seat number, type (restricted view status),
+     * and current availability status.
+     * 
+     * @return A formatted string containing the seat's configuration details
      */
     @Override
     public String toString() {

@@ -1,8 +1,5 @@
 package api;
 
-
-
-
 import com.lancaster.database.Films;
 import com.lancaster.database.OperationsInterface.JDBC;
 
@@ -11,7 +8,28 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * API class for handling marketing-related database operations.
+ * Provides functionality for retrieving and managing:
+ * - Group bookings
+ * - Show information
+ * - Film schedules by date
+ * 
+ * Note: Some functionality may be limited due to database connection issues
+ * with the marketing environment configuration.
+ */
 public class MkJDBC {
+    /**
+     * Main method demonstrating the usage of MkJDBC functionality.
+     * Retrieves and displays:
+     * - Group booking details
+     * - Show information by ID
+     * - Film schedules for a specific date
+     * 
+     * @param args Command line arguments (not used)
+     * @throws SQLException If a database access error occurs
+     * @throws ClassNotFoundException If the JDBC driver class cannot be found
+     */
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         JDBC jdbc = new JDBC();
 

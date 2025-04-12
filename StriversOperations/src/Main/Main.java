@@ -4,6 +4,14 @@ import DAO.*;
 import Models.*;
 
 public class Main {
+    /**
+     * Main method that initializes the application and inserts sample data.
+     * Creates instances of various DAO classes and uses them to insert
+     * sample records into the database, demonstrating the functionality
+     * of the booking and event management system.
+     * 
+     * @param args Command line arguments (not used)
+     */
     public static void main(String[] args) {
         UserDAO userDAO = new UserDAO();
         BookingDAO bookingDAO = new BookingDAO();

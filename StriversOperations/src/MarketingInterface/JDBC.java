@@ -3,10 +3,26 @@ package MarketingInterface;
 import java.sql.*;
 import java.util.List;
 
+/**
+ * Database access class for the marketing interface.
+ * Provides methods for connecting to and interacting with the MySQL database,
+ * including operations for venue availability, seating configurations,
+ * wheelchair accessibility, and calendar management.
+ */
 public class JDBC {
+    /** Database connection instance */
     private final Connection connection;
+    /** Marketing data handler */
     private MarketingData marketingData;
 
+    /**
+     * Constructs a new JDBC instance and establishes a database connection.
+     * Initializes the connection using predefined credentials and sets up
+     * the MarketingData handler.
+     * 
+     * @throws SQLException If a database access error occurs
+     * @throws ClassNotFoundException If the JDBC driver class cannot be found
+     */
     public JDBC() throws SQLException, ClassNotFoundException {
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
         String userName = "in2033t26_d";
@@ -17,6 +33,16 @@ public class JDBC {
         this.marketingData = new MarketingData();
     }
 
+    /**
+     * Main method demonstrating the usage of JDBC functionality.
+     * Shows examples of retrieving various marketing-related data including:
+     * - Venue unavailability (existing bookings)
+     * - Seating configurations
+     * - Wheelchair accessible seats
+     * - Calendar availability
+     * 
+     * @param args Command line arguments (not used)
+     */
     public static void main(String[] args) {
 
         /*
@@ -88,18 +114,38 @@ public class JDBC {
     }
 
     // Wrapper methods that delegate to BoxOfficeData
+
+    /**
+     * Retrieves a list of venue unavailability periods.
+     * @return List of strings representing unavailable time slots
+     */
     public List<String> getVenueUnavailability() {
         return marketingData.getVenueUnavailability(connection);
     }
 
+    /**
+     * Retrieves seating configurations for a specific hall.
+     * @param hallName The name of the hall to get configurations for
+     * @return List of seating configurations
+     */
     public List<SeatingConfiguration> getSeatingConfigurations(String hallName) {
         return marketingData.seatingConfigurations(connection, hallName);
     }
 
+    /**
+     * Retrieves a list of wheelchair accessible seats for a specific hall.
+     * @param hallName The name of the hall to get wheelchair seats for
+     * @return List of wheelchair seat configurations
+     */
     public List<WheelChairSeatConfig> getWheelChairSeats(String hallName) {
         return marketingData.isAccessible(connection, hallName);
     }
 
+    /**
+     * Retrieves calendar availability for a specific date.
+     * @param BookingDate The date to check availability for
+     * @return List of available time slots
+     */
     public List<String> getCalendarAvailability(Date BookingDate) {
         return marketingData.getCalendarAvailability(connection, BookingDate);
     }

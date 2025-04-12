@@ -1,5 +1,11 @@
 package Models;
 
+/**
+ * Represents a booking in the venue management system.
+ * This class stores information about venue bookings, including timing,
+ * type, and payment status. It is used throughout the system to manage
+ * and track venue reservations.
+ */
 public class Booking {
     private int bookingID;
     private int userID;
@@ -9,6 +15,17 @@ public class Booking {
     private String bookingType;
     private String paymentStatus;
 
+    /**
+     * Constructs a new Booking with the specified details.
+     * 
+     * @param bookingID Unique identifier for the booking
+     * @param userID ID of the user who made the booking
+     * @param bookingDate Date of the booking in YYYY-MM-DD format
+     * @param startTime Start time of the booking in HH:MM:SS format
+     * @param endTime End time of the booking in HH:MM:SS format
+     * @param bookingType Type of booking (e.g., Conference, Meeting, Event)
+     * @param paymentStatus Current payment status of the booking
+     */
     public Booking(int bookingID, int userID, String bookingDate, String startTime, String endTime, String bookingType, String paymentStatus) {
         this.bookingID = bookingID;
         this.userID = userID;

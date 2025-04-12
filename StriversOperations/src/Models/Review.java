@@ -1,5 +1,10 @@
 package Models;
 
+/**
+ * Represents a review in the venue management system.
+ * This class stores information about reviews submitted by users for bookings,
+ * including ratings, comments, and any responses from venue staff.
+ */
 public class Review {
     private int reviewID;
     private int userID;
@@ -8,6 +13,16 @@ public class Review {
     private String comments;
     private String response;
 
+    /**
+     * Constructs a new Review with the specified details.
+     * 
+     * @param reviewID Unique identifier for the review
+     * @param userID ID of the user who submitted the review
+     * @param bookingID ID of the booking this review is associated with
+     * @param rating Rating given in the review
+     * @param comments Text comments provided in the review
+     * @param response Response from venue staff to the review
+     */
     public Review(int reviewID, int userID, int bookingID, int rating, String comments, String response) {
         this.reviewID = reviewID;
         this.userID = userID;

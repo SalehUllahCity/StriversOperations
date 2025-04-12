@@ -1,5 +1,10 @@
 package Configurations;
 
+/**
+ * Represents the configuration of a wheelchair-accessible seat in a venue.
+ * Stores details about the seat's location (row and seat number) and whether
+ * the adjacent seat is taken, which is important for accessibility considerations.
+ */
 public class WheelChairSeatConfig {
     private final String rowNumber;
     private final String seatNumber;
@@ -18,8 +23,10 @@ public class WheelChairSeatConfig {
     }
 
     /**
-     * toString() method returns the string itself
-     * @return string value of these variables
+     * Returns a string representation of the wheelchair seat configuration.
+     * The format includes the row number, seat number, and the status of the adjacent seat.
+     * 
+     * @return A formatted string containing the wheelchair seat's configuration details
      */
     @Override
     public String toString() {

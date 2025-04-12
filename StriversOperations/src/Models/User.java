@@ -1,5 +1,10 @@
 package Models;
 
+/**
+ * Represents a user in the venue management system.
+ * This class stores information about system users, including their personal details,
+ * contact information, and role-based access permissions.
+ */
 public class User {
     private int userID;
     private String name;
@@ -8,6 +13,16 @@ public class User {
     private String role;
     private String password;
 
+    /**
+     * Constructs a new User with the specified details.
+     * 
+     * @param userID Unique identifier for the user
+     * @param name Full name of the user
+     * @param email Email address of the user
+     * @param phone Phone number of the user
+     * @param role Role of the user in the system
+     * @param password Hashed password for user authentication
+     */
     public User(int userID, String name, String email, String phone, String role, String password) {
         this.userID = userID;
         this.name = name;

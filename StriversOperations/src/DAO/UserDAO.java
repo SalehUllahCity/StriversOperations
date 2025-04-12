@@ -7,7 +7,23 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+/**
+ * Data Access Object (DAO) class for handling user-related database operations.
+ * This class provides methods to interact with the users table in the database,
+ * including inserting new user records with proper transaction management and error handling.
+ */
 public class UserDAO {
+    /**
+     * Inserts a new user record into the database.
+     * This method handles the entire user insertion process, including:
+     * - Transaction management (begin, commit, rollback)
+     * - Parameter binding for the prepared statement
+     * - Error handling and connection cleanup
+     * 
+     * @param user The User object containing the user details to be inserted,
+     *            including name, email, phone, role, and password
+     * @return true if the user was successfully registered, false otherwise
+     */
     public static boolean insertUser(User user) {
         String query = "INSERT INTO users (Name, Email, Phone, Role, Password) VALUES (?, ?, ?, ?, ?)";
         Connection conn = null;

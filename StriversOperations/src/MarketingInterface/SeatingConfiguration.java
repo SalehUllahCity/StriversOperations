@@ -1,5 +1,12 @@
 package MarketingInterface;
 
+/**
+ * Represents the configuration of a single seat in a venue.
+ * This class is used by the marketing system to track and manage seat configurations,
+ * including their availability status and whether they have restricted views.
+ * The information stored in this class is crucial for proper seat allocation and
+ * customer experience management.
+ */
 public class SeatingConfiguration {
     private final String seatNumber;
     private final String isRestrictedView;
@@ -22,8 +29,12 @@ public class SeatingConfiguration {
     // casting it to String type.
 
     /**
-     * toString() method returns the string itself
-     * @return string value of these variables
+     * Returns a string representation of the seat configuration.
+     * This method provides a human-readable format of the seat's details,
+     * including its number, type (restricted view status), and current availability.
+     * The format is used for display purposes in the marketing interface.
+     * 
+     * @return A formatted string containing the seat's configuration details
      */
     @Override
     public String toString() {

@@ -3,11 +3,26 @@ package BoxOfficeInterface;
 import java.sql.*;
 import java.util.List;
 
+/**
+ * Database access class for the box office system.
+ * Provides methods for connecting to and interacting with the MySQL database,
+ * including operations for venue availability, seating configurations,
+ * and calendar management.
+ */
 public class JDBC {
+    /** Database connection instance */
     private final Connection connection;
+    /** Box office data handler */
     private BoxOfficeData boxOfficeData;
 
-
+    /**
+     * Constructs a new JDBC instance and establishes a database connection.
+     * Initializes the connection using predefined credentials and sets up
+     * the BoxOfficeData handler.
+     * 
+     * @throws SQLException If a database access error occurs
+     * @throws ClassNotFoundException If the JDBC driver class cannot be found
+     */
     public JDBC() throws SQLException, ClassNotFoundException {
         String url = "jdbc:mysql://sst-stuproj.city.ac.uk:3306/in2033t26";
         String userName = "in2033t26_a";
@@ -29,6 +44,10 @@ public class JDBC {
      * - Reserved seats
      * - Wheelchair accessible seats
      * - Calendar availability
+     * 
+     * @param args Command line arguments (not used)
+     * @throws SQLException If a database access error occurs
+     * @throws ClassNotFoundException If the JDBC driver class cannot be found
      */
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         /*
@@ -127,33 +146,66 @@ public class JDBC {
     }
 
 
-    // Wrapper methods that delegate to BoxOfficeData
+    /* Wrapper methods that delegate to BoxOfficeData */
+
+    /**
+     * Retrieves a list of venue unavailability periods.
+     * @return List of strings representing unavailable time slots
+     */
     public List<String> getVenueUnavailability() {
         return boxOfficeData.getVenueUnavailability(connection);
     }
 
+    /**
+     * Retrieves seating configurations for a specific hall.
+     * @param hallName The name of the hall to get configurations for
+     * @return List of seating configurations
+     */
     public List<SeatingConfiguration> getSeatingConfigurations(String hallName) {
         return boxOfficeData.seatingConfigurations(connection, hallName);
     }
 
+    /**
+     * Retrieves a list of restricted seats for a specific hall.
+     * @param hallName The name of the hall to get restricted seats for
+     * @return List of restricted seating configurations
+     */
     public List<SeatingConfiguration> getRestrictedSeats(String hallName) {
         return boxOfficeData.isRestricted(connection, hallName);
     }
 
+    /**
+     * Retrieves a list of reserved seats for a specific hall.
+     * @param hallName The name of the hall to get reserved seats for
+     * @return List of reserved seating configurations
+     */
     public List<SeatingConfiguration> getReservedSeats(String hallName) {
         return boxOfficeData.isReserved(connection, hallName);
     }
 
+    /**
+     * Retrieves a list of wheelchair accessible seats for a specific hall.
+     * @param hallName The name of the hall to get wheelchair seats for
+     * @return List of wheelchair seat configurations
+     */
     public List<WheelChairSeatConfig> getWheelchairSeats(String hallName) {
         return boxOfficeData.isAccessible(connection, hallName);
     }
 
+    /**
+     * Retrieves calendar availability for a specific date.
+     * @param date The date to check availability for
+     * @return List of available time slots
+     */
     public List<String> getCalendarAvailability(Date date) {
         return boxOfficeData.getCalendarAvailability(connection, date);
     }
 
     /**
      * For SELECT queries that return results
+     * @param query The SQL query to execute
+     * @return ResultSet containing the query results
+     * @throws SQLException If a database access error occurs
      */
     public ResultSet executeQuery(String query) throws SQLException {
         Statement stmt = connection.createStatement();
@@ -162,6 +214,11 @@ public class JDBC {
 
     /**
      * For parameterized SELECT queries (prevent SQL injection)
+     * Prevents SQL injection by using prepared statements.
+     * @param query The SQL query with parameter placeholders
+     * @param params The parameters to substitute in the query
+     * @return ResultSet containing the query results
+     * @throws SQLException If a database access error occurs
      */
     public ResultSet executeQuery(String query, Object... params) throws SQLException {
         PreparedStatement pstmt = connection.prepareStatement(query);
@@ -172,7 +229,10 @@ public class JDBC {
     }
 
     /**
-     * For INSERT, UPDATE, DELETE operations
+     * Executes an INSERT, UPDATE, or DELETE operation.
+     * @param query The SQL query to execute
+     * @return The number of rows affected
+     * @throws SQLException If a database access error occurs
      */
     public int executeUpdate(String query) throws SQLException {
         Statement stmt = connection.createStatement();
@@ -181,6 +241,10 @@ public class JDBC {
 
     /**
      * For parameterized UPDATE queries (prevent SQL injection)
+     * Prevents SQL injection by using prepared statements.
+     * @param query The SQL query with parameter placeholders
+     * @param params The parameters to substitute in the query
+     * @throws SQLException If a database access error occurs
      */
     public void executeUpdate(String query, Object... params) throws SQLException {
         PreparedStatement pstmt = connection.prepareStatement(query);
@@ -190,7 +254,10 @@ public class JDBC {
         pstmt.executeUpdate();
     }
 
-
+    /**
+     * Closes the database connection.
+     * @throws SQLException If a database access error occurs
+     */
     public void close() throws SQLException {
         if (connection != null) {
             connection.close();

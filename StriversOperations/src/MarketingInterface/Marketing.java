@@ -5,7 +5,6 @@ import java.sql.Date;
 import java.util.List;
 
 public interface Marketing {
-    // Venue Unavailability
     /**
      * Collects that data of events that are booked
      * @param connection connection to the SQL DB
